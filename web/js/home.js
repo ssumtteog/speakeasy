@@ -1,0 +1,236 @@
+// ===== MAGNETIC WAVE SLIDERS =====
+function positionOrb(track, targetPos, instant, prevPos) {
+  const dots = track.querySelectorAll('.slider-dot');
+  const orb = track.querySelector('.slider-orb');
+  const core = track.querySelector('.slider-orb-core');
+  const glow = track.querySelector('.slider-track-glow');
+  const targetDot = dots[targetPos];
+  if (!targetDot || !orb || !core) return;
+
+  const centerX = targetDot.offsetLeft + targetDot.offsetWidth / 2;
+  const size = DOT_SIZES[targetPos];
+
+  if (instant) {
+    orb.style.transition = 'none';
+    core.style.transition = 'none';
+    if (glow) glow.style.transition = 'none';
+  } else {
+    orb.style.transition = '';
+    core.style.transition = '';
+    if (glow) glow.style.transition = '';
+  }
+
+  orb.style.left = centerX + 'px';
+  orb.style.width = size.outer + 'px';
+  orb.style.height = size.outer + 'px';
+  core.style.width = size.inner + 'px';
+  core.style.height = size.inner + 'px';
+
+  if (glow) {
+    glow.style.left = (targetPos * 25) + '%';
+  }
+
+  if (instant) {
+    // Force reflow then restore smooth transitions
+    void orb.offsetWidth;
+    orb.style.transition = '';
+    core.style.transition = '';
+    if (glow) glow.style.transition = '';
+    return;
+  }
+
+  // Directional liquid magnetic flow & wave ripple across passed dots
+  if (typeof prevPos === 'number' && prevPos !== targetPos) {
+    const dir = targetPos > prevPos ? 1 : -1;
+    const waveClass = dir > 0 ? 'wave-right' : 'wave-left';
+
+    // Magnetic stretch while traveling
+    orb.classList.remove('flowing');
+    void orb.offsetWidth;
+    orb.classList.add('flowing');
+    clearTimeout(orb._flowTimer);
+    orb._flowTimer = setTimeout(() => {
+      orb.classList.remove('flowing');
+    }, 130);
+
+    // Staggered wave along intermediate dots toward target
+    const distance = Math.abs(targetPos - prevPos);
+    for (let step = 1; step <= distance; step++) {
+      const idx = prevPos + dir * step;
+      const d = dots[idx];
+      if (!d) continue;
+      const delay = (step - 1) * 26;
+      setTimeout(() => {
+        d.classList.remove('wave-right', 'wave-left');
+        void d.offsetWidth;
+        d.classList.add(waveClass);
+      }, delay);
+    }
+  }
+}
+
+function positionAllOrbs(instant) {
+  document.querySelectorAll('.slider-track').forEach(track => {
+    const pos = parseInt(track.dataset.selected, 10) || 0;
+    positionOrb(track, pos, instant);
+  });
+}
+
+document.querySelectorAll('.slider-track').forEach(track => {
+  const key = track.dataset.slider;
+  track.querySelectorAll('.slider-dot').forEach(dot => {
+    dot.addEventListener('click', () => {
+      const prevPos = parseInt(track.dataset.selected, 10);
+      const nextPos = parseInt(dot.dataset.pos, 10);
+      if (prevPos === nextPos) return;
+      track.dataset.selected = String(nextPos);
+      state.prefs[key] = parseInt(dot.dataset.value, 10);
+      safeSetStorage('speakeasy-prefs', JSON.stringify(state.prefs));
+      postToNative({ type: 'PREFS', prefs: state.prefs, region: state.region });
+      if (typeof scheduleCloudSync === 'function') scheduleCloudSync();
+      positionOrb(track, nextPos, false, prevPos);
+      updateCtaCount();
+    });
+  });
+});
+
+function applyPrefsToUI() {
+  document.querySelectorAll('.slider-track').forEach(track => {
+    const key = track.dataset.slider;
+    const val = state.prefs[key];
+    if (typeof val !== 'number') return;
+    const matchingDot = track.querySelector('.slider-dot[data-value="' + val + '"]');
+    if (matchingDot) {
+      const pos = parseInt(matchingDot.dataset.pos, 10);
+      track.dataset.selected = String(pos);
+      positionOrb(track, pos, true);
+    }
+  });
+  document.querySelectorAll('.location-chip').forEach(chip => {
+    chip.classList.toggle('active', chip.dataset.region === state.region);
+  });
+}
+
+// ===== MATCHING ALGORITHM =====
+function calcMatch(bar) {
+  const dMood  = Math.abs(bar.mood  - state.prefs.mood);
+  const dPrice = Math.abs(bar.price - state.prefs.price);
+  const dSpace = Math.abs(bar.space - state.prefs.space);
+  const dTaste = Math.abs(bar.taste - state.prefs.taste);
+  const maxDiff = 16;
+  const totalDiff = dMood * 1.15 + dPrice * 1.0 + dSpace * 0.9 + dTaste * 0.95;
+  const score = Math.round(Math.max(58, Math.min(99, 100 - (totalDiff / maxDiff) * 46)));
+  return score;
+}
+
+function getFilteredBars(likesOnly) {
+  let list = BARS.map(b => ({ ...b, match: calcMatch(b), distKm: getBarDistanceKm(b) }));
+  if (likesOnly) {
+    list = list.filter(b => state.likes.has(b.id));
+  } else if (state.region !== '전체') {
+    list = list.filter(b => b.city === state.region || b.region === state.region);
+  }
+  if (state.sortBy === 'price') {
+    list.sort((a, b) => a.price - b.price || b.match - a.match);
+  } else if (state.sortBy === 'distance') {
+    list.sort((a, b) => {
+      const da = a.distKm == null ? 99999 : a.distKm;
+      const db = b.distKm == null ? 99999 : b.distKm;
+      return da - db || b.match - a.match;
+    });
+  } else {
+    list.sort((a, b) => b.match - a.match);
+  }
+  return list;
+}
+
+function updateCtaCount() {
+  const matched = getFilteredBars(false);
+  document.getElementById('ctaCount').textContent = matched.length + '곳';
+}
+
+// ===== LOCATION CHIPS =====
+document.querySelectorAll('.location-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.location-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    state.region = chip.dataset.region;
+    safeSetStorage('speakeasy-region', state.region);
+    postToNative({ type: 'PREFS', prefs: state.prefs, region: state.region });
+    if (typeof scheduleCloudSync === 'function') scheduleCloudSync();
+    updateCtaCount();
+  });
+});
+
+// ===== BLUR LOADING TRANSITION -> RESULTS =====
+let isLoadingResults = false;
+function startSearchTransition() {
+  if (isLoadingResults) return;
+  isLoadingResults = true;
+  const overlay = document.getElementById('loadingOverlay');
+  const pctEl = document.getElementById('loadingPercent');
+  pctEl.textContent = '0%';
+  overlay.classList.add('active');
+
+  const duration = 1150;
+  const start = performance.now();
+
+  function tick(now) {
+    const elapsed = now - start;
+    const t = Math.min(1, elapsed / duration);
+    // Smooth ease-out curve for natural progress feel
+    const eased = 1 - Math.pow(1 - t, 2.4);
+    const pct = Math.round(eased * 100);
+    pctEl.textContent = pct + '%';
+
+    if (t < 1) {
+      requestAnimationFrame(tick);
+    } else {
+      pctEl.textContent = '100%';
+      setView('results');
+      setTimeout(() => {
+        overlay.classList.remove('active');
+        isLoadingResults = false;
+      }, 180);
+    }
+  }
+  requestAnimationFrame(tick);
+}
+
+document.getElementById('ctaButton').addEventListener('click', startSearchTransition);
+document.getElementById('backBtn').addEventListener('click', () => {
+  const authEl = document.getElementById('authScreen');
+  if (authEl && authEl.classList.contains('open') && typeof closeAuthScreen === 'function') {
+    closeAuthScreen();
+    return;
+  }
+  const setEl = document.getElementById('settingsScreen');
+  if (setEl && setEl.classList.contains('open') && typeof closeSettingsScreen === 'function') {
+    closeSettingsScreen();
+    return;
+  }
+  const fs = document.getElementById('searchFilterScreen');
+  if (fs && fs.classList.contains('open') && typeof closeSearchFilterScreen === 'function') {
+    closeSearchFilterScreen();
+    return;
+  }
+  if (state.view === 'search' && typeof handleSearchBack === 'function' && handleSearchBack()) return;
+  if (state.view === 'guide' && typeof handleGuideBack === 'function' && handleGuideBack()) return;
+  setView('home');
+});
+document.getElementById('headerLikeBtn').addEventListener('click', () => {
+  setView(state.view === 'likes' ? 'home' : 'likes');
+});
+
+document.querySelectorAll('#sortBar .sort-option').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#sortBar .sort-option').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.sortBy = btn.dataset.sort;
+    if (state.sortBy === 'distance' && !state.userLocation) {
+      requestWebUserLocation(false);
+      showToast('현재 위치를 확인해 가까운 순으로 정렬하고 있어요');
+    }
+    renderResults();
+  });
+});

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="speakeasy">
+  <meta name="theme-color" id="themeColorMeta" content="#FFFFFF">
+  <title>speakeasy</title>
+  <link rel="stylesheet" href="vendor/leaflet.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/search.css">
+  <link rel="stylesheet" href="css/home.css">
+  <link rel="stylesheet" href="css/results.css">
+  <link rel="stylesheet" href="css/guide.css">
+  <link rel="stylesheet" href="css/map.css">
+  <link rel="stylesheet" href="css/my.css">
+  <link rel="stylesheet" href="css/responsive.css">
+<body>
+  <div class="phone-wrapper">
+    <div class="phone-frame" id="phoneFrame">
+      <div class="bg-base"></div>
+      <div class="ambient-glow glow-1"></div>
+      <div class="ambient-glow glow-2"></div>
+      <div class="notch"></div>
+
+      <!-- FIXED HEADER -->
+      <div class="fixed-header ios-glass-header">
+        <div class="fixed-header-inner">
+          <div class="header-left">
+            <button class="back-btn" id="backBtn" aria-label="뒤로가기">
+              <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <div class="logo" id="headerTitle">speakeasy</div>
+          </div>
+          <div class="header-icons">
+            <button class="icon-btn" id="themeToggle" aria-label="테마 전환">
+              <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+              <svg class="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            </button>
+            <button class="icon-btn" id="headerLikeBtn" aria-label="찜한 바">
+              <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <span class="like-badge" id="likeBadge">0</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW STACK -->
+      <div class="views-container">
+        <!-- VIEW 1: HOME -->
+        <div class="view view-home" id="viewHome">
+          <div class="page-title">어떤 바를 원하시나요?</div>
+          <div class="page-subtitle">원하는 느낌을 선택하고 장소를 찾아보세요!</div>
+
+          <div class="location-section">
+            <div class="location-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              지역 선택
+            </div>
+            <div class="location-scroll" id="locationScroll">
+              <div class="location-chip active" data-region="전체">전국</div>
+              <div class="location-chip" data-region="서울">서울</div>
+              <div class="location-chip" data-region="경기">경기</div>
+              <div class="location-chip" data-region="인천">인천</div>
+              <div class="location-chip" data-region="부산">부산</div>
+              <div class="location-chip" data-region="대구">대구</div>
+              <div class="location-chip" data-region="대전">대전</div>
+              <div class="location-chip" data-region="광주">광주</div>
+              <div class="location-chip" data-region="강원">강원</div>
+              <div class="location-chip" data-region="충청">충청</div>
+              <div class="location-chip" data-region="전라">전라</div>
+              <div class="location-chip" data-region="경상">경상</div>
+              <div class="location-chip" data-region="제주">제주</div>
+            </div>
+          </div>
+
+          <div class="section-divider"></div>
+
+          <div class="slider-section">
+            <div class="slider-title">분위기</div>
+            <div class="slider-track" data-slider="mood" data-selected="0">
+              <div class="slider-track-base"><div class="slider-track-glow"></div></div>
+              <div class="slider-orb"><div class="slider-orb-core"></div></div>
+              <div class="slider-dot" data-pos="0" data-value="1"><div class="outer"><div class="inner"></div></div></div>
+              <div class="slider-dot" data-pos="1" data-value="2"><div class="outer"><div class="inner"></div></div></div>
+              <div class="slider-dot" data-pos="2" data-value="3"><div class="outer"><div class="inner"></div></div></div>
+              <div class="slider-dot" data-pos="3" data-value="4"><div class="outer"><div class="inner"></div></div></div>
+              <div class="slider-dot" data-pos="4" data-value="5"><div class="outer"><div class="inner"></div></div></div>
+            </div>
+            <div class="slider-labels"><span class="slider-label">조용함</span><span class="slider-label">활기찬</span></div>
+          </div>
+
+          <div class="slider-section">
+            <div class="slider-title">가격대</div>
+            <div class="slider-track" data-slider="price" data-selected="3">
+              <div class="slider-track-base"><div class="slider-track-glow"></div></div>
+              <div class="slider-orb"><div class="slider-orb-core"></div></div>
+              <div class="slider-dot" data-pos="0" data-value="1"><div class="outer"><div class="inner"></div></div></div>
+              <div class="slider-dot" data-pos="1" data-value="2"><div class="outer"><div class="inner"></div></div></div>
+              <div class="slider-dot" data-pos="2" data-value="3"><div class="outer"><div class="inner"></div></div></div>
+              <div class="slider-dot" data-pos="3" data-value="4"><div class="outer"><div class="inner"></div></div></div>
+              <div class="slider-dot" data-pos="4" data-value="5"><div class="outer"><div class="inner"></div></div></div>
+            </div>
+            <div class="slider-labels"><span class="slider-label">가성비</span><span class="slider-label">프리미엄</span></div>
+          </div>
+
+          <div class="slider-section">
+            <div class="slider-title">공간</div>
+            <div class="slider-track" data-slider="space" data-selected="2">
+              <div class="slider-track-base"><div class="slider-track-glow"></div></div>
+              <div class="slider-orb"><div class="slider-orb-core"></div></div>
+              <div class="slider-dot" data-pos="0" data-value="1"><div class="outer"><div class="inner"></div></div></div>
+              <div class="slider-dot" data-pos="1" data-value="2"><div class="outer"><div class="inner"></div></div></div>
+              <div class="slider-dot" data-pos="2" data-value="3"><div class="outer"><div class="inner"></div></div></div>
+              <div class="slider-dot" data-pos="3" data-value="4"><div class="outer"><div class="inner"></div></div></div>
+              <div class="slider-dot" data-pos="4" data-value="5"><div class="outer"><div class="inner"></div></div></div>
+            </div>
+            <div class="slider-labels"><span class="slider-label">혼술하기 좋은</span><span class="slider-label">모임에 좋은</span></div>
+          </div>
+
+          <div class="slider-section">
+            <div class="slider-title">취향</div>
+            <div class="slider-track" data-slider="taste" data-selected="3">
+              <div class="slider-track-base"><div class="slider-track-glow"></div></div>
+              <div class="slider-orb"><div class="slider-orb-core"></div></div>
+              <div class="slider-dot" data-pos="0" data-value="1"><div class="outer"><div class="inner"></div></div></div>
+              <div class="slider-dot" data-pos="1" data-value="2"><div class="outer"><div class="inner"></div></div></div>
+              <div class="slider-dot" data-pos="2" data-value="3"><div class="outer"><div class="inner"></div></div></div>
+              <div class="slider-dot" data-pos="3" data-value="4"><div class="outer"><div class="inner"></div></div></div>
+              <div class="slider-dot" data-pos="4" data-value="5"><div class="outer"><div class="inner"></div></div></div>
+            </div>
+            <div class="slider-labels"><span class="slider-label">가볍고 달콤한</span><span class="slider-label">무겁고 강한</span></div>
+          </div>
+        </div>
+
+        <!-- VIEW 2: BAR RESULTS -->
+        <div class="view view-results" id="viewResults">
+          <div class="results-summary-bar">
+            <div class="results-heading" id="resultsHeading">추천 바 <span>0곳</span></div>
+          </div>
+          <div class="sort-bar" id="sortBar">
+            <button class="sort-option active" data-sort="match">취향 일치순</button>
+            <button class="sort-option" data-sort="distance">가까운 거리순</button>
+            <button class="sort-option" data-sort="price">낮은 가격순</button>
+          </div>
+          <div class="pref-pills" id="prefPills"></div>
+          <div class="results-list" id="resultsList"></div>
+        </div>
+
+        <!-- VIEW 3: SEARCH -->
+        <div class="view view-search" id="viewSearch">
+          <div class="search-hero">
+            <div class="search-title">무엇을 찾으시나요?</div>
+            <div class="search-bar-row">
+              <div class="search-bar-box">
+                <svg class="search-bar-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <div class="search-input-wrap">
+                  <div class="search-rolling-ph" id="searchRollingPh" aria-hidden="true"></div>
+                  <input type="text" class="search-input" id="searchInput" autocomplete="off" aria-label="위스키 또는 바 검색" />
+                </div>
+                <div class="search-bar-actions">
+                  <button class="search-action-btn search-clear-btn" id="searchClearBtn" aria-label="검색어 지우기">
+                    <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                  <button class="search-action-btn" id="searchCameraBtn" aria-label="라벨 촬영 검색">
+                    <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  </button>
+                  <button class="search-action-btn" id="searchFilterBtn" aria-label="상세 검색 필터">
+                    <svg viewBox="0 0 24 24"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="17" x2="20" y2="17"/><circle cx="9" cy="7" r="2.2" fill="var(--surface)"/><circle cx="15" cy="17" r="2.2" fill="var(--surface)"/></svg>
+                    <span class="filter-active-dot" id="filterActiveDot"></span>
+                  </button>
+                </div>
+              </div>
+              <button class="search-cancel-btn" id="searchCancelBtn">취소</button>
+            </div>
+
+            <!-- YouTube / Google / Naver style recent search history: appears right below search bar ONLY when focused -->
+            <div class="recent-searches-box" id="recentSearchesBox"></div>
+
+            <!-- Active filter summary pills (shown when filters are applied) -->
+            <div class="active-filter-bar" id="activeFilterBar"></div>
+
+            <div class="search-tags-wrap" id="searchTagsWrap">
+              <button class="search-tag-chip" data-stag="혼술하기 좋은">#혼술하기 좋은</button>
+              <button class="search-tag-chip" data-stag="고급진">#고급진</button>
+              <button class="search-tag-chip" data-stag="입문 위스키">#입문 위스키</button>
+              <button class="search-tag-chip" data-stag="조용한 바">#조용한 바</button>
+              <button class="search-tag-chip" data-stag="피트 위스키">#피트 위스키</button>
+              <button class="search-tag-chip" data-stag="가성비">#가성비</button>
+            </div>
+
+            <input type="file" id="cameraFileInput" accept="image/*" style="display:none" />
+          </div>
+
+          <div class="search-results-section" id="searchResultsSection">
+            <div class="search-results-header">
+              <div class="search-results-count" id="searchResultsCount">검색 결과 <span>0건</span></div>
+              <button class="search-reset-btn" id="searchResetBtn">초기화</button>
+            </div>
+            <div id="searchWhiskyBlock"></div>
+            <div id="searchBarBlock">
+              <div class="results-list" id="searchResultsList"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW 4: WHISKY GUIDE (3-LEVEL) -->
+        <div class="view view-guide" id="viewGuide">
+          <div id="guideContent"></div>
+        </div>
+
+        <!-- VIEW 5: NATIONWIDE REAL MAP (NAVER MAP STYLE) -->
+        <div class="view view-map" id="viewMap">
+          <div class="map-stage" id="leafletMap"></div>
+
+          <div class="map-top-overlay">
+            <div class="map-search-bar">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" class="map-search-input" id="mapSearchInput" placeholder="전국 바, 지역, 지하철역, 위스키 검색" autocomplete="off" />
+              <button class="map-search-clear" id="mapSearchClear" aria-label="검색어 지우기">
+                <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+            <div class="map-chips-scroll" id="mapChipsScroll">
+              <button class="map-chip active" data-mcity="전체">전국</button>
+              <button class="map-chip" data-mcity="서울">서울</button>
+              <button class="map-chip" data-mcity="경기">경기</button>
+              <button class="map-chip" data-mcity="인천">인천</button>
+              <button class="map-chip" data-mcity="부산">부산</button>
+              <button class="map-chip" data-mcity="대구">대구</button>
+              <button class="map-chip" data-mcity="대전">대전</button>
+              <button class="map-chip" data-mcity="광주">광주</button>
+              <button class="map-chip" data-mcity="강원">강원</button>
+              <button class="map-chip" data-mcity="충청">충청</button>
+              <button class="map-chip" data-mcity="전라">전라</button>
+              <button class="map-chip" data-mcity="경상">경상</button>
+              <button class="map-chip" data-mcity="제주">제주</button>
+            </div>
+          </div>
+
+          <!-- Right circular floating buttons (Location Ping Saved / Explore / Nationwide Reset) -->
+          <div class="map-controls">
+            <button class="map-round-btn active" id="mapFocusSavedBtn" aria-label="저장한 바 핑 보기" title="저장한 바 핑 보기">
+              <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3" fill="currentColor"/></svg>
+              <span class="map-round-badge" id="mapSavedCount">0</span>
+            </button>
+            <button class="map-round-btn" id="mapExploreAllBtn" aria-label="전국 전체 바 둘러보기" title="전체 바 둘러보기">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+            </button>
+            <button class="map-round-btn" id="mapResetBtn" aria-label="전국 보기" title="전국 보기">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+            </button>
+          </div>
+
+          <div class="map-bottom-dock">
+            <button class="map-list-pill" id="mapListPill">
+              <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span id="mapListPillText">저장한 바 0곳 · 목록</span>
+            </button>
+            <div class="map-preview-card" id="mapPreviewCard"></div>
+          </div>
+        </div>
+
+        <!-- VIEW 6: MY PAGE -->
+        <div class="view view-my" id="viewMy">
+          <div id="myContent"></div>
+        </div>
+      </div>
+
+      <!-- TOAST -->
+      <div class="app-toast" id="appToast"></div>
+
+      <!-- BLUR LOADING OVERLAY -->
+      <div class="loading-overlay" id="loadingOverlay" aria-live="polite">
+        <div class="loading-spinner">
+          <svg viewBox="0 0 44 44">
+            <circle class="track-ring" cx="22" cy="22" r="18"/>
+            <circle class="arc-ring" cx="22" cy="22" r="18"/>
+          </svg>
+        </div>
+        <div class="loading-text">맞춤 바를 찾는중...</div>
+        <div class="loading-percent" id="loadingPercent">0%</div>
+      </div>
+
+      <!-- CTA BUTTON -->
+      <div class="cta-container" id="ctaContainer">
+        <button class="cta-button" id="ctaButton">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span>내 취향에 맞는 바 찾기</span>
+          <span class="cta-count" id="ctaCount">12곳</span>
+        </button>
+      </div>
+
+      <!-- GLASS BOTTOM NAV -->
+      <div class="bottom-nav ios-glass">
+        <div class="nav-item active" data-tab="home">
+          <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span>홈</span>
+        </div>
+        <div class="nav-item inactive" data-tab="search">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span>검색</span>
+        </div>
+        <div class="nav-item inactive" data-tab="guide">
+          <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          <span>가이드</span>
+        </div>
+        <div class="nav-item inactive" data-tab="map">
+          <svg viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+          <span>지도</span>
+        </div>
+        <div class="nav-item inactive" data-tab="my">
+          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>나</span>
+        </div>
+      </div>
+
+      <!-- DEDICATED FULL-SCREEN SEARCH FILTER PAGE -->
+      <div class="filter-screen" id="searchFilterScreen" aria-hidden="true">
+        <div class="filter-screen-header">
+          <button class="filter-header-close" id="filterCloseBtn" aria-label="필터 닫기">
+            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <div class="filter-header-title">검색 필터</div>
+          <button class="filter-header-reset" id="filterResetDraftBtn">초기화</button>
+        </div>
+
+        <div class="filter-screen-body">
+          <div class="filter-group">
+            <div class="filter-group-title">지역 <span class="filter-group-sub">전국 시/도</span></div>
+            <div class="filter-chip-grid" id="filterRegionGroup">
+              <button class="filter-opt-chip active" data-fregion="전체">전국</button>
+              <button class="filter-opt-chip" data-fregion="서울">서울</button>
+              <button class="filter-opt-chip" data-fregion="경기">경기</button>
+              <button class="filter-opt-chip" data-fregion="인천">인천</button>
+              <button class="filter-opt-chip" data-fregion="부산">부산</button>
+              <button class="filter-opt-chip" data-fregion="대구">대구</button>
+              <button class="filter-opt-chip" data-fregion="대전">대전</button>
+              <button class="filter-opt-chip" data-fregion="광주">광주</button>
+              <button class="filter-opt-chip" data-fregion="강원">강원</button>
+              <button class="filter-opt-chip" data-fregion="충청">충청</button>
+              <button class="filter-opt-chip" data-fregion="전라">전라</button>
+              <button class="filter-opt-chip" data-fregion="경상">경상</button>
+              <button class="filter-opt-chip" data-fregion="제주">제주</button>
+            </div>
+          </div>
+
+          <div class="filter-group">
+            <div class="filter-group-title">원하는 위스키 종류</div>
+            <div class="filter-chip-grid" id="filterTypeGroup">
+              <button class="filter-opt-chip active" data-fwtype="전체">전체</button>
+              <button class="filter-opt-chip" data-fwtype="블렌디드">블렌디드</button>
+              <button class="filter-opt-chip" data-fwtype="싱글몰트">싱글몰트</button>
+              <button class="filter-opt-chip" data-fwtype="피트">피트</button>
+              <button class="filter-opt-chip" data-fwtype="버번">버번</button>
+            </div>
+          </div>
+
+          <div class="filter-group">
+            <div class="filter-group-title">향 · 풍미</div>
+            <div class="filter-chip-grid" id="filterAromaGroup">
+              <button class="filter-opt-chip active" data-faroma="전체">전체</button>
+              <button class="filter-opt-chip" data-faroma="달콤·바닐라">달콤·바닐라</button>
+              <button class="filter-opt-chip" data-faroma="과일·꿀">과일·꿀</button>
+              <button class="filter-opt-chip" data-faroma="스모키·피트">스모키·피트</button>
+              <button class="filter-opt-chip" data-faroma="셰리·우디">셰리·우디</button>
+              <button class="filter-opt-chip" data-faroma="부드러운 입문">부드러운 입문</button>
+            </div>
+          </div>
+
+          <div class="filter-group">
+            <div class="filter-group-title">가격대 <span class="filter-group-sub">잔당 기준</span></div>
+            <div class="filter-chip-grid" id="filterPriceGroup">
+              <button class="filter-opt-chip active" data-fprice="전체">전체</button>
+              <button class="filter-opt-chip" data-fprice="low">가성비 (1만원대)</button>
+              <button class="filter-opt-chip" data-fprice="mid">합리적 (2만원대)</button>
+              <button class="filter-opt-chip" data-fprice="high">프리미엄 (3만원+)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="filter-screen-footer">
+          <button class="filter-apply-cta" id="filterApplyBtn">
+            <span>필터 적용하고 검색하기</span>
+            <span class="cta-count" id="filterPreviewCount">0건</span>
+          </button>
+          <button class="filter-skip-btn" id="filterSkipBtn">필터 없이 바로 검색하기</button>
+        </div>
+      </div>
+
+      <!-- FULL-SCREEN SETTINGS PAGE (OPENED FROM MY PAGE GEAR ICON) -->
+      <div class="sub-screen settings-screen" id="settingsScreen" aria-hidden="true">
+        <div class="filter-screen-header">
+          <button type="button" class="filter-header-close" id="settingsCloseBtn" aria-label="설정 닫기">
+            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <div class="filter-header-title" id="settingsHeaderTitle">설정</div>
+          <div style="width:34px;"></div>
+        </div>
+        <div class="sub-screen-body" id="settingsScreenBody"></div>
+      </div>
+
+      <!-- FULL-SCREEN LOGIN / SIGNUP PAGE (SPEAKEASY EDITORIAL MOOD) -->
+      <div class="sub-screen auth-screen" id="authScreen" aria-hidden="true">
+        <div class="auth-screen-header">
+          <button type="button" class="filter-header-close" id="authCloseBtn" aria-label="로그인 닫기">
+            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <span class="auth-header-brand">speakeasy</span>
+        </div>
+        <div class="auth-screen-body" id="authScreenBody"></div>
+      </div>
+
+      <!-- BAR DETAIL SHEET -->
+      <div class="sheet-scrim" id="sheetScrim"></div>
+      <div class="detail-sheet" id="detailSheet">
+        <div class="sheet-handle-wrap" id="sheetCloseHandle"><div class="sheet-handle"></div></div>
+        <div class="sheet-scroll" id="sheetBody"></div>
+      </div>
+
+      <!-- 19+ ADULT VERIFICATION GATE (FIRST LAUNCH) -->
+      <div class="age-gate-overlay" id="ageGateOverlay" role="dialog" aria-modal="true" aria-label="성인 확인">
+        <div class="age-gate-card" id="ageGateCard"></div>
+      </div>
+
+      <!-- HIDDEN PROFILE AVATAR PICKER -->
+      <input type="file" id="profileAvatarInput" accept="image/*" style="display:none" />
+    </div>
+  </div>
+
+
+  <!-- Leaflet Real Map Engine (bundled locally for instant loading) -->
+  <script src="vendor/leaflet.js"></script>
+
+  <!-- Data -->
+  <script src="data/bars.js"></script>
+  <script src="data/whiskies.js"></script>
+  <script src="data/guide.js"></script>
+
+  <!-- App Modules -->
+  <script src="js/state.js"></script>
+  <script src="js/whisky-visual.js"></script>
+  <script src="js/home.js"></script>
+  <script src="js/results.js"></script>
+  <script src="js/search.js"></script>
+  <script src="js/guide.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/my.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

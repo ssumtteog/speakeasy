@@ -1,0 +1,181 @@
+/* ===== HOME CONTENT ===== */
+.page-title {
+  color: var(--text);
+  font-size: clamp(24px, 6.8vw, 28px);
+  font-weight: 600; margin-top: 8px; line-height: 1.3; letter-spacing: -0.5px;
+  transition: color 0.25s ease;
+}
+.page-subtitle {
+  color: var(--text-light);
+  font-size: 14px; font-weight: 400; margin-top: 6px; margin-bottom: 28px;
+  transition: color 0.25s ease;
+}
+
+/* ===== LOCATION CHIPS ===== */
+.location-section { margin-bottom: 30px; }
+.location-label {
+  font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 6px;
+  transition: color 0.25s ease;
+}
+.location-scroll {
+  display: flex; gap: 8px;
+  overflow-x: auto; overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x;
+  padding-bottom: 4px; scrollbar-width: none;
+  margin-left: calc(var(--side-pad) * -1);
+  margin-right: calc(var(--side-pad) * -1);
+  padding-left: var(--side-pad);
+  padding-right: var(--side-pad);
+}
+.location-scroll::-webkit-scrollbar { display: none; }
+.location-chip {
+  flex-shrink: 0; padding: 9px 18px; border-radius: 100px;
+  font-size: 14px; font-weight: 500; color: var(--text);
+  background: transparent; border: 1.2px solid var(--chip-border);
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  white-space: nowrap; user-select: none;
+}
+.location-chip.active {
+  background: var(--accent); border-color: var(--accent);
+  color: #FFF; font-weight: 600;
+  box-shadow: 0 4px 14px rgba(30, 58, 47, 0.24);
+}
+
+.section-divider {
+  height: 1px; background: var(--divider);
+  margin: 4px 0 32px 0; transition: background-color 0.25s ease;
+}
+
+/* ===== MAGNETIC WAVE SLIDERS ===== */
+.slider-section { margin-bottom: 36px; }
+.slider-title {
+  font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 18px;
+  transition: color 0.25s ease;
+}
+.slider-track {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 4px; margin-bottom: 10px; position: relative;
+  user-select: none;
+}
+.slider-track-base {
+  position: absolute; left: 24px; right: 24px; top: 50%;
+  height: 3px; border-radius: 2px; transform: translateY(-50%); z-index: 0;
+  background: var(--track-neutral);
+  overflow: hidden;
+  pointer-events: none;
+  transition: background-color 0.25s ease;
+}
+/* Smooth flowing magnetic glow along the track */
+.slider-track-glow {
+  position: absolute; top: 0; bottom: 0; width: 38%;
+  left: 0;
+  background: linear-gradient(90deg, transparent 0%, var(--accent-track) 50%, transparent 100%);
+  border-radius: 2px;
+  transform: translateX(-50%);
+  transition: left 0.26s cubic-bezier(0.45, 0.05, 0.18, 1);
+  will-change: left;
+}
+
+/* Magnetic floating orb that flows smoothly from old dot -> new dot */
+.slider-orb {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  z-index: 3;
+  pointer-events: none;
+  border-radius: 9999px;
+  display: flex; align-items: center; justify-content: center;
+  background-color: var(--dot-outer-active);
+  box-shadow: 0 0 18px rgba(30, 58, 47, 0.16), 0 2px 6px rgba(30, 58, 47, 0.10);
+  transform: translate(-50%, -50%) scaleX(1) scaleY(1);
+  /* Snappy Easy Ease In: magnetic acceleration into smooth arrival */
+  transition:
+    left 0.24s cubic-bezier(0.48, 0.04, 0.2, 1),
+    width 0.22s cubic-bezier(0.48, 0.04, 0.2, 1),
+    height 0.22s cubic-bezier(0.48, 0.04, 0.2, 1),
+    transform 0.14s cubic-bezier(0.45, 0.05, 0.55, 0.95);
+  will-change: left, width, height, transform;
+}
+.slider-orb.flowing {
+  transform: translate(-50%, -50%) scaleX(1.22) scaleY(0.86);
+}
+.slider-orb-core {
+  border-radius: 9999px;
+  background: var(--orb-core);
+  box-shadow: var(--orb-shadow);
+  transition:
+    width 0.22s cubic-bezier(0.48, 0.04, 0.2, 1),
+    height 0.22s cubic-bezier(0.48, 0.04, 0.2, 1),
+    background-color 0.25s ease;
+}
+
+.slider-dot {
+  position: relative; z-index: 2; cursor: pointer;
+  user-select: none; touch-action: manipulation;
+}
+.slider-dot .outer {
+  border-radius: 9999px; display: flex; align-items: center; justify-content: center;
+  background-color: var(--dot-bg);
+  box-shadow: var(--dot-outer-shadow);
+  transition: transform 0.32s cubic-bezier(0.42, 0, 0.2, 1), background-color 0.25s ease;
+}
+.slider-dot .inner {
+  border-radius: 9999px;
+  background-color: var(--dot-inactive);
+  box-shadow: var(--dot-inner-shadow);
+  transition: transform 0.32s cubic-bezier(0.42, 0, 0.2, 1), background-color 0.25s ease;
+}
+
+/* Directional magnetic wave ripple on intermediate & target dots */
+@keyframes magneticWaveRight {
+  0%   { transform: translateX(0) scale(1); }
+  40%  { transform: translateX(3px) scale(1.13); background-color: var(--wave-ripple-bg); }
+  100% { transform: translateX(0) scale(1); }
+}
+@keyframes magneticWaveLeft {
+  0%   { transform: translateX(0) scale(1); }
+  40%  { transform: translateX(-3px) scale(1.13); background-color: var(--wave-ripple-bg); }
+  100% { transform: translateX(0) scale(1); }
+}
+.slider-dot.wave-right .outer { animation: magneticWaveRight 0.26s cubic-bezier(0.42, 0, 0.2, 1); }
+.slider-dot.wave-left .outer  { animation: magneticWaveLeft  0.26s cubic-bezier(0.42, 0, 0.2, 1); }
+
+.slider-dot[data-pos="0"] .outer, .slider-dot[data-pos="4"] .outer { width: 46px; height: 46px; }
+.slider-dot[data-pos="1"] .outer, .slider-dot[data-pos="3"] .outer { width: 38px; height: 38px; }
+.slider-dot[data-pos="2"] .outer { width: 30px; height: 30px; }
+.slider-dot[data-pos="0"] .inner, .slider-dot[data-pos="4"] .inner { width: 34px; height: 34px; }
+.slider-dot[data-pos="1"] .inner, .slider-dot[data-pos="3"] .inner { width: 28px; height: 28px; }
+.slider-dot[data-pos="2"] .inner { width: 22px; height: 22px; }
+
+.slider-labels { display: flex; justify-content: space-between; padding: 0 2px; }
+.slider-label { font-size: 13px; color: var(--text-light); transition: color 0.25s ease; }
+
+/* ===== CTA BUTTON (Home only) ===== */
+.cta-container {
+  position: absolute; bottom: 92px; left: var(--side-pad); right: var(--side-pad); z-index: 25;
+  transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.25s ease;
+}
+.cta-container.hidden {
+  transform: translateY(24px);
+  opacity: 0;
+  pointer-events: none;
+}
+.cta-button {
+  width: 100%; padding: 17px 0; border-radius: 100px; border: none;
+  font-family: 'Pretendard', sans-serif; font-size: 16px; font-weight: 600; color: #FFF;
+  background: var(--accent);
+  cursor: pointer; transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 6px 20px rgba(30, 58, 47, 0.26), 0 1px 3px rgba(0,0,0,0.08);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  position: relative; overflow: hidden; user-select: none; touch-action: manipulation;
+}
+.cta-button:active { transform: scale(0.98); background: var(--accent-secondary); }
+.cta-button svg { width: 18px; height: 18px; stroke: #FFF; fill: none; stroke-width: 2; flex-shrink: 0; }
+.cta-count {
+  background: rgba(201, 168, 108, 0.24); padding: 3px 12px; border-radius: 100px;
+  font-size: 14px; font-weight: 600; color: #F7ECDA;
+  border: 0.5px solid rgba(201, 168, 108, 0.45);
+}

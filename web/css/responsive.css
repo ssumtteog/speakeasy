@@ -1,0 +1,100 @@
+/* ===== GLASS BOTTOM NAV ===== */
+.bottom-nav {
+  position: absolute; bottom: 12px; left: 12px; right: 12px;
+  height: 64px; border-radius: 100px; z-index: 30;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 6px; gap: 2px;
+}
+.nav-item {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  cursor: pointer; padding: 7px 0; border-radius: 100px;
+  transition: background-color 0.2s ease;
+  user-select: none; touch-action: manipulation;
+}
+.nav-item svg { width: 20px; height: 20px; stroke-width: 1.8; fill: none; transition: stroke 0.2s ease; }
+.nav-item span { font-size: 13px; font-weight: 400; white-space: nowrap; transition: color 0.2s ease; }
+.nav-item.inactive svg { stroke: var(--muted); }
+.nav-item.inactive span { color: var(--muted); }
+.nav-item.active {
+  background: var(--nav-active-bg);
+  border: 0.5px solid var(--nav-active-border);
+  box-shadow: var(--nav-active-shadow);
+}
+.nav-item.active svg { stroke: var(--text); }
+.nav-item.active span { color: var(--text); font-weight: 600; }
+
+/* ===== DESKTOP-ONLY HOVER ===== */
+@media (hover: hover) and (pointer: fine) {
+  .icon-btn:hover svg { transform: scale(1.1); }
+  .location-chip:hover:not(.active) { border-color: var(--accent); background: rgba(30, 58, 47, 0.06); }
+  .slider-dot:hover .outer { transform: scale(1.06); }
+  .cta-button:hover { transform: translateY(-2px); background: var(--accent-secondary); box-shadow: 0 8px 26px rgba(30, 58, 47, 0.34); }
+  .nav-item:hover:not(.active) { background: var(--nav-hover-bg); }
+  .btn-naver:hover,
+  .sheet-naver-cta:hover {
+    background: var(--map-accent);
+    border-color: var(--map-accent);
+    color: #FFF;
+    box-shadow: 0 4px 14px rgba(44, 82, 64, 0.28);
+  }
+  .btn-detail:hover { border-color: var(--accent-secondary); }
+}
+
+/* ===== REAL MOBILE RESPONSIVE FULLSCREEN ===== */
+@media (pointer: coarse), (max-width: 480px) {
+  :root { --side-pad: clamp(18px, 6vw, 24px); }
+  html, body {
+    position: fixed; inset: 0; width: 100%; height: 100%;
+    overflow: hidden; background: var(--bg); padding: 0; display: block;
+  }
+  .phone-wrapper, .phone-frame {
+    position: fixed; inset: 0; width: 100%; height: 100%;
+    border-radius: 0; box-shadow: none; transform: none !important; display: block;
+  }
+  .notch { display: none; }
+  .fixed-header {
+    padding: calc(env(safe-area-inset-top, 0px) + 14px) var(--side-pad) 14px var(--side-pad);
+  }
+  .view-home {
+    padding: calc(env(safe-area-inset-top, 0px) + 68px) var(--side-pad) calc(env(safe-area-inset-bottom, 0px) + 178px) var(--side-pad);
+  }
+  .view-results,
+  .view-search,
+  .view-guide {
+    padding: calc(env(safe-area-inset-top, 0px) + 68px) var(--side-pad) calc(env(safe-area-inset-bottom, 0px) + 106px) var(--side-pad);
+  }
+  .search-hero { padding-top: 120px; }
+  .cta-container {
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 91px);
+    left: var(--side-pad); right: var(--side-pad);
+  }
+  .bottom-nav {
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 17px);
+    left: 12px; right: 12px;
+  }
+}
+
+/* ===== NATIVE APP SHELL MODE (EXPO / IOS NATIVE TABS) ===== */
+html.native-tabs-mode .bottom-nav {
+  display: none !important;
+}
+html.native-tabs-mode .fixed-header {
+  padding-top: calc(var(--native-inset-top, env(safe-area-inset-top, 0px)) + 10px);
+}
+html.native-tabs-mode .view-home {
+  padding-top: calc(var(--native-inset-top, env(safe-area-inset-top, 0px)) + 64px);
+  padding-bottom: calc(var(--native-tabbar-top, 84px) + 84px);
+}
+html.native-tabs-mode .view-results,
+html.native-tabs-mode .view-search,
+html.native-tabs-mode .view-guide {
+  padding-top: calc(var(--native-inset-top, env(safe-area-inset-top, 0px)) + 64px);
+  padding-bottom: calc(var(--native-tabbar-top, 84px) + 28px);
+}
+html.native-tabs-mode .cta-container {
+  bottom: calc(var(--native-tabbar-top, 84px) + 8px);
+}
+html.native-tabs-mode .detail-sheet {
+  padding-bottom: calc(var(--native-tabbar-top, 84px) + 20px);
+}
