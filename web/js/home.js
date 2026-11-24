@@ -146,7 +146,8 @@ function getFilteredBars(likesOnly) {
 
 function updateCtaCount() {
   const matched = getFilteredBars(false);
-  document.getElementById('ctaCount').textContent = matched.length + '곳';
+  const el = document.getElementById('ctaCount');
+  if (el) el.textContent = tl(matched.length + '곳', matched.length + ' bars', matched.length + '軒');
 }
 
 // ===== LOCATION CHIPS =====
@@ -247,7 +248,7 @@ if (sortBarEl && viewResultsEl) {
     state.sortBy = btn.dataset.sort;
     if (state.sortBy === 'distance' && !state.userLocation) {
       requestWebUserLocation(false);
-      showToast('현재 위치를 확인해 가까운 순으로 정렬하고 있어요');
+      showToast(tl('현재 위치를 확인해 가까운 순으로 정렬하고 있어요', 'Checking your location to sort by distance…', '現在地を取得して近い順に並べ替えています…'));
     }
     renderResults();
   };

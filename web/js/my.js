@@ -387,11 +387,11 @@ function closeAuthScreen() {
 async function submitPasswordReset(email) {
   const cleanEmail = String(email || '').trim().toLowerCase();
   if (!isValidEmail(cleanEmail)) {
-    showToast('올바른 이메일 주소를 입력해 주세요');
+    showToast(tl('올바른 이메일 주소를 입력해 주세요', 'Please enter a valid email address', '正しいメールアドレスを入力してください'));
     return;
   }
   if (!hasLiveSupabase()) {
-    showToast('Supabase 연결 후 비밀번호 재설정을 사용할 수 있어요');
+    showToast(tl('Supabase 연결 후 비밀번호 재설정을 사용할 수 있어요', 'Password reset requires a live Supabase connection', 'Supabase接続後にパスワード再設定を利用できます'));
     return;
   }
   const base = window.SPEAKEASY_SUPABASE.url.replace(/\/$/, '');
@@ -406,17 +406,17 @@ async function submitPasswordReset(email) {
       const data = await res.json().catch(() => ({}));
       const rawErr = String(data.error_description || data.msg || data.message || '').toLowerCase();
       if (rawErr.includes('rate limit')) {
-        showToast('요청이 너무 많아요. 잠시 후 다시 시도해 주세요');
+        showToast(tl('요청이 너무 많아요. 잠시 후 다시 시도해 주세요', 'Too many requests. Please try again in a moment', 'リクエストが集中しています。しばらくしてからお試しください'));
       } else {
-        showToast('비밀번호 재설정 메일 발송에 실패했어요');
+        showToast(tl('비밀번호 재설정 메일 발송에 실패했어요', 'Could not send reset email. Please try again', '再設定メールの送信に失敗しました'));
       }
       return;
     }
     authMode = 'login';
     renderAuthScreen();
-    showToast('비밀번호 재설정 메일을 보냈어요! 메일함을 확인해 주세요');
+    showToast(tl('비밀번호 재설정 메일을 보냈어요! 메일함을 확인해 주세요', 'Reset link sent! Check your inbox', '再設定メールを送信しました。受信箱をご確認ください'));
   } catch (e) {
-    showToast('네트워크 연결을 확인해 주세요');
+    showToast(tl('네트워크 연결을 확인해 주세요', 'Please check your internet connection', 'ネットワーク接続をご確認ください'));
   }
 }
 
@@ -426,15 +426,15 @@ async function submitEmailAuth(email, password, name, confirmPassword) {
   const cleanName = String(name || '').trim();
 
   if (!isValidEmail(cleanEmail)) {
-    showToast('올바른 이메일 주소를 입력해 주세요');
+    showToast(tl('올바른 이메일 주소를 입력해 주세요', 'Please enter a valid email address', '正しいメールアドレスを入力してください'));
     return;
   }
   if (cleanPw.length < 6) {
-    showToast('비밀번호는 6자 이상 입력해 주세요');
+    showToast(tl('비밀번호는 6자 이상 입력해 주세요', 'Password must be at least 6 characters', 'パスワードは6文字以上で入力してください'));
     return;
   }
   if (authMode === 'signup' && cleanPw !== String(confirmPassword || '')) {
-    showToast('비밀번호가 서로 일치하지 않아요');
+    showToast(tl('비밀번호가 서로 일치하지 않아요', 'Passwords don’t match', 'パスワードが一致しません'));
     return;
   }
 
@@ -458,22 +458,22 @@ async function submitEmailAuth(email, password, name, confirmPassword) {
       if (!res.ok) {
         const rawErr = String(data.error_description || data.msg || data.message || '').toLowerCase();
         if (rawErr.includes('invalid login credentials')) {
-          showToast('이메일 또는 비밀번호가 올바르지 않아요');
+          showToast(tl('이메일 또는 비밀번호가 올바르지 않아요', 'Incorrect email or password', 'メールアドレスまたはパスワードが正しくありません'));
         } else if (rawErr.includes('email not confirmed')) {
-          showToast('이메일 인증이 필요해요. 메일함을 확인해 주세요');
+          showToast(tl('이메일 인증이 필요해요. 메일함을 확인해 주세요', 'Please verify your email first — check your inbox', 'メール認証が必要です。受信箱をご確認ください'));
         } else if (rawErr.includes('already registered')) {
-          showToast('이미 가입된 이메일이에요. 로그인해 주세요');
+          showToast(tl('이미 가입된 이메일이에요. 로그인해 주세요', 'This email is already registered — try signing in', 'すでに登録済みのメールです。ログインしてください'));
         } else if (rawErr.includes('rate limit')) {
-          showToast('요청이 너무 많아요. 잠시 후 다시 시도해 주세요');
+          showToast(tl('요청이 너무 많아요. 잠시 후 다시 시도해 주세요', 'Too many attempts. Please try again shortly', 'リクエストが集中しています。少し待ってからお試しください'));
         } else {
-          showToast(data.error_description || data.msg || '이메일 또는 비밀번호를 확인해 주세요');
+          showToast(data.error_description || data.msg || tl('이메일 또는 비밀번호를 확인해 주세요', 'Please check your email and password', 'メールアドレスとパスワードをご確認ください'));
         }
         return;
       }
       if (authMode === 'signup' && !data.access_token) {
         authMode = 'login';
         renderAuthScreen();
-        showToast('인증 메일을 보냈어요! 메일함 확인 후 로그인해 주세요');
+        showToast(tl('인증 메일을 보냈어요! 메일함 확인 후 로그인해 주세요', 'Verification email sent! Confirm it, then sign in', '確認メールを送信しました。認証後にログインしてください'));
         return;
       }
       const userObj = data.user || data;
@@ -498,10 +498,12 @@ async function submitEmailAuth(email, password, name, confirmPassword) {
       }
       closeAuthScreen();
       if (typeof closeOnboardingScreen === 'function') closeOnboardingScreen(true);
-      showToast(authMode === 'signup' ? '회원가입이 완료되었어요!' : '로그인 및 기록 동기화 완료!');
+      showToast(authMode === 'signup'
+        ? tl('회원가입이 완료되었어요!', 'Welcome to speakeasy!', 'ご登録が完了しました！')
+        : tl('로그인 및 기록 동기화 완료!', 'Signed in & synced!', 'ログインして記録を同期しました！'));
       return;
     } catch (err) {
-      showToast('네트워크 연결을 확인해 주세요');
+      showToast(tl('네트워크 연결을 확인해 주세요', 'Please check your internet connection', 'ネットワーク接続をご確認ください'));
       return;
     }
   }
@@ -510,7 +512,7 @@ async function submitEmailAuth(email, password, name, confirmPassword) {
   const users = getLocalUsers();
   if (authMode === 'signup') {
     if (users.some(u => u.email === cleanEmail)) {
-      showToast('이미 가입된 이메일이에요. 로그인해 주세요');
+      showToast(tl('이미 가입된 이메일이에요. 로그인해 주세요', 'This email is already registered — try signing in', 'すでに登録済みのメールです。ログインしてください'));
       return;
     }
     const newName = cleanName || cleanEmail.split('@')[0];
@@ -520,11 +522,11 @@ async function submitEmailAuth(email, password, name, confirmPassword) {
     setAccountState({ provider: 'email', name: newName, email: cleanEmail, signedInAt: Date.now() });
     closeAuthScreen();
     if (typeof closeOnboardingScreen === 'function') closeOnboardingScreen(true);
-    showToast('회원가입 후 로그인되었어요!');
+    showToast(tl('회원가입 후 로그인되었어요!', 'Welcome to speakeasy!', 'ご登録・ログインが完了しました！'));
   } else {
     const matched = users.find(u => u.email === cleanEmail);
     if (matched && matched.password !== cleanPw) {
-      showToast('비밀번호가 일치하지 않아요');
+      showToast(tl('비밀번호가 일치하지 않아요', 'Incorrect password', 'パスワードが一致しません'));
       return;
     }
     const resolvedName = matched ? matched.name : (state.profile.name || cleanEmail.split('@')[0]);
@@ -535,7 +537,7 @@ async function submitEmailAuth(email, password, name, confirmPassword) {
     setAccountState({ provider: 'email', name: resolvedName, email: cleanEmail, signedInAt: Date.now() });
     closeAuthScreen();
     if (typeof closeOnboardingScreen === 'function') closeOnboardingScreen(true);
-    showToast('로그인되었어요!');
+    showToast(tl('로그인되었어요!', 'Signed in!', 'ログインしました！'));
   }
 }
 
@@ -549,27 +551,27 @@ function renderAuthScreen() {
   body.innerHTML = `
     <div class="auth-hero">
       <span class="auth-eyebrow">${isReset ? 'PASSWORD RESET' : (isSignup ? 'NEW MEMBER' : 'SPEAKEASY MEMBER')}</span>
-      <div class="auth-title">${isReset ? '비밀번호 찾기' : (isSignup ? '회원가입' : '로그인')}</div>
+      <div class="auth-title">${isReset ? tl('비밀번호 찾기', 'Reset Password', 'パスワード再設定') : (isSignup ? tl('회원가입', 'Create Account', '新規登録') : tl('로그인', 'Sign In', 'ログイン'))}</div>
       <div class="auth-subtitle">${isReset
-        ? '가입하신 이메일 주소를 입력하시면 비밀번호 재설정 링크를 보내드려요.'
+        ? tl('가입하신 이메일 주소를 입력하시면 비밀번호 재설정 링크를 보내드려요.', 'Enter your email and we’ll send a password reset link.', 'ご登録のメールアドレス宛に再設定リンクをお送りします。')
         : (isSignup
-          ? '내 취향에 맞는 위스키 바와 테이스팅 노트를 한곳에 보관해 보세요.'
-          : '저장한 바와 찜한 위스키, 나만의 테이스팅 노트를 이어서 확인해요.')
+          ? tl('내 취향에 맞는 위스키 바와 테이스팅 노트를 한곳에 보관해 보세요.', 'Keep your favorite whisky bars, tasting notes, and reviews synced across devices.', 'お気に入りのバーやテイスティング記録をまとめて保存しましょう。')
+          : tl('저장한 바와 찜한 위스키, 나만의 테이스팅 노트를 이어서 확인해요.', 'Pick up right where you left off with your saved bars and notes.', '保存したバーやノートを引き続き確認できます。'))
       }</div>
     </div>
 
     <form class="auth-form" id="authForm" novalidate>
       ${isSignup ? `
         <div class="auth-field">
-          <label class="auth-label" for="authNameInput">이름 (닉네임)</label>
+          <label class="auth-label" for="authNameInput">${tl('이름 (닉네임)', 'Display Name', 'ニックネーム')}</label>
           <div class="auth-input-box">
-            <input type="text" class="auth-input" id="authNameInput" maxlength="20" placeholder="사용할 이름을 입력해 주세요" autocomplete="nickname" />
+            <input type="text" class="auth-input" id="authNameInput" maxlength="20" placeholder="${tl('사용할 이름을 입력해 주세요', 'What should we call you?', '表示名を入力してください')}" autocomplete="nickname" />
           </div>
         </div>
       ` : ''}
 
       <div class="auth-field">
-        <label class="auth-label" for="authEmailInput">이메일 주소</label>
+        <label class="auth-label" for="authEmailInput">${tl('이메일 주소', 'Email Address', 'メールアドレス')}</label>
         <div class="auth-input-box">
           <input type="email" class="auth-input" id="authEmailInput" value="${authEmailDraft.replace(/"/g, '&quot;')}" placeholder="name@example.com" autocomplete="email" inputmode="email" />
           <span class="auth-valid-check ${emailValid ? 'valid' : ''}" id="authEmailCheck" aria-hidden="true">
@@ -580,10 +582,10 @@ function renderAuthScreen() {
 
       ${!isReset ? `
         <div class="auth-field">
-          <label class="auth-label" for="authPwInput">비밀번호</label>
+          <label class="auth-label" for="authPwInput">${tl('비밀번호', 'Password', 'パスワード')}</label>
           <div class="auth-input-box">
-            <input type="${authPwVisible ? 'text' : 'password'}" class="auth-input" id="authPwInput" placeholder="6자 이상 입력해 주세요" autocomplete="${isSignup ? 'new-password' : 'current-password'}" />
-            <button type="button" class="auth-eye-btn" id="authPwToggleBtn" aria-label="비밀번호 표시 전환">
+            <input type="${authPwVisible ? 'text' : 'password'}" class="auth-input" id="authPwInput" placeholder="${tl('6자 이상 입력해 주세요', 'At least 6 characters', '6文字以上で入力してください')}" autocomplete="${isSignup ? 'new-password' : 'current-password'}" />
+            <button type="button" class="auth-eye-btn" id="authPwToggleBtn" aria-label="Toggle password">
               ${authPwVisible
                 ? '<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
                 : '<svg viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
@@ -595,29 +597,29 @@ function renderAuthScreen() {
 
       ${isSignup ? `
         <div class="auth-field">
-          <label class="auth-label" for="authPwConfirmInput">비밀번호 확인</label>
+          <label class="auth-label" for="authPwConfirmInput">${tl('비밀번호 확인', 'Confirm Password', 'パスワード確認')}</label>
           <div class="auth-input-box">
-            <input type="${authPwVisible ? 'text' : 'password'}" class="auth-input" id="authPwConfirmInput" placeholder="비밀번호를 한 번 더 입력해 주세요" autocomplete="new-password" />
+            <input type="${authPwVisible ? 'text' : 'password'}" class="auth-input" id="authPwConfirmInput" placeholder="${tl('비밀번호를 한 번 더 입력해 주세요', 'Re-enter your password', 'もう一度入力してください')}" autocomplete="new-password" />
           </div>
         </div>
       ` : ''}
 
       ${(!isSignup && !isReset) ? `
         <div class="auth-forgot-row">
-          <button type="button" class="auth-forgot-btn" id="authForgotBtn">비밀번호를 잊으셨나요?</button>
+          <button type="button" class="auth-forgot-btn" id="authForgotBtn">${tl('비밀번호를 잊으셨나요?', 'Forgot password?', 'パスワードをお忘れですか？')}</button>
         </div>
       ` : ''}
 
-      <button type="submit" class="auth-submit-btn" id="authSubmitBtn">${isReset ? '재설정 메일 보내기' : (isSignup ? '가입하고 시작하기' : '이메일로 로그인')}</button>
+      <button type="submit" class="auth-submit-btn" id="authSubmitBtn">${isReset ? tl('재설정 메일 보내기', 'Send Reset Link', '再設定メールを送る') : (isSignup ? tl('가입하고 시작하기', 'Create Account', '登録してはじめる') : tl('이메일로 로그인', 'Sign In', 'メールでログイン'))}</button>
     </form>
 
     <div class="auth-switch-row">
       ${isReset ? `
-        <span>비밀번호가 기억나셨나요?</span>
-        <button type="button" class="auth-switch-btn" id="authSwitchModeBtn">로그인으로 돌아가기</button>
+        <span>${tl('비밀번호가 기억나셨나요?', 'Remembered it?', '思い出しましたか？')}</span>
+        <button type="button" class="auth-switch-btn" id="authSwitchModeBtn">${tl('로그인으로 돌아가기', 'Back to Sign In', 'ログインに戻る')}</button>
       ` : `
-        <span>${isSignup ? '이미 계정이 있으신가요?' : '스피크이지가 처음이신가요?'}</span>
-        <button type="button" class="auth-switch-btn" id="authSwitchModeBtn">${isSignup ? '로그인' : '회원가입'}</button>
+        <span>${isSignup ? tl('이미 계정이 있으신가요?', 'Already have an account?', 'すでにアカウントをお持ちですか？') : tl('스피크이지가 처음이신가요?', 'New to speakeasy?', 'speakeasyは初めてですか？')}</span>
+        <button type="button" class="auth-switch-btn" id="authSwitchModeBtn">${isSignup ? tl('로그인', 'Sign In', 'ログイン') : tl('회원가입', 'Sign Up', '新規登録')}</button>
       `}
     </div>
   `;
@@ -719,8 +721,8 @@ function renderSettingsScreen() {
 
       <button type="button" class="my-setting-row" id="setOnboardingRow">
         <div class="my-setting-left">
-          <span class="my-setting-title">앱 소개 다시 보기</span>
-          <span class="my-setting-sub">speakeasy 첫 진입 온보딩 화면 보기</span>
+          <span class="my-setting-title">${tl('앱 소개 다시 보기', 'Replay App Intro', 'アプリ紹介をもう一度見る')}</span>
+          <span class="my-setting-sub">${tl('speakeasy 첫 진입 온보딩 화면 보기', 'View the speakeasy welcome tour', 'speakeasyのガイド画面を見る')}</span>
         </div>
         <div class="guide-arrow">
           <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
@@ -746,14 +748,14 @@ function renderSettingsScreen() {
       ${acc ? `
         <div class="my-setting-row static">
           <div class="my-setting-left">
-            <span class="my-setting-title">로그인 계정</span>
-            <span class="my-setting-sub">${providerMeta.badge} · ${acc.email}</span>
+            <span class="my-setting-title">${tl('로그인 계정', 'Signed-in Account', 'ログイン中のアカウント')}</span>
+            <span class="my-setting-sub">${tl('이메일', 'Email', 'メール')} · ${acc.email}</span>
           </div>
         </div>
         <button type="button" class="my-setting-row" id="setChangePwRow">
           <div class="my-setting-left">
-            <span class="my-setting-title">비밀번호 변경</span>
-            <span class="my-setting-sub">새 비밀번호로 변경하기</span>
+            <span class="my-setting-title">${tl('비밀번호 변경', 'Change Password', 'パスワード変更')}</span>
+            <span class="my-setting-sub">${tl('새 비밀번호로 변경하기', 'Update your password', '新しいパスワードに変更')}</span>
           </div>
           <div class="guide-arrow">
             <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
@@ -762,7 +764,7 @@ function renderSettingsScreen() {
         <button type="button" class="my-setting-row" id="setLogoutRow">
           <div class="my-setting-left">
             <span class="my-setting-title">${t('logout')}</span>
-            <span class="my-setting-sub">${providerMeta.label} ${t('logoutSub')}</span>
+            <span class="my-setting-sub">${t('logoutSub')}</span>
           </div>
           <div class="guide-arrow">
             <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
@@ -770,8 +772,8 @@ function renderSettingsScreen() {
         </button>
         <button type="button" class="my-setting-row danger" id="setDeleteAccountRow">
           <div class="my-setting-left">
-            <span class="my-setting-title">회원 탈퇴</span>
-            <span class="my-setting-sub">계정 및 저장된 모든 기록 영구 삭제</span>
+            <span class="my-setting-title">${tl('회원 탈퇴', 'Delete Account', 'アカウント削除')}</span>
+            <span class="my-setting-sub">${tl('계정 및 저장된 모든 기록 영구 삭제', 'Permanently delete account & saved data', 'アカウントと全記録を完全に削除')}</span>
           </div>
           <div class="guide-arrow">
             <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
@@ -780,8 +782,8 @@ function renderSettingsScreen() {
       ` : `
         <button type="button" class="my-setting-row" id="setLoginRow">
           <div class="my-setting-left">
-            <span class="my-setting-title">로그인 / 회원가입</span>
-            <span class="my-setting-sub">이메일로 로그인하고 내 기록을 동기화하세요</span>
+            <span class="my-setting-title">${tl('로그인 / 회원가입', 'Sign In / Sign Up', 'ログイン / 新規登録')}</span>
+            <span class="my-setting-sub">${tl('이메일로 로그인하고 내 기록을 동기화하세요', 'Sign in with email to sync your data', 'メールでログインして記録を同期')}</span>
           </div>
           <div class="guide-arrow">
             <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
@@ -790,13 +792,13 @@ function renderSettingsScreen() {
       `}
     </div>
 
-    <div class="my-footer-meta">speakeasy v1.0 · 전국 ${BARS.length}개 위스키 바 · ${WHISKIES.length}종 위스키 수록</div>
+    <div class="my-footer-meta">${tl(`speakeasy v1.0 · 전국 ${BARS.length}개 위스키 바 · ${WHISKIES.length}종 위스키 수록`, `speakeasy v1.0 · ${BARS.length} Whisky Bars · ${WHISKIES.length} Bottles`, `speakeasy v1.0 · ${BARS.length}軒のバー · ${WHISKIES.length}種のウイスキー`)}</div>
   `;
 
   document.getElementById('setLangRow')?.addEventListener('click', openLanguageSheet);
   document.getElementById('setLocationRow')?.addEventListener('click', () => {
     requestWebUserLocation(false);
-    showToast('현재 위치를 업데이트하고 있어요');
+    showToast(tl('현재 위치를 업데이트하고 있어요', 'Updating your current location…', '現在地を更新しています…'));
   });
   document.getElementById('setOnboardingRow')?.addEventListener('click', () => {
     closeSettingsScreen();
@@ -812,36 +814,36 @@ function renderSettingsScreen() {
 function openChangePasswordSheet() {
   sheetBody.innerHTML = `
     <div class="sheet-title-row" style="margin-bottom:14px;">
-      <div class="sheet-bar-name">비밀번호 변경</div>
-      <span class="sheet-match">계정 보안</span>
+      <div class="sheet-bar-name">${tl('비밀번호 변경', 'Change Password', 'パスワード変更')}</div>
+      <span class="sheet-match">${tl('계정 보안', 'Security', 'セキュリティ')}</span>
     </div>
 
     <div class="note-form-field">
-      <label class="note-form-label" for="newPwInput">새 비밀번호</label>
-      <input type="password" class="note-form-input" id="newPwInput" placeholder="6자 이상 입력해 주세요" autocomplete="new-password" />
+      <label class="note-form-label" for="newPwInput">${tl('새 비밀번호', 'New Password', '新しいパスワード')}</label>
+      <input type="password" class="note-form-input" id="newPwInput" placeholder="${tl('6자 이상 입력해 주세요', 'At least 6 characters', '6文字以上で入力してください')}" autocomplete="new-password" />
     </div>
 
     <div class="note-form-field">
-      <label class="note-form-label" for="newPwConfirmInput">새 비밀번호 확인</label>
-      <input type="password" class="note-form-input" id="newPwConfirmInput" placeholder="비밀번호를 한 번 더 입력해 주세요" autocomplete="new-password" />
+      <label class="note-form-label" for="newPwConfirmInput">${tl('새 비밀번호 확인', 'Confirm New Password', '新しいパスワード（確認）')}</label>
+      <input type="password" class="note-form-input" id="newPwConfirmInput" placeholder="${tl('비밀번호를 한 번 더 입력해 주세요', 'Re-enter your new password', 'もう一度入力してください')}" autocomplete="new-password" />
     </div>
 
-    <button type="button" class="note-save-cta" id="saveNewPwBtn">비밀번호 변경하기</button>
+    <button type="button" class="note-save-cta" id="saveNewPwBtn">${tl('비밀번호 변경하기', 'Update Password', 'パスワードを変更する')}</button>
   `;
 
   document.getElementById('saveNewPwBtn')?.addEventListener('click', async () => {
     const pw1 = document.getElementById('newPwInput')?.value || '';
     const pw2 = document.getElementById('newPwConfirmInput')?.value || '';
     if (pw1.length < 6) {
-      showToast('비밀번호는 6자 이상 입력해 주세요');
+      showToast(tl('비밀번호는 6자 이상 입력해 주세요', 'Password must be at least 6 characters', 'パスワードは6文字以上で入力してください'));
       return;
     }
     if (pw1 !== pw2) {
-      showToast('비밀번호가 서로 일치하지 않아요');
+      showToast(tl('비밀번호가 서로 일치하지 않아요', 'Passwords don’t match', 'パスワードが一致しません'));
       return;
     }
     if (!hasLiveSupabase() || !state.account || !state.account.accessToken) {
-      showToast('로그인 상태를 확인해 주세요');
+      showToast(tl('로그인 상태를 확인해 주세요', 'Please sign in again to continue', 'ログイン状態をご確認ください'));
       return;
     }
     try {
@@ -852,13 +854,13 @@ function openChangePasswordSheet() {
       });
       if (!res || !res.ok) {
         const data = res ? await res.json().catch(() => ({})) : {};
-        showToast(data.msg || data.message || '비밀번호 변경에 실패했어요');
+        showToast(data.msg || data.message || tl('비밀번호 변경에 실패했어요', 'Couldn’t update password', 'パスワードの変更に失敗しました'));
         return;
       }
       closeDetailSheet();
-      showToast('비밀번호가 변경되었어요!');
+      showToast(tl('비밀번호가 변경되었어요!', 'Password updated!', 'パスワードを変更しました！'));
     } catch (e) {
-      showToast('네트워크 연결을 확인해 주세요');
+      showToast(tl('네트워크 연결을 확인해 주세요', 'Please check your internet connection', 'ネットワーク接続をご確認ください'));
     }
   });
 
@@ -870,26 +872,26 @@ function openDeleteAccountSheet() {
   const email = state.account?.email || '';
   sheetBody.innerHTML = `
     <div class="sheet-title-row" style="margin-bottom:14px;">
-      <div class="sheet-bar-name">회원 탈퇴</div>
-      <span class="sheet-match">주의</span>
+      <div class="sheet-bar-name">${tl('회원 탈퇴', 'Delete Account', 'アカウント削除')}</div>
+      <span class="sheet-match">${tl('주의', 'Caution', '注意')}</span>
     </div>
 
     <div class="danger-confirm-box">
-      <strong>${email}</strong> 계정을 탈퇴하면 저장한 바, 찜한 위스키, 테이스팅 노트 등 모든 기록이 영구 삭제되며 다시 복구할 수 없어요.
+      ${tl(`<strong>${email}</strong> 계정을 탈퇴하면 저장한 바, 찜한 위스키, 테이스팅 노트 등 모든 기록이 영구 삭제되며 다시 복구할 수 없어요.`, `Deleting <strong>${email}</strong> will permanently erase all saved bars, whiskies, and tasting notes. This cannot be undone.`, `<strong>${email}</strong>を削除すると、保存したバー・ウイスキー・テイスティング記録がすべて完全に削除され、復元できません。`)}
     </div>
 
-    <button type="button" class="danger-confirm-btn" id="confirmDeleteAccountBtn">네, 영구 탈퇴할게요</button>
-    <button type="button" class="my-sheet-secondary-cta" id="cancelDeleteAccountBtn">취소</button>
+    <button type="button" class="danger-confirm-btn" id="confirmDeleteAccountBtn">${tl('네, 영구 탈퇴할게요', 'Yes, Delete Permanently', 'はい、完全に削除します')}</button>
+    <button type="button" class="my-sheet-secondary-cta" id="cancelDeleteAccountBtn">${tl('취소', 'Cancel', 'キャンセル')}</button>
   `;
 
   document.getElementById('cancelDeleteAccountBtn')?.addEventListener('click', closeDetailSheet);
   document.getElementById('confirmDeleteAccountBtn')?.addEventListener('click', async () => {
     if (!hasLiveSupabase() || !state.account || !state.account.accessToken) {
-      showToast('로그인 상태를 확인해 주세요');
+      showToast(tl('로그인 상태를 확인해 주세요', 'Please sign in again to continue', 'ログイン状態をご確認ください'));
       return;
     }
     const btn = document.getElementById('confirmDeleteAccountBtn');
-    if (btn) { btn.disabled = true; btn.textContent = '탈퇴 처리 중...'; }
+    if (btn) { btn.disabled = true; btn.textContent = tl('탈퇴 처리 중...', 'Deleting account…', '削除処理中…'); }
     try {
       const res = await supabaseAuthedFetch('/rest/v1/rpc/delete_own_account', {
         method: 'POST',
@@ -897,8 +899,8 @@ function openDeleteAccountSheet() {
         body: '{}'
       });
       if (!res || !res.ok) {
-        if (btn) { btn.disabled = false; btn.textContent = '네, 영구 탈퇴할게요'; }
-        showToast('Supabase에 delete_own_account 함수를 먼저 등록해 주세요');
+        if (btn) { btn.disabled = false; btn.textContent = tl('네, 영구 탈퇴할게요', 'Yes, Delete Permanently', 'はい、完全に削除します'); }
+        showToast(tl('Supabase에 delete_own_account 함수를 먼저 등록해 주세요', 'Could not delete account right now', 'アカウント削除を実行できませんでした'));
         return;
       }
       hasCloudRow = false;
@@ -908,10 +910,10 @@ function openDeleteAccountSheet() {
       resetLocalUserRecords();
       closeDetailSheet();
       closeSettingsScreen();
-      showToast('회원 탈퇴가 완료되었어요');
+      showToast(tl('회원 탈퇴가 완료되었어요', 'Your account has been deleted', 'アカウントを削除しました'));
     } catch (e) {
-      if (btn) { btn.disabled = false; btn.textContent = '네, 영구 탈퇴할게요'; }
-      showToast('네트워크 연결을 확인해 주세요');
+      if (btn) { btn.disabled = false; btn.textContent = tl('네, 영구 탈퇴할게요', 'Yes, Delete Permanently', 'はい、完全に削除します'); }
+      showToast(tl('네트워크 연결을 확인해 주세요', 'Please check your internet connection', 'ネットワーク接続をご確認ください'));
     }
   });
 
@@ -955,26 +957,26 @@ function openProfileEditSheet() {
 
   sheetBody.innerHTML = `
     <div class="sheet-title-row" style="margin-bottom:16px;">
-      <div class="sheet-bar-name">프로필 편집</div>
-      <span class="sheet-match">내 정보</span>
+      <div class="sheet-bar-name">${tl('프로필 편집', 'Edit Profile', 'プロフィール編集')}</div>
+      <span class="sheet-match">${tl('내 정보', 'Profile', 'マイ情報')}</span>
     </div>
 
     <div class="profile-edit-avatar-block">
       <div class="profile-edit-avatar-circle" id="profileEditAvatarPreview">
-        ${pendingAvatarDraft ? `<img src="${pendingAvatarDraft}" alt="프로필 사진" />` : `<span>${initialChar}</span>`}
+        ${pendingAvatarDraft ? `<img src="${pendingAvatarDraft}" alt="avatar" />` : `<span>${initialChar}</span>`}
       </div>
       <div class="profile-edit-avatar-actions">
-        <button type="button" class="profile-photo-btn primary" id="profilePickPhotoBtn">사진 선택</button>
-        ${pendingAvatarDraft ? '<button type="button" class="profile-photo-btn" id="profileResetPhotoBtn">기본 이미지</button>' : ''}
+        <button type="button" class="profile-photo-btn primary" id="profilePickPhotoBtn">${tl('사진 선택', 'Choose Photo', '写真を選ぶ')}</button>
+        ${pendingAvatarDraft ? '<button type="button" class="profile-photo-btn" id="profileResetPhotoBtn">' + tl('기본 이미지', 'Reset', 'デフォルト') + '</button>' : ''}
       </div>
     </div>
 
     <div class="note-form-field">
-      <label class="note-form-label" for="profileNameInput">이름 (닉네임)</label>
-      <input type="text" class="note-form-input" id="profileNameInput" maxlength="20" value="${(state.profile.name || '').replace(/"/g, '&quot;')}" placeholder="표시할 이름을 입력해 주세요" autocomplete="off" />
+      <label class="note-form-label" for="profileNameInput">${tl('이름 (닉네임)', 'Display Name', 'ニックネーム')}</label>
+      <input type="text" class="note-form-input" id="profileNameInput" maxlength="20" value="${(state.profile.name || '').replace(/"/g, '&quot;')}" placeholder="${tl('표시할 이름을 입력해 주세요', 'Enter your display name', '表示名を入力してください')}" autocomplete="off" />
     </div>
 
-    <button type="button" class="note-save-cta" id="profileSaveBtn">프로필 저장하기</button>
+    <button type="button" class="note-save-cta" id="profileSaveBtn">${tl('프로필 저장하기', 'Save Profile', 'プロフィールを保存')}</button>
   `;
 
   const avatarInput = document.getElementById('profileAvatarInput');
@@ -994,7 +996,7 @@ function openProfileEditSheet() {
           resetBtn.type = 'button';
           resetBtn.className = 'profile-photo-btn';
           resetBtn.id = 'profileResetPhotoBtn';
-          resetBtn.textContent = '기본 이미지';
+          resetBtn.textContent = tl('기본 이미지', 'Reset', 'デフォルト');
           resetBtn.addEventListener('click', () => {
             pendingAvatarDraft = '';
             const nVal = (document.getElementById('profileNameInput')?.value || 'S').trim();
@@ -1019,7 +1021,7 @@ function openProfileEditSheet() {
     const nextName = (document.getElementById('profileNameInput')?.value || '').trim() || '스피크이지 멤버';
     setProfileState({ name: nextName, avatar: pendingAvatarDraft || '' });
     closeDetailSheet();
-    showToast('프로필을 저장했어요');
+    showToast(tl('프로필을 저장했어요', 'Profile saved', 'プロフィールを保存しました'));
   });
 
   sheetScrim.classList.add('open');
@@ -1029,9 +1031,9 @@ function openProfileEditSheet() {
 // ===== LANGUAGE SELECTION SHEET =====
 function openLanguageSheet() {
   const langs = [
-    { code: 'ko', name: '한국어', sub: 'Korean (기본)' },
-    { code: 'en', name: 'English', sub: '영어 인터페이스' },
-    { code: 'ja', name: '日本語', sub: '일본어 인터페이스' }
+    { code: 'ko', name: '한국어', sub: 'Korean' },
+    { code: 'en', name: 'English', sub: tl('영어', 'English', '英語') },
+    { code: 'ja', name: '日本語', sub: tl('일본어', 'Japanese', '日本語') }
   ];
   sheetBody.innerHTML = `
     <div class="sheet-title-row" style="margin-bottom:14px;">
@@ -1090,26 +1092,60 @@ function openAgeInfoSheet() {
 function openTermsSheet(activeTab) {
   const tab = activeTab || 'terms';
   const bodies = {
-    terms: `
+    terms: tl(`
       <div class="my-policy-heading">제1조 (목적 및 서비스 범위)</div>
       <p class="my-policy-p">본 약관은 speakeasy(이하 "서비스")가 제공하는 위스키 바 탐색, 위스키 가이드, 지도 및 테이스팅 노트 기록 기능의 이용 조건과 절차를 규정합니다.</p>
       <div class="my-policy-heading">제2조 (이용 연령 제한 및 건전 음주)</div>
       <p class="my-policy-p">본 서비스는 대한민국 법정 음주 가능 연령인 만 19세 이상 성인만 이용할 수 있으며, 과도한 음주를 권장하지 않습니다. 매장 영업시간·가격·보유 바틀 정보는 현장 사정에 따라 달라질 수 있습니다.</p>
       <div class="my-policy-heading">제3조 (계정 및 이용자 콘텐츠)</div>
       <p class="my-policy-p">이용자가 작성한 테이스팅 노트 및 찜 목록은 본인의 개인 기록 용도로 보관되며, 언제든 수정하거나 삭제할 수 있습니다.</p>
-    `,
-    privacy: `
+    `, `
+      <div class="my-policy-heading">1. Scope of Service</div>
+      <p class="my-policy-p">speakeasy provides curated whisky bar discovery, a whisky archive, interactive map, and personal tasting logs across South Korea.</p>
+      <div class="my-policy-heading">2. Responsible Drinking &amp; Venue Info</div>
+      <p class="my-policy-p">This app is intended for adults of legal drinking age. Venue hours, cover charges, pricing, and bottle availability may vary on-site.</p>
+      <div class="my-policy-heading">3. Your Account &amp; Notes</div>
+      <p class="my-policy-p">Your saved bars, tasting notes, and reviews remain yours to edit or delete at any time.</p>
+    `, `
+      <div class="my-policy-heading">第1条（サービスの目的・範囲）</div>
+      <p class="my-policy-p">本規約は、speakeasyが提供するウイスキーバー検索、ガイド、地図、テイスティングノート記録機能の利用条件を定めるものです。</p>
+      <div class="my-policy-heading">第2条（適正飲酒および店舗情報）</div>
+      <p class="my-policy-p">本サービスは飲酒可能な成人を対象としています。営業時間・料金・取扱銘柄は店舗の事情により変更される場合があります。</p>
+      <div class="my-policy-heading">第3条（アカウントとユーザー記録）</div>
+      <p class="my-policy-p">保存したバーやテイスティングノートは個人記録として保管され、いつでも編集・削除できます。</p>
+    `),
+    privacy: tl(`
       <div class="my-policy-heading">1. 수집하는 개인정보 항목</div>
-      <p class="my-policy-p">• 로그인 연동 시: 이메일 주소, 로그인 제공자 식별값 (이메일 / Apple / 네이버 / Google)<br/>• 프로필 설정 시: 사용자가 직접 입력한 닉네임, 프로필 이미지<br/>• 서비스 이용 시: 찜한 바·찜한 술·테이스팅 노트, (동의 시) 현재 위치 좌표</p>
+      <p class="my-policy-p">• 로그인 연동 시: 이메일 주소<br/>• 프로필 설정 시: 사용자가 직접 입력한 닉네임, 프로필 이미지<br/>• 서비스 이용 시: 찜한 바·찜한 술·테이스팅 노트·작성 리뷰, (동의 시) 현재 위치 좌표</p>
       <div class="my-policy-heading">2. 개인정보의 이용 목적 및 보관</div>
       <p class="my-policy-p">수집된 정보는 회원 식별, 맞춤형 바 추천, 개인 기록 보관 목적에만 사용되며, 이용자는 언제든 수정·삭제 및 로그아웃할 수 있습니다.</p>
-    `,
-    location: `
+    `, `
+      <div class="my-policy-heading">1. Information We Collect</div>
+      <p class="my-policy-p">• Account: Email address used for sign-in<br/>• Profile: Display name and optional avatar<br/>• Activity: Saved bars, whiskies, tasting notes, reviews, and (when allowed) current location</p>
+      <div class="my-policy-heading">2. How We Use It</div>
+      <p class="my-policy-p">Your information is used solely to personalize recommendations and sync your personal records. You can edit, sign out, or permanently delete your account anytime.</p>
+    `, `
+      <div class="my-policy-heading">1. 収集する情報</div>
+      <p class="my-policy-p">• アカウント連携時：メールアドレス<br/>• プロフィール設定時：ニックネーム、プロフィール画像<br/>• ご利用時：保存したバー・ウイスキー・ノート・レビュー、（許可時）現在地情報</p>
+      <div class="my-policy-heading">2. 利用目的と管理</div>
+      <p class="my-policy-p">収集した情報は会員識別・バー提案・記録の同期にのみ使用し、いつでも変更・削除・退会が可能です。</p>
+    `),
+    location: tl(`
       <div class="my-policy-heading">1. 위치정보 수집 및 이용 목적</div>
       <p class="my-policy-p">speakeasy는 이용자의 동의를 얻어 현재 위치(GPS) 정보를 확인하며, 다음 목적에만 일회성으로 사용합니다.<br/>• 지도 탭에서 내 현재 위치 중심으로 주변 바 표시<br/>• 검색 및 추천 결과의 '가까운 거리순' 정렬</p>
       <div class="my-policy-heading">2. 위치정보 보관 및 권한 철회</div>
       <p class="my-policy-p">현재 위치 좌표는 서버에 영구 저장하거나 제3자에게 제공하지 않습니다. 기기 설정에서 언제든 위치 권한을 변경하거나 철회할 수 있습니다.</p>
-    `
+    `, `
+      <div class="my-policy-heading">1. How Location Is Used</div>
+      <p class="my-policy-p">With your permission, speakeasy uses your current GPS location solely to:<br/>• Center the map around nearby bars<br/>• Sort recommendations and search results by distance</p>
+      <div class="my-policy-heading">2. Storage &amp; Permissions</div>
+      <p class="my-policy-p">Your coordinates are never permanently stored on our servers or shared with third parties. You may revoke location access in your device settings at any time.</p>
+    `, `
+      <div class="my-policy-heading">1. 位置情報の利用目的</div>
+      <p class="my-policy-p">speakeasyはお客様の許可を得た場合のみ現在地（GPS）を使用し、以下の目的に限定して利用します。<br/>• 地図上で現在地周辺のバーを表示<br/>• 検索およびおすすめ結果の「近い順」並び替え</p>
+      <div class="my-policy-heading">2. 保管および権限の変更</div>
+      <p class="my-policy-p">現在地座標をサーバーに恒久保存したり第三者へ提供することはありません。端末の設定からいつでも権限を変更できます。</p>
+    `)
   };
 
   sheetBody.innerHTML = `
@@ -1118,9 +1154,9 @@ function openTermsSheet(activeTab) {
       <span class="sheet-match">v1.0</span>
     </div>
     <div class="my-policy-tabs">
-      <button type="button" class="my-policy-tab ${tab === 'terms' ? 'active' : ''}" data-ptab="terms">이용약관</button>
-      <button type="button" class="my-policy-tab ${tab === 'privacy' ? 'active' : ''}" data-ptab="privacy">개인정보처리방침</button>
-      <button type="button" class="my-policy-tab ${tab === 'location' ? 'active' : ''}" data-ptab="location">위치기반서비스</button>
+      <button type="button" class="my-policy-tab ${tab === 'terms' ? 'active' : ''}" data-ptab="terms">${tl('이용약관', 'Terms', '利用規約')}</button>
+      <button type="button" class="my-policy-tab ${tab === 'privacy' ? 'active' : ''}" data-ptab="privacy">${tl('개인정보처리방침', 'Privacy', 'プライバシー')}</button>
+      <button type="button" class="my-policy-tab ${tab === 'location' ? 'active' : ''}" data-ptab="location">${tl('위치기반서비스', 'Location', '位置情報')}</button>
     </div>
     <div class="my-policy-card">
       ${bodies[tab]}
@@ -1152,7 +1188,7 @@ function openSavedBarsCollectionSheet() {
               <div class="my-saved-info">
                 <div class="my-saved-top">
                   <span class="my-saved-name">${b.name}</span>
-                  <span class="my-saved-city">${b.city}</span>
+                  <span class="my-saved-city">${tRegion(b.city)}</span>
                   ${dist ? `<span class="my-saved-city">${dist}</span>` : ''}
                 </div>
                 <div class="my-saved-sub">${b.region} · ${b.station} · ${b.priceText}</div>
@@ -1164,11 +1200,11 @@ function openSavedBarsCollectionSheet() {
           `;
         }).join('')}
       </div>
-      <button type="button" class="my-sheet-secondary-cta" id="colBarsOpenMapBtn">지도에서 저장한 바 모두 보기</button>
+      <button type="button" class="my-sheet-secondary-cta" id="colBarsOpenMapBtn">${tl('지도에서 저장한 바 모두 보기', 'View Saved Bars on Map', '地図で保存したバーを見る')}</button>
     ` : `
       <div class="my-empty-card" style="margin-bottom:6px;">
-        <div class="my-empty-text">아직 저장한 위스키 바가 없어요.<br/>마음에 드는 바에 하트(♡)를 눌러 나만의 리스트를 만들어 보세요!</div>
-        <button type="button" class="my-empty-btn" id="colBarsFindBtn">내 취향 바 찾으러 가기</button>
+        <div class="my-empty-text">${tl('아직 저장한 위스키 바가 없어요.<br/>마음에 드는 바에 하트(♡)를 눌러 나만의 리스트를 만들어 보세요!', 'No saved bars yet.<br/>Tap the heart on bars you love to build your own list.', 'まだ保存したバーがありません。<br/>気になるバーにハートを付けてリストを作りましょう。')}</div>
+        <button type="button" class="my-empty-btn" id="colBarsFindBtn">${tl('내 취향 바 찾으러 가기', 'Discover Bars', '好みのバーを探す')}</button>
       </div>
     `}
   `;
@@ -1207,7 +1243,7 @@ function openTastingNotesCollectionSheet() {
   sheetBody.innerHTML = `
     <div class="sheet-title-row" style="margin-bottom:14px;">
       <div class="sheet-bar-name">${t('tastingNotes')}</div>
-      <button type="button" class="my-sheet-head-btn" id="colNotesAddBtn">+ 기록 남기기</button>
+      <button type="button" class="my-sheet-head-btn" id="colNotesAddBtn">${tl('+ 기록 남기기', '+ Add Note', '+ 記録する')}</button>
     </div>
     ${myTastingNotes.length > 0 ? `
       <div class="my-sheet-list">
@@ -1220,7 +1256,7 @@ function openTastingNotesCollectionSheet() {
               <div class="my-note-body">
                 <div class="my-note-top">
                   <span class="my-note-whisky">${note.whisky}</span>
-                  <button type="button" class="my-note-del" data-col-del-note="${idx}" aria-label="기록 삭제">
+                  <button type="button" class="my-note-del" data-col-del-note="${idx}" aria-label="Delete">
                     <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                   </button>
                 </div>
@@ -1238,8 +1274,8 @@ function openTastingNotesCollectionSheet() {
       </div>
     ` : `
       <div class="my-empty-card" style="margin-bottom:6px;">
-        <div class="my-empty-text">아직 작성한 테이스팅 노트가 없어요.<br/>오늘 마신 위스키의 향과 여운을 첫 기록으로 남겨보세요.</div>
-        <button type="button" class="my-empty-btn" id="colNotesFirstBtn">첫 테이스팅 노트 작성하기</button>
+        <div class="my-empty-text">${tl('아직 작성한 테이스팅 노트가 없어요.<br/>오늘 마신 위스키의 향과 여운을 첫 기록으로 남겨보세요.', 'No tasting notes yet.<br/>Log the nose, palate, and finish of your next dram.', 'まだテイスティングノートがありません。<br/>今日の一杯の香りや余韻を記録してみましょう。')}</div>
+        <button type="button" class="my-empty-btn" id="colNotesFirstBtn">${tl('첫 테이스팅 노트 작성하기', 'Write First Note', '最初のノートを書く')}</button>
       </div>
     `}
   `;
@@ -1254,7 +1290,7 @@ function openTastingNotesCollectionSheet() {
       persistTastingNotes();
       renderMyView();
       openTastingNotesCollectionSheet();
-      showToast('테이스팅 노트를 삭제했어요');
+      showToast(tl('테이스팅 노트를 삭제했어요', 'Tasting note deleted', 'ノートを削除しました'));
     });
   });
 
@@ -1277,8 +1313,8 @@ function openLikedWhiskiesCollectionSheet() {
             ${renderWhiskyBottleSVG(w, 'thumb-sm')}
             <div class="my-saved-info">
               <div class="my-saved-top">
-                <span class="my-saved-name">${w.name}</span>
-                <span class="my-saved-city">${w.category}</span>
+                <span class="my-saved-name">${state.lang === 'en' && w.en ? w.en : w.name}</span>
+                <span class="my-saved-city">${tCat(w.category)}</span>
               </div>
               <div class="my-saved-sub">${w.origin} · ${w.abv} · ${w.level}</div>
             </div>
@@ -1290,8 +1326,8 @@ function openLikedWhiskiesCollectionSheet() {
       </div>
     ` : `
       <div class="my-empty-card" style="margin-bottom:6px;">
-        <div class="my-empty-text">아직 찜한 위스키가 없어요.<br/>가이드나 검색에서 마음에 드는 위스키에 하트(♡)를 눌러 모아보세요!</div>
-        <button type="button" class="my-empty-btn" id="colWhiskyGuideBtn">위스키 가이드 둘러보기</button>
+        <div class="my-empty-text">${tl('아직 찜한 위스키가 없어요.<br/>가이드나 검색에서 마음에 드는 위스키에 하트(♡)를 눌러 모아보세요!', 'No saved whiskies yet.<br/>Tap the heart on bottles you want to try or remember.', 'まだお気に入りのウイスキーがありません。<br/>ガイドや検索からハートを付けて集めてみましょう。')}</div>
+        <button type="button" class="my-empty-btn" id="colWhiskyGuideBtn">${tl('위스키 가이드 둘러보기', 'Browse Whisky Archive', 'ウイスキーアーカイブを見る')}</button>
       </div>
     `}
   `;
@@ -1323,48 +1359,57 @@ function openLikedWhiskiesCollectionSheet() {
 // ===== WRITE TASTING NOTE SHEET =====
 function openAddTastingNoteSheet() {
   let pickedRating = 5;
-  let pickedStyle = '니트';
-  const quickPicks = ['발베니 12년 더블우드', '글렌피딕 12년', '맥캘란 12년 더블캐스크', '아드벡 10년', '메이커스마크', '조니워커 블랙', '히비키 하모니'];
+  let pickedStyle = tl('니트', 'Neat', 'ストレート');
+  const quickPicks = state.lang === 'en'
+    ? ['Balvenie 12 DoubleWood', 'Glenfiddich 12', 'Macallan 12 Double Cask', 'Ardbeg 10', "Maker's Mark", 'Johnnie Walker Black', 'Hibiki Harmony']
+    : ['발베니 12년 더블우드', '글렌피딕 12년', '맥캘란 12년 더블캐스크', '아드벡 10년', '메이커스마크', '조니워커 블랙', '히비키 하모니'];
+
+  const styleChoices = [
+    { key: '니트', label: tl('니트', 'Neat', 'ストレート') },
+    { key: '온더락', label: tl('온더락', 'On the Rocks', 'ロック') },
+    { key: '하이볼', label: tl('하이볼', 'Highball', 'ハイボール') },
+    { key: '칵테일', label: tl('칵테일', 'Cocktail', 'カクテル') }
+  ];
 
   sheetBody.innerHTML = `
     <div class="sheet-title-row" style="margin-bottom:14px;">
-      <div class="sheet-bar-name">테이스팅 노트 기록</div>
-      <span class="sheet-match">나만의 기록</span>
+      <div class="sheet-bar-name">${tl('테이스팅 노트 기록', 'Log a Tasting Note', 'テイスティングノート')}</div>
+      <span class="sheet-match">${tl('나만의 기록', 'Personal Log', 'マイ記録')}</span>
     </div>
 
     <div class="note-form-field">
-      <label class="note-form-label" for="noteWhiskyInput">마신 위스키</label>
-      <input type="text" class="note-form-input" id="noteWhiskyInput" placeholder="예: 발베니 12년, 아드벡 10년" autocomplete="off" />
+      <label class="note-form-label" for="noteWhiskyInput">${tl('마신 위스키', 'Whisky', '飲んだウイスキー')}</label>
+      <input type="text" class="note-form-input" id="noteWhiskyInput" placeholder="${tl('예: 발베니 12년, 아드벡 10년', 'e.g. Balvenie 12, Ardbeg 10', '例：バルヴェニー12年、アードベッグ10年')}" autocomplete="off" />
       <div class="bar-whiskeys" style="margin-top:8px; margin-bottom:0;">
         ${quickPicks.map(p => `<button type="button" class="whiskey-tag" style="cursor:pointer; font-size:12px; padding:4px 9px;" data-note-pick="${p}">${p}</button>`).join('')}
       </div>
     </div>
 
     <div class="note-form-field">
-      <label class="note-form-label">만족도</label>
+      <label class="note-form-label">${tl('만족도', 'Rating', '満足度')}</label>
       <div class="note-stars-picker" id="noteStarsPicker">
         ${[1, 2, 3, 4, 5].map(n => `<button type="button" class="note-star-btn active" data-star="${n}">★</button>`).join('')}
       </div>
     </div>
 
     <div class="note-form-field">
-      <label class="note-form-label">음용 방식</label>
+      <label class="note-form-label">${tl('음용 방식', 'Served', '飲み方')}</label>
       <div class="note-style-row" id="noteStyleRow">
-        ${['니트', '온더락', '하이볼', '칵테일'].map(s => `<button type="button" class="note-style-chip ${s === '니트' ? 'active' : ''}" data-nstyle="${s}">${s}</button>`).join('')}
+        ${styleChoices.map(s => `<button type="button" class="note-style-chip ${s.key === '니트' ? 'active' : ''}" data-nstyle="${s.label}">${s.label}</button>`).join('')}
       </div>
     </div>
 
     <div class="note-form-field">
-      <label class="note-form-label" for="noteBarInput">방문한 바 (선택)</label>
-      <input type="text" class="note-form-input" id="noteBarInput" placeholder="예: 바참, 이카루스, 홈바" autocomplete="off" />
+      <label class="note-form-label" for="noteBarInput">${tl('방문한 바 (선택)', 'Bar Visited (Optional)', '訪問したバー（任意）')}</label>
+      <input type="text" class="note-form-input" id="noteBarInput" placeholder="${tl('예: 바참, 이카루스, 홈바', 'e.g. Bar Cham, Home Bar', '例：バーチャム、ホームバー')}" autocomplete="off" />
     </div>
 
     <div class="note-form-field">
-      <label class="note-form-label" for="noteMemoInput">향 · 맛 한 줄 메모</label>
-      <textarea class="note-form-textarea" id="noteMemoInput" placeholder="느꼈던 향이나 분위기, 다시 마시고 싶은 이유를 가볍게 적어보세요."></textarea>
+      <label class="note-form-label" for="noteMemoInput">${tl('향 · 맛 한 줄 메모', 'Tasting Notes', '香り・味わいのメモ')}</label>
+      <textarea class="note-form-textarea" id="noteMemoInput" placeholder="${tl('느꼈던 향이나 분위기, 다시 마시고 싶은 이유를 가볍게 적어보세요.', 'Jot down flavors, aromas, or why you’d order it again…', '感じた香りや雰囲気、また飲みたい理由を気軽にメモしましょう。')}"></textarea>
     </div>
 
-    <button type="button" class="note-save-cta" id="noteSaveSubmitBtn">기록 저장하기</button>
+    <button type="button" class="note-save-cta" id="noteSaveSubmitBtn">${tl('기록 저장하기', 'Save Tasting Note', '記録を保存する')}</button>
   `;
 
   const whiskyInput = document.getElementById('noteWhiskyInput');
@@ -1393,7 +1438,7 @@ function openAddTastingNoteSheet() {
   document.getElementById('noteSaveSubmitBtn')?.addEventListener('click', () => {
     const whiskyName = (whiskyInput.value || '').trim();
     if (!whiskyName) {
-      showToast('마신 위스키 이름을 입력해 주세요');
+      showToast(tl('마신 위스키 이름을 입력해 주세요', 'Please enter a whisky name', 'ウイスキー名を入力してください'));
       whiskyInput.focus();
       return;
     }
@@ -1408,13 +1453,13 @@ function openAddTastingNoteSheet() {
       rating: pickedRating,
       style: pickedStyle,
       bar: barName,
-      memo: memo || '기분 좋게 즐긴 한 잔',
+      memo: memo || tl('기분 좋게 즐긴 한 잔', 'A memorable dram', '心地よく楽しんだ一杯'),
       date: dateStr
     });
     persistTastingNotes();
     closeDetailSheet();
     renderMyView();
-    showToast('테이스팅 노트를 저장했어요');
+    showToast(tl('테이스팅 노트를 저장했어요', 'Tasting note saved', 'テイスティングノートを保存しました'));
   });
 
   sheetScrim.classList.add('open');
@@ -1485,12 +1530,12 @@ async function openMyBarReviewsSheet() {
   if (!state.account || !state.account.accessToken) {
     sheetBody.innerHTML = `
       <div class="sheet-title-row" style="margin-bottom:14px;">
-        <div class="sheet-bar-name">내가 쓴 바 리뷰</div>
-        <span class="sheet-match">로그인 필요</span>
+        <div class="sheet-bar-name">${tl('내가 쓴 바 리뷰', 'My Bar Reviews', '投稿したバーレビュー')}</div>
+        <span class="sheet-match">${tl('로그인 필요', 'Sign In', '要ログイン')}</span>
       </div>
       <div class="my-empty-card" style="margin-bottom:6px;">
-        <div class="my-empty-text">로그인하면 내가 작성한 바 후기와 별점을<br/>한곳에서 모아보고 관리할 수 있어요!</div>
-        <button type="button" class="my-empty-btn" id="myRevLoginBtn">이메일로 로그인하기</button>
+        <div class="my-empty-text">${tl('로그인하면 내가 작성한 바 후기와 별점을<br/>한곳에서 모아보고 관리할 수 있어요!', 'Sign in to view and manage all your bar reviews<br/>and ratings in one place.', 'ログインすると、投稿したバーのレビューや評価を<br/>まとめて確認・管理できます。')}</div>
+        <button type="button" class="my-empty-btn" id="myRevLoginBtn">${tl('이메일로 로그인하기', 'Sign In with Email', 'メールでログイン')}</button>
       </div>
     `;
     document.getElementById('myRevLoginBtn')?.addEventListener('click', () => {
@@ -1504,10 +1549,10 @@ async function openMyBarReviewsSheet() {
 
   sheetBody.innerHTML = `
     <div class="sheet-title-row" style="margin-bottom:14px;">
-      <div class="sheet-bar-name">내가 쓴 바 리뷰</div>
-      <span class="sheet-match">불러오는 중...</span>
+      <div class="sheet-bar-name">${tl('내가 쓴 바 리뷰', 'My Bar Reviews', '投稿したバーレビュー')}</div>
+      <span class="sheet-match">${tl('불러오는 중...', 'Loading…', '読み込み中…')}</span>
     </div>
-    <div class="review-empty-box">작성한 바 후기를 불러오고 있어요...</div>
+    <div class="review-empty-box">${tl('작성한 바 후기를 불러오고 있어요...', 'Loading your bar reviews…', 'レビューを読み込んでいます…')}</div>
   `;
   sheetScrim.classList.add('open');
   detailSheet.classList.add('open');
@@ -1521,15 +1566,15 @@ function renderMyBarReviewsSheetBody(reviews) {
   const list = Array.isArray(reviews) ? reviews : [];
   sheetBody.innerHTML = `
     <div class="sheet-title-row" style="margin-bottom:14px;">
-      <div class="sheet-bar-name">내가 쓴 바 리뷰</div>
-      <span class="sheet-match">${list.length}개</span>
+      <div class="sheet-bar-name">${tl('내가 쓴 바 리뷰', 'My Bar Reviews', '投稿したバーレビュー')}</div>
+      <span class="sheet-match">${tl(list.length + '개', String(list.length), list.length + '件')}</span>
     </div>
     ${list.length > 0 ? `
       <div class="review-list" style="margin-bottom:8px;">
         ${list.map(r => {
           const bar = BARS.find(b => b.id === r.bar_id);
           const barName = bar ? bar.name : r.bar_id;
-          const barRegion = bar ? (bar.city + ' · ' + bar.region) : '';
+          const barRegion = bar ? (tRegion(bar.city) + ' · ' + bar.region) : '';
           const tags = Array.isArray(r.tags) ? r.tags : [];
           const photos = Array.isArray(r.photos) ? r.photos : [];
           return `
@@ -1545,16 +1590,16 @@ function renderMyBarReviewsSheetBody(reviews) {
                     <span class="review-date">${formatReviewDate(r.created_at)}</span>
                   </div>
                 </div>
-                <button type="button" class="review-del-btn" data-my-del-review="${escapeReviewHtml(r.id)}">삭제</button>
+                <button type="button" class="review-del-btn" data-my-del-review="${escapeReviewHtml(r.id)}">${tl('삭제', 'Delete', '削除')}</button>
               </div>
               ${tags.length > 0 ? `
                 <div class="review-card-tags">
-                  ${tags.map(tg => `<span class="review-card-tag">#${escapeReviewHtml(tg)}</span>`).join('')}
+                  ${tags.map(tg => `<span class="review-card-tag">#${escapeReviewHtml(tReviewTag(tg))}</span>`).join('')}
                 </div>
               ` : ''}
               ${photos.length > 0 ? `
                 <div class="review-card-photos">
-                  ${photos.map(src => `<img class="review-card-photo" src="${src}" alt="후기 사진" data-zoom-my-photo="1" />`).join('')}
+                  ${photos.map(src => `<img class="review-card-photo" src="${src}" alt="review photo" data-zoom-my-photo="1" />`).join('')}
                 </div>
               ` : ''}
               <div class="review-card-content">${escapeReviewHtml(r.content)}</div>
@@ -1564,8 +1609,8 @@ function renderMyBarReviewsSheetBody(reviews) {
       </div>
     ` : `
       <div class="my-empty-card" style="margin-bottom:6px;">
-        <div class="my-empty-text">아직 작성한 바 리뷰가 없어요.<br/>마음에 드는 바 상세 화면에서 첫 후기를 남겨보세요!</div>
-        <button type="button" class="my-empty-btn" id="myRevExploreBtn">바 둘러보러 가기</button>
+        <div class="my-empty-text">${tl('아직 작성한 바 리뷰가 없어요.<br/>마음에 드는 바 상세 화면에서 첫 후기를 남겨보세요!', 'No bar reviews yet.<br/>Open any bar’s details to share your first review.', 'まだ投稿したレビューがありません。<br/>お気に入りのバーの詳細画面から最初の感想を残してみましょう。')}</div>
+        <button type="button" class="my-empty-btn" id="myRevExploreBtn">${tl('바 둘러보러 가기', 'Explore Bars', 'バーを探しに行く')}</button>
       </div>
     `}
   `;
@@ -1610,7 +1655,10 @@ function renderMyView() {
 
   const savedBarsCount = BARS.filter(b => state.likes.has(b.id)).length;
   const likedWhiskiesCount = WHISKIES.filter(w => state.likedWhiskies.has(w.id)).length;
-  const displayName = (state.profile && state.profile.name) || '스피크이지 멤버';
+  const rawProfileName = (state.profile && state.profile.name) || '';
+  const displayName = (!rawProfileName || rawProfileName === '스피크이지 멤버')
+    ? tl('스피크이지 멤버', 'Speakeasy Member', 'speakeasyメンバー')
+    : rawProfileName;
   const avatarData = (state.profile && state.profile.avatar) || '';
   const initialChar = displayName.trim().charAt(0).toUpperCase() || 'S';
 
@@ -1618,10 +1666,10 @@ function renderMyView() {
   const providerMeta = acc ? (PROVIDER_META[acc.provider] || PROVIDER_META.email) : null;
 
   const tasteTags = [
-    state.region === '전체' ? '전국' : state.region,
-    LABEL_MAP.mood[state.prefs.mood - 1],
-    LABEL_MAP.price[state.prefs.price - 1],
-    LABEL_MAP.taste[state.prefs.taste - 1]
+    tRegion(state.region),
+    tLabel('mood', state.prefs.mood - 1),
+    tLabel('price', state.prefs.price - 1),
+    tLabel('taste', state.prefs.taste - 1)
   ];
 
   const writeNoteSub = myTastingNotes.length > 0
@@ -1660,7 +1708,7 @@ function renderMyView() {
           </div>
           ${acc ? `
             <div class="my-profile-login-row">
-              <span class="my-provider-dot ${acc.provider}">${providerMeta.badge}</span>
+              <span class="my-provider-dot ${acc.provider}">${tl('이메일', 'Email', 'メール')}</span>
               <span class="my-profile-email">${acc.email}</span>
             </div>
           ` : `
@@ -1782,7 +1830,9 @@ function updateOnboardingIndicators(idx) {
   if (skipBtn) skipBtn.style.visibility = isLast ? 'hidden' : 'visible';
   if (footer) footer.classList.toggle('is-last', isLast);
   if (nextBtn) {
-    nextBtn.textContent = onboardingActiveIndex === 2 ? '시작하기' : '다음';
+    nextBtn.textContent = onboardingActiveIndex === 2
+      ? tl('시작하기', 'Get Started', 'はじめる')
+      : tl('다음', 'Next', '次へ');
   }
 }
 
@@ -1794,7 +1844,7 @@ function openOnboardingScreen(startIdx) {
   el.innerHTML = `
     <div class="ob-top-bar">
       <span class="ob-brand">speakeasy</span>
-      <button type="button" class="ob-skip-btn" id="obSkipBtn">건너뛰기</button>
+      <button type="button" class="ob-skip-btn" id="obSkipBtn">${tl('건너뛰기', 'Skip', 'スキップ')}</button>
     </div>
 
     <div class="onboarding-slides" id="onboardingSlides">
@@ -1804,31 +1854,31 @@ function openOnboardingScreen(startIdx) {
           <div class="ob-visual-eyebrow">01 · CURATION</div>
           <div class="ob-mock-sliders">
             <div class="ob-mock-row">
-              <span>분위기</span>
+              <span>${t('sliderMood')}</span>
               <div class="ob-mock-track"><div class="ob-mock-fill" style="width:24%"></div><div class="ob-mock-orb" style="left:24%"></div></div>
             </div>
             <div class="ob-mock-row">
-              <span>가격대</span>
+              <span>${t('sliderPrice')}</span>
               <div class="ob-mock-track"><div class="ob-mock-fill" style="width:68%"></div><div class="ob-mock-orb" style="left:68%"></div></div>
             </div>
             <div class="ob-mock-row">
-              <span>공간</span>
+              <span>${t('sliderSpace')}</span>
               <div class="ob-mock-track"><div class="ob-mock-fill" style="width:45%"></div><div class="ob-mock-orb" style="left:45%"></div></div>
             </div>
             <div class="ob-mock-row">
-              <span>취향</span>
+              <span>${tl('취향', 'Flavor', '好み')}</span>
               <div class="ob-mock-track"><div class="ob-mock-fill" style="width:82%"></div><div class="ob-mock-orb" style="left:82%"></div></div>
             </div>
           </div>
           <div class="ob-mock-chips">
-            <span class="ob-mock-chip active">조용한 바</span>
-            <span class="ob-mock-chip">혼술 추천</span>
-            <span class="ob-mock-chip">취향 96% 일치</span>
+            <span class="ob-mock-chip active">${tl('조용한 바', 'Quiet Bar', '静かなバー')}</span>
+            <span class="ob-mock-chip">${tl('혼술 추천', 'Solo-Friendly', 'ひとり飲み◎')}</span>
+            <span class="ob-mock-chip">${tl('취향 96% 일치', '96% Match', 'マッチ度96%')}</span>
           </div>
         </div>
         <div class="ob-copy">
-          <h2 class="ob-title">취향으로 찾는<br/>나만의 위스키 바</h2>
-          <p class="ob-desc">분위기, 가격대, 공간, 위스키 스타일.<br/>네 가지 감각에 꼭 맞는 전국 바를 추천해 드려요.</p>
+          <h2 class="ob-title">${tl('취향으로 찾는<br/>나만의 위스키 바', 'Find Whisky Bars<br/>Made for Your Mood', '気分で選べる<br/>あなただけのバー')}</h2>
+          <p class="ob-desc">${tl('분위기, 가격대, 공간, 위스키 스타일.<br/>네 가지 감각에 꼭 맞는 전국 바를 추천해 드려요.', 'Tune atmosphere, budget, setting, and flavor.<br/>We match you with Korea’s finest whisky bars.', '雰囲気・価格帯・空間・味わいの4つから、<br/>今の気分にぴったりの一軒をご提案します。')}</p>
         </div>
       </section>
 
@@ -1853,14 +1903,14 @@ function openOnboardingScreen(startIdx) {
             </div>
           </div>
           <div class="ob-mock-chips">
-            <span class="ob-mock-chip active">초보자 가이드</span>
-            <span class="ob-mock-chip">AI 라벨 판독</span>
-            <span class="ob-mock-chip">사전 · 페어링</span>
+            <span class="ob-mock-chip active">${tl('초보자 가이드', 'Beginner Guide', '初心者ガイド')}</span>
+            <span class="ob-mock-chip">${tl('AI 라벨 판독', 'AI Label Scan', 'AIラベル認識')}</span>
+            <span class="ob-mock-chip">${tl('사전 · 페어링', 'Glossary & Bites', '辞典・ペアリング')}</span>
           </div>
         </div>
         <div class="ob-copy">
-          <h2 class="ob-title">초보자 가이드부터<br/>AI 라벨 스캔까지</h2>
-          <p class="ob-desc">위스키가 처음이어도 쉽게 알아갈 수 있어요.<br/>4대 위스키 입문 가이드·용어 사전·안주 페어링과<br/>AI 라벨 판독·소믈리에까지 한 번에 담아뒀어요.</p>
+          <h2 class="ob-title">${tl('초보자 가이드부터<br/>AI 라벨 스캔까지', 'From Beginner Guide<br/>to AI Label Scan', '初心者ガイドから<br/>AIラベルスキャンまで')}</h2>
+          <p class="ob-desc">${tl('위스키가 처음이어도 쉽게 알아갈 수 있어요.<br/>4대 위스키 입문 가이드·용어 사전·안주 페어링과<br/>AI 라벨 판독·소믈리에까지 한 번에 담아뒀어요.', 'New to whisky? We’ve got you covered.<br/>Explore style guides, glossary & pairings,<br/>plus instant AI label scan and sommelier Q&A.', 'ウイスキーが初めてでも大丈夫。<br/>4大スタイル解説・用語辞典・ペアリングから<br/>AIラベル認識・ソムリエ相談までこれひとつ。')}</p>
         </div>
       </section>
 
@@ -1872,20 +1922,20 @@ function openOnboardingScreen(startIdx) {
             <div class="ob-map-road r1"></div>
             <div class="ob-map-road r2"></div>
             <div class="ob-map-river"></div>
-            <span class="ob-map-area a1">이태원</span>
-            <span class="ob-map-area a2">청담</span>
-            <span class="ob-map-area a3">성수</span>
+            <span class="ob-map-area a1">${tl('이태원', 'Itaewon', '梨泰院')}</span>
+            <span class="ob-map-area a2">${tl('청담', 'Cheongdam', '清潭')}</span>
+            <span class="ob-map-area a3">${tl('성수', 'Seongsu', '聖水')}</span>
             <div class="ob-map-pin p1"></div>
             <div class="ob-map-pin p2"></div>
           </div>
           <div class="ob-mock-review">
             <span class="ob-mock-stars">★★★★★</span>
-            <span class="ob-mock-review-txt">바텐더 추천이 완벽했던 조용한 공간</span>
+            <span class="ob-mock-review-txt">${tl('바텐더 추천이 완벽했던 조용한 공간', 'Quiet gem with spot-on bartender picks', 'バーテンダーの提案が完璧な隠れ家')}</span>
           </div>
         </div>
         <div class="ob-copy">
-          <h2 class="ob-title">나만의 바 지도와<br/>위스키 테이스팅 기록</h2>
-          <p class="ob-desc">저장한 바를 깔끔한 지도 위 핀으로 모아두고,<br/>테이스팅 노트와 방문 리뷰를 한곳에 남겨 보세요.</p>
+          <h2 class="ob-title">${tl('나만의 바 지도와<br/>위스키 테이스팅 기록', 'Your Personal Map<br/>& Tasting Journal', '自分だけのバー地図と<br/>テイスティング記録')}</h2>
+          <p class="ob-desc">${tl('저장한 바를 깔끔한 지도 위 핀으로 모아두고,<br/>테이스팅 노트와 방문 리뷰를 한곳에 남겨 보세요.', 'Pin your favorite bars on a clean, minimal map,<br/>and keep tasting notes & reviews in one place.', '保存したバーをシンプルな地図にピン留めして、<br/>飲んだ一杯のノートやレビューをまとめて管理。')}</p>
         </div>
       </section>
 
@@ -1893,19 +1943,19 @@ function openOnboardingScreen(startIdx) {
       <section class="ob-slide ob-slide-welcome">
         <div class="ob-welcome-copy">
           <span class="ob-welcome-eyebrow">WELCOME TO SPEAKEASY</span>
-          <h2 class="ob-welcome-title">speakeasy가<br/>처음이신가요?</h2>
-          <p class="ob-welcome-desc">이메일 계정을 연결하면 찜한 바와 테이스팅 노트,<br/>내가 쓴 리뷰가 언제든 안전하게 동기화돼요.</p>
+          <h2 class="ob-welcome-title">${tl('speakeasy가<br/>처음이신가요?', 'New to<br/>speakeasy?', 'speakeasyは<br/>初めてですか？')}</h2>
+          <p class="ob-welcome-desc">${tl('이메일 계정을 연결하면 찜한 바와 테이스팅 노트,<br/>내가 쓴 리뷰가 언제든 안전하게 동기화돼요.', 'Connect your email to keep your saved bars,<br/>tasting notes, and reviews synced everywhere.', 'メールアカウントを連携すると、保存したバーや<br/>テイスティング記録がいつでも安全に同期されます。')}</p>
         </div>
         <div class="ob-welcome-actions">
           <button type="button" class="ob-choice-btn primary" id="obSignupBtn">
-            <span>네, 처음이에요</span>
-            <small>회원가입 및 이메일 연동</small>
+            <span>${tl('네, 처음이에요', 'Yes, I’m new here', 'はい、初めてです')}</span>
+            <small>${tl('회원가입 및 이메일 연동', 'Create an account with email', '新規登録してはじめる')}</small>
           </button>
           <button type="button" class="ob-choice-btn secondary" id="obLoginBtn">
-            <span>아니요, 써봤어요</span>
-            <small>로그인하고 바로 시작하기</small>
+            <span>${tl('아니요, 써봤어요', 'I’ve been here before', 'いいえ、利用したことがあります')}</span>
+            <small>${tl('로그인하고 바로 시작하기', 'Sign in to your account', 'ログインしてすぐはじめる')}</small>
           </button>
-          <button type="button" class="ob-guest-btn" id="obGuestBtn">로그인 없이 먼저 둘러보기</button>
+          <button type="button" class="ob-guest-btn" id="obGuestBtn">${tl('로그인 없이 먼저 둘러보기', 'Explore without signing in', 'ログインせずに見てみる')}</button>
         </div>
       </section>
     </div>
@@ -1917,7 +1967,7 @@ function openOnboardingScreen(startIdx) {
         <span class="ob-dot"></span>
         <span class="ob-dot"></span>
       </div>
-      <button type="button" class="ob-next-btn" id="obNextBtn">다음</button>
+      <button type="button" class="ob-next-btn" id="obNextBtn">${tl('다음', 'Next', '次へ')}</button>
     </div>
   `;
 

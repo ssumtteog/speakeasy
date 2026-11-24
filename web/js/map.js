@@ -23,62 +23,59 @@ function getCleanColorfulTileUrl() {
 
 // Curated minimal area anchors ONLY (no ㅇㅇ동 / ㅇㅇ로 — clean landmark neighborhood names only)
 const MAP_CITY_LABELS = [
-  { name: '서울', lat: 37.5665, lng: 126.9780 },
-  { name: '인천', lat: 37.4563, lng: 126.7052 },
-  { name: '수원', lat: 37.2636, lng: 127.0286 },
-  { name: '강릉', lat: 37.7519, lng: 128.8761 },
-  { name: '대전', lat: 36.3504, lng: 127.3845 },
-  { name: '전주', lat: 35.8242, lng: 127.1480 },
-  { name: '광주', lat: 35.1595, lng: 126.8526 },
-  { name: '대구', lat: 35.8714, lng: 128.6014 },
-  { name: '부산', lat: 35.1796, lng: 129.0756 },
-  { name: '제주', lat: 33.4996, lng: 126.5312 }
+  { name: '서울', en: 'Seoul', ja: 'ソウル', lat: 37.5665, lng: 126.9780 },
+  { name: '인천', en: 'Incheon', ja: '仁川', lat: 37.4563, lng: 126.7052 },
+  { name: '수원', en: 'Suwon', ja: '水原', lat: 37.2636, lng: 127.0286 },
+  { name: '강릉', en: 'Gangneung', ja: '江陵', lat: 37.7519, lng: 128.8761 },
+  { name: '대전', en: 'Daejeon', ja: '大田', lat: 36.3504, lng: 127.3845 },
+  { name: '전주', en: 'Jeonju', ja: '全州', lat: 35.8242, lng: 127.1480 },
+  { name: '광주', en: 'Gwangju', ja: '光州', lat: 35.1595, lng: 126.8526 },
+  { name: '대구', en: 'Daegu', ja: '大邱', lat: 35.8714, lng: 128.6014 },
+  { name: '부산', en: 'Busan', ja: '釜山', lat: 35.1796, lng: 129.0756 },
+  { name: '제주', en: 'Jeju', ja: '済州', lat: 33.4996, lng: 126.5312 }
 ];
 
 const MAP_DISTRICT_LABELS = [
-  // 서울 주요 권역
-  { name: '이태원', lat: 37.5345, lng: 126.9946 },
-  { name: '용산', lat: 37.5299, lng: 126.9648 },
-  { name: '한남', lat: 37.5348, lng: 127.0095 },
-  { name: '강남', lat: 37.4980, lng: 127.0276 },
-  { name: '청담', lat: 37.5245, lng: 127.0474 },
-  { name: '압구정', lat: 37.5271, lng: 127.0285 },
-  { name: '신사', lat: 37.5165, lng: 127.0205 },
-  { name: '성수', lat: 37.5446, lng: 127.0560 },
-  { name: '잠실', lat: 37.5133, lng: 127.1001 },
-  { name: '여의도', lat: 37.5219, lng: 126.9245 },
-  { name: '목동', lat: 37.5262, lng: 126.8752 },
-  { name: '홍대', lat: 37.5563, lng: 126.9236 },
-  { name: '연남', lat: 37.5656, lng: 126.9255 },
-  { name: '합정', lat: 37.5495, lng: 126.9138 },
-  { name: '서촌', lat: 37.5795, lng: 126.9708 },
-  { name: '을지로', lat: 37.5663, lng: 126.9910 },
-  { name: '종로', lat: 37.5704, lng: 126.9831 },
-  { name: '광화문', lat: 37.5759, lng: 126.9768 },
-  { name: '서래마을', lat: 37.4955, lng: 126.9975 },
-  { name: '삼성', lat: 37.5089, lng: 127.0631 },
-  { name: '건대', lat: 37.5404, lng: 127.0692 },
-  { name: '혜화', lat: 37.5821, lng: 127.0019 },
-  { name: '마포', lat: 37.5396, lng: 126.9459 },
-  { name: '신촌', lat: 37.5559, lng: 126.9369 },
-  { name: '방배', lat: 37.4814, lng: 126.9976 },
-  { name: '노원', lat: 37.6542, lng: 127.0568 },
-  // 경기 · 인천
-  { name: '판교', lat: 37.3948, lng: 127.1112 },
-  { name: '분당', lat: 37.3595, lng: 127.1086 },
-  { name: '안양', lat: 37.3943, lng: 126.9568 },
-  { name: '일산', lat: 37.6584, lng: 126.7745 },
-  { name: '송도', lat: 37.3860, lng: 126.6435 },
-  { name: '부평', lat: 37.4900, lng: 126.7235 },
-  // 지방 주요 권역
-  { name: '서면', lat: 35.1578, lng: 129.0598 },
-  { name: '해운대', lat: 35.1631, lng: 129.1635 },
-  { name: '광안리', lat: 35.1532, lng: 129.1189 },
-  { name: '남포', lat: 35.0979, lng: 129.0355 },
-  { name: '동성로', lat: 35.8693, lng: 128.5956 },
-  { name: '둔산', lat: 36.3512, lng: 127.3782 },
-  { name: '상무', lat: 35.1528, lng: 126.8515 },
-  { name: '서귀포', lat: 33.2541, lng: 126.5601 }
+  { name: '이태원', en: 'Itaewon', ja: '梨泰院', lat: 37.5345, lng: 126.9946 },
+  { name: '용산', en: 'Yongsan', ja: '龍山', lat: 37.5299, lng: 126.9648 },
+  { name: '한남', en: 'Hannam', ja: '漢南', lat: 37.5348, lng: 127.0095 },
+  { name: '강남', en: 'Gangnam', ja: '江南', lat: 37.4980, lng: 127.0276 },
+  { name: '청담', en: 'Cheongdam', ja: '清潭', lat: 37.5245, lng: 127.0474 },
+  { name: '압구정', en: 'Apgujeong', ja: '狎鴎亭', lat: 37.5271, lng: 127.0285 },
+  { name: '신사', en: 'Sinsa', ja: '新沙', lat: 37.5165, lng: 127.0205 },
+  { name: '성수', en: 'Seongsu', ja: '聖水', lat: 37.5446, lng: 127.0560 },
+  { name: '잠실', en: 'Jamsil', ja: '蚕室', lat: 37.5133, lng: 127.1001 },
+  { name: '여의도', en: 'Yeouido', ja: '汝矣島', lat: 37.5219, lng: 126.9245 },
+  { name: '목동', en: 'Mokdong', ja: '木洞', lat: 37.5262, lng: 126.8752 },
+  { name: '홍대', en: 'Hongdae', ja: '弘大', lat: 37.5563, lng: 126.9236 },
+  { name: '연남', en: 'Yeonnam', ja: '延南', lat: 37.5656, lng: 126.9255 },
+  { name: '합정', en: 'Hapjeong', ja: '合井', lat: 37.5495, lng: 126.9138 },
+  { name: '서촌', en: 'Seochon', ja: '西村', lat: 37.5795, lng: 126.9708 },
+  { name: '을지로', en: 'Euljiro', ja: '乙支路', lat: 37.5663, lng: 126.9910 },
+  { name: '종로', en: 'Jongno', ja: '鐘路', lat: 37.5704, lng: 126.9831 },
+  { name: '광화문', en: 'Gwanghwamun', ja: '光化門', lat: 37.5759, lng: 126.9768 },
+  { name: '서래마을', en: 'Seorae', ja: 'ソレマウル', lat: 37.4955, lng: 126.9975 },
+  { name: '삼성', en: 'Samseong', ja: '三成', lat: 37.5089, lng: 127.0631 },
+  { name: '건대', en: 'Konkuk', ja: '建大', lat: 37.5404, lng: 127.0692 },
+  { name: '혜화', en: 'Hyehwa', ja: '恵化', lat: 37.5821, lng: 127.0019 },
+  { name: '마포', en: 'Mapo', ja: '麻浦', lat: 37.5396, lng: 126.9459 },
+  { name: '신촌', en: 'Sinchon', ja: '新村', lat: 37.5559, lng: 126.9369 },
+  { name: '방배', en: 'Bangbae', ja: '方背', lat: 37.4814, lng: 126.9976 },
+  { name: '노원', en: 'Nowon', ja: '芦原', lat: 37.6542, lng: 127.0568 },
+  { name: '판교', en: 'Pangyo', ja: '板橋', lat: 37.3948, lng: 127.1112 },
+  { name: '분당', en: 'Bundang', ja: '盆唐', lat: 37.3595, lng: 127.1086 },
+  { name: '안양', en: 'Anyang', ja: '安養', lat: 37.3943, lng: 126.9568 },
+  { name: '일산', en: 'Ilsan', ja: '一山', lat: 37.6584, lng: 126.7745 },
+  { name: '송도', en: 'Songdo', ja: '松島', lat: 37.3860, lng: 126.6435 },
+  { name: '부평', en: 'Bupyeong', ja: '富平', lat: 37.4900, lng: 126.7235 },
+  { name: '서면', en: 'Seomyeon', ja: '西面', lat: 35.1578, lng: 129.0598 },
+  { name: '해운대', en: 'Haeundae', ja: '海雲台', lat: 35.1631, lng: 129.1635 },
+  { name: '광안리', en: 'Gwangalli', ja: '広安里', lat: 35.1532, lng: 129.1189 },
+  { name: '남포', en: 'Nampo', ja: '南浦', lat: 35.0979, lng: 129.0355 },
+  { name: '동성로', en: 'Dongseongno', ja: '東城路', lat: 35.8693, lng: 128.5956 },
+  { name: '둔산', en: 'Dunsan', ja: '屯山', lat: 36.3512, lng: 127.3782 },
+  { name: '상무', en: 'Sangmu', ja: '尚武', lat: 35.1528, lng: 126.8515 },
+  { name: '서귀포', en: 'Seogwipo', ja: '西帰浦', lat: 33.2541, lng: 126.5601 }
 ];
 
 function refreshAreaLabels() {
@@ -89,6 +86,7 @@ function refreshAreaLabels() {
   const cls = z <= 10 ? 'is-city' : 'is-district';
 
   list.forEach(item => {
+    const labelText = state.lang === 'en' ? item.en : (state.lang === 'ja' ? item.ja : item.name);
     L.marker([item.lat, item.lng], {
       interactive: false,
       keyboard: false,
@@ -96,7 +94,7 @@ function refreshAreaLabels() {
       icon: L.divIcon({
         className: 'se-area-wrap',
         iconSize: [0, 0],
-        html: `<div class="se-area-label ${cls}">${item.name}</div>`
+        html: `<div class="se-area-label ${cls}">${labelText}</div>`
       })
     }).addTo(mapState.areaLabelsLayer);
   });
@@ -237,13 +235,19 @@ function refreshMapMarkers() {
 
   if (listPillText) {
     if (q) {
-      listPillText.textContent = `"${q}" 검색 결과 ${visibleBars.length}곳 · 목록`;
+      listPillText.textContent = tl(`"${q}" 검색 결과 ${visibleBars.length}곳 · 목록`, `"${q}" · ${visibleBars.length} bars · List`, `「${q}」${visibleBars.length}軒・一覧`);
     } else if (mapState.exploreAll) {
-      const prefix = mapState.city === '전체' ? '전국 위스키 바 ' : mapState.city + ' 위스키 바 ';
-      listPillText.textContent = `${prefix}${visibleBars.length}곳 · 목록`;
+      listPillText.textContent = tl(
+        `${mapState.city === '전체' ? '전국 위스키 바 ' : mapState.city + ' 위스키 바 '}${visibleBars.length}곳 · 목록`,
+        `${mapState.city === '전체' ? 'All Bars' : tRegion(mapState.city)} · ${visibleBars.length} · List`,
+        `${mapState.city === '전체' ? '全国のバー' : tRegion(mapState.city) + 'のバー'} ${visibleBars.length}軒・一覧`
+      );
     } else {
-      const prefix = mapState.city === '전체' ? '저장한 바 ' : mapState.city + ' 저장한 바 ';
-      listPillText.textContent = `${prefix}${visibleBars.length}곳 · 목록`;
+      listPillText.textContent = tl(
+        `${mapState.city === '전체' ? '저장한 바 ' : mapState.city + ' 저장한 바 '}${visibleBars.length}곳 · 목록`,
+        `${mapState.city === '전체' ? 'Saved Bars' : tRegion(mapState.city) + ' Saved'} · ${visibleBars.length} · List`,
+        `${mapState.city === '전체' ? '保存したバー' : tRegion(mapState.city) + 'の保存'} ${visibleBars.length}軒・一覧`
+      );
     }
   }
 
@@ -295,20 +299,20 @@ function renderMapPreviewCard(barId) {
       <div class="map-card-title-wrap">
         <div class="map-card-title-row">
           <span class="map-card-name">${bar.name}</span>
-          <span class="map-card-match">취향 ${match}%</span>
+          <span class="map-card-match">${tl('취향 ' + match + '%', match + '% Match', 'マッチ ' + match + '%')}</span>
         </div>
         <div class="map-card-sub">
           ${distText ? `<strong style="color:var(--text);">${distText}</strong><span>·</span>` : ''}
-          <span>${bar.city} ${bar.region} (${bar.station})</span>
+          <span>${tRegion(bar.city)} ${bar.region} (${bar.station})</span>
           <span>·</span>
           <span>${bar.priceText}</span>
         </div>
       </div>
       <div class="map-card-head-actions">
-        <button class="map-card-icon-btn ${isLiked ? 'liked' : ''}" id="mapCardLikeBtn" aria-label="바 저장">
+        <button class="map-card-icon-btn ${isLiked ? 'liked' : ''}" id="mapCardLikeBtn" aria-label="${tl('바 저장', 'Save bar', '保存')}">
           <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
         </button>
-        <button class="map-card-icon-btn" id="mapCardCloseBtn" aria-label="닫기">
+        <button class="map-card-icon-btn" id="mapCardCloseBtn" aria-label="${tl('닫기', 'Close', '閉じる')}">
           <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
@@ -318,10 +322,10 @@ function renderMapPreviewCard(barId) {
       ${bar.whiskeys.slice(0, 3).map(w => `<span class="whiskey-tag">${w}</span>`).join('')}
     </div>
     <div class="map-card-actions">
-      <button class="btn-detail" id="mapCardDetailBtn">상세정보</button>
+      <button class="btn-detail" id="mapCardDetailBtn">${tl('상세정보', 'Details', '詳細')}</button>
       <a class="btn-naver" id="mapCardNaverBtn" href="${naverUrl}" target="_blank" rel="noopener noreferrer">
         <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        네이버 지도 길찾기
+        ${tl('네이버 지도 길찾기', 'Directions', 'Naver地図でルート')}
       </a>
     </div>
   `;
@@ -365,28 +369,30 @@ function openMapListSheet() {
   if (state.userLocation) {
     visible.sort((a, b) => (getBarDistanceKm(a) || 9999) - (getBarDistanceKm(b) || 9999));
   }
-  const cityLabel = mapState.city === '전체' ? '전국' : mapState.city;
+  const cityLabel = tRegion(mapState.city);
   const title = q
-    ? `"${q}" 검색 결과`
-    : (mapState.exploreAll ? `${cityLabel} 위스키 바` : `${cityLabel} 저장한 바`);
+    ? tl(`"${q}" 검색 결과`, `Results for "${q}"`, `「${q}」の検索結果`)
+    : (mapState.exploreAll
+      ? tl(`${cityLabel} 위스키 바`, `Whisky Bars · ${cityLabel}`, `${cityLabel}のバー`)
+      : tl(`${cityLabel} 저장한 바`, `Saved Bars · ${cityLabel}`, `${cityLabel}の保存したバー`));
 
   if (!visible.length) {
     sheetBody.innerHTML = `
       <div class="sheet-title-row">
         <div class="sheet-bar-name">${title}</div>
-        <span class="sheet-match">0곳</span>
+        <span class="sheet-match">${tl('0곳', '0', '0軒')}</span>
       </div>
       <div class="sheet-desc" style="margin-top:14px;">
         ${!mapState.exploreAll && !q
-          ? '아직 저장한 바가 없어요. 마음에 드는 바의 하트(♡)를 누르면 지도에 위치 핑으로 깔끔하게 표시돼요!'
-          : '현재 조건에 맞는 바를 찾지 못했어요.'}
+          ? tl('아직 저장한 바가 없어요. 마음에 드는 바의 하트(♡)를 누르면 지도에 위치 핑으로 깔끔하게 표시돼요!', 'No saved bars yet. Tap the heart on any bar to pin it right onto your map.', 'まだ保存したバーがありません。お気に入りのバーにハートを付けると地図にピンで表示されます。')
+          : tl('현재 조건에 맞는 바를 찾지 못했어요.', 'No bars found in this area.', '条件に合うバーが見つかりませんでした。')}
       </div>
     `;
   } else {
     sheetBody.innerHTML = `
       <div class="sheet-title-row" style="margin-bottom:14px;">
         <div class="sheet-bar-name">${title}</div>
-        <span class="sheet-match">${visible.length}곳</span>
+        <span class="sheet-match">${tl(visible.length + '곳', String(visible.length), visible.length + '軒')}</span>
       </div>
       <div class="guide-brand-list">
         ${visible.map(b => {
@@ -397,9 +403,9 @@ function openMapListSheet() {
               <div class="guide-brand-info">
                 <div class="guide-brand-top">
                   <span class="guide-brand-name">${b.name}</span>
-                  <span class="guide-brand-count">${b.city}</span>
+                  <span class="guide-brand-count">${tRegion(b.city)}</span>
                   ${dist ? `<span class="guide-brand-count">${dist}</span>` : ''}
-                  ${isSaved ? '<span class="guide-brand-count" style="background:rgba(201,168,108,0.24); color:var(--whiskey-text);">저장됨</span>' : ''}
+                  ${isSaved ? '<span class="guide-brand-count" style="background:rgba(201,168,108,0.24); color:var(--whiskey-text);">' + tl('저장됨', 'Saved', '保存済') + '</span>' : ''}
                 </div>
                 <div class="guide-brand-sub" style="-webkit-line-clamp:1;">
                   <strong style="color:var(--text);">${b.region}</strong> · ${b.station} · ${b.priceText}

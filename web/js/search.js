@@ -128,7 +128,9 @@ function computeSearchMatches(params) {
     })
     .sort((a, b) => b.match - a.match);
 
-  let barSectionTitle = region === '전체' ? '전국 관련 위스키 바' : region + ' 관련 위스키 바';
+  let barSectionTitle = region === '전체'
+    ? tl('전국 관련 위스키 바', 'Matching Whisky Bars', '関連ウイスキーバー')
+    : tl(region + ' 관련 위스키 바', 'Whisky Bars in ' + tRegion(region), tRegion(region) + 'のウイスキーバー');
   if (matchedBars.length === 0 && matchedWhiskies.length > 0 && region === '전체' && price === '전체' && !tag) {
     const primaryCat = matchedWhiskies[0].category;
     matchedBars = BARS
@@ -136,7 +138,11 @@ function computeSearchMatches(params) {
       .filter(b => matchesWhiskyTypeBar(b, primaryCat))
       .sort((a, b) => b.match - a.match)
       .slice(0, 5);
-    barSectionTitle = primaryCat + ' 즐기기 좋은 전국 추천 바';
+    barSectionTitle = tl(
+      primaryCat + ' 즐기기 좋은 전국 추천 바',
+      'Great Bars for ' + tCat(primaryCat),
+      tCat(primaryCat) + 'を楽しめるおすすめバー'
+    );
   }
 
   return { matchedWhiskies, matchedBars, barSectionTitle };
@@ -147,12 +153,11 @@ function renderActiveFilterBar() {
   const filterBtn = document.getElementById('searchFilterBtn');
   if (!barEl) return;
 
-  const priceLabels = { low: '가성비(1만원대)', mid: '합리적(2만원대)', high: '프리미엄(3만원+)' };
   const chips = [];
-  if (state.searchRegion !== '전체') chips.push({ key: 'region', label: state.searchRegion });
-  if (state.searchWhiskyType !== '전체') chips.push({ key: 'whiskyType', label: state.searchWhiskyType });
-  if (state.searchAroma !== '전체') chips.push({ key: 'aroma', label: state.searchAroma });
-  if (state.searchPrice !== '전체') chips.push({ key: 'price', label: priceLabels[state.searchPrice] || state.searchPrice });
+  if (state.searchRegion !== '전체') chips.push({ key: 'region', label: tRegion(state.searchRegion) });
+  if (state.searchWhiskyType !== '전체') chips.push({ key: 'whiskyType', label: tCat(state.searchWhiskyType) });
+  if (state.searchAroma !== '전체') chips.push({ key: 'aroma', label: tAroma(state.searchAroma) });
+  if (state.searchPrice !== '전체') chips.push({ key: 'price', label: tPriceOpt(state.searchPrice) });
 
   if (filterBtn) filterBtn.classList.toggle('active', chips.length > 0);
 
@@ -223,15 +228,15 @@ function renderSearchResults() {
   });
 
   const total = matchedWhiskies.length + matchedBars.length;
-  countEl.innerHTML = '검색 결과 <span>' + total + '건</span>';
+  countEl.innerHTML = tl('검색 결과 <span>' + total + '건</span>', '<span>' + total + '</span> Results', '検索結果 <span>' + total + '件</span>');
 
   if (matchedWhiskies.length > 0) {
     const shelfWhiskies = matchedWhiskies.slice(0, 16);
     const isSingle = shelfWhiskies.length === 1;
     whiskyBlock.innerHTML = `
       <div class="search-group-label">
-        <span>위스키 알아보기 · ${matchedWhiskies.length}종</span>
-        ${matchedWhiskies.length > 1 ? '<span class="search-group-sub">좌우로 넘기기 →</span>' : ''}
+        <span>${tl('위스키 알아보기 · ' + matchedWhiskies.length + '종', 'Explore Whisky · ' + matchedWhiskies.length, 'ウイスキー · ' + matchedWhiskies.length + '種')}</span>
+        ${matchedWhiskies.length > 1 ? '<span class="search-group-sub">' + tl('좌우로 넘기기 →', 'Swipe →', 'スワイプ →') + '</span>' : ''}
       </div>
       <div class="whisky-search-shelf ${isSingle ? 'single-item' : ''}">
         ${shelfWhiskies.map(w => `
@@ -241,22 +246,22 @@ function renderSearchResults() {
                 ${renderWhiskyBottleSVG(w, 'thumb-sm')}
                 <div class="whisky-shelf-meta">
                   <div class="whisky-result-top" style="margin-bottom:4px;">
-                    <span class="whisky-cat-badge">${w.category}</span>
+                    <span class="whisky-cat-badge">${tCat(w.category)}</span>
                     <span class="whisky-abv">${w.abv}</span>
                   </div>
-                  <div class="whisky-result-name">${w.name}</div>
+                  <div class="whisky-result-name">${state.lang === 'en' && w.en ? w.en : w.name}</div>
                 </div>
               </div>
               <div class="whisky-result-summary">${w.summary}</div>
             </div>
             <div class="whisky-result-footer">
-              <span>자세히 알아보기</span>
+              <span>${tl('자세히 알아보기', 'Tasting Notes', '詳しく見る')}</span>
               <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
             </div>
           </div>
         `).join('')}
       </div>
-      ${matchedBars.length > 0 ? '<div class="search-group-label"><span>' + barSectionTitle + '</span><span>' + matchedBars.length + '곳</span></div>' : ''}
+      ${matchedBars.length > 0 ? '<div class="search-group-label"><span>' + barSectionTitle + '</span><span>' + tl(matchedBars.length + '곳', matchedBars.length + ' bars', matchedBars.length + '軒') + '</span></div>' : ''}
     `;
     whiskyBlock.querySelectorAll('[data-open-whisky]').forEach(el => {
       el.addEventListener('click', () => {
@@ -266,7 +271,7 @@ function renderSearchResults() {
     });
   } else {
     whiskyBlock.innerHTML = matchedBars.length > 0
-      ? '<div class="search-group-label"><span>' + barSectionTitle + '</span><span>' + matchedBars.length + '곳</span></div>'
+      ? '<div class="search-group-label"><span>' + barSectionTitle + '</span><span>' + tl(matchedBars.length + '곳', matchedBars.length + ' bars', matchedBars.length + '軒') + '</span></div>'
       : '';
   }
 
@@ -276,7 +281,11 @@ function renderSearchResults() {
     renderBarCards(
       listEl,
       matchedBars,
-      '선택한 조건에 맞는 위스키나 바가 없어요.<br>필터를 조금 넓히거나 다른 키워드로 검색해 보세요!'
+      tl(
+        '선택한 조건에 맞는 위스키나 바가 없어요.<br>필터를 조금 넓히거나 다른 키워드로 검색해 보세요!',
+        'No matching whiskies or bars found.<br>Try loosening your filters or searching another keyword.',
+        '条件に合うウイスキーやバーが見つかりませんでした。<br>条件を少し広げるか、別のキーワードでお試しください。'
+      )
     );
   }
   if (hadResults && viewSearch) {
@@ -297,36 +306,36 @@ function openWhiskySheet(id) {
       ${renderWhiskyBottleSVG(w, 'thumb-lg')}
       <div class="whisky-sheet-hero-info">
         <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px;">
-          <span class="sheet-match" style="display:inline-block;">${w.category}</span>
+          <span class="sheet-match" style="display:inline-block;">${tCat(w.category)}</span>
           <button type="button" class="whisky-like-pill ${isWLiked ? 'liked' : ''}" id="sheetWhiskyLikeBtn">
             <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-            <span>${isWLiked ? '찜한 술' : '술 찜하기'}</span>
+            <span>${isWLiked ? tl('찜한 술', 'Saved', '保存済み') : tl('술 찜하기', 'Save Whisky', 'お気に入り')}</span>
           </button>
         </div>
-        <div class="sheet-bar-name" style="font-size:20px;">${w.name}</div>
-        <div class="sheet-addr" style="margin-bottom:0; margin-top:3px;">${w.en}</div>
+        <div class="sheet-bar-name" style="font-size:20px;">${state.lang === 'en' && w.en ? w.en : w.name}</div>
+        <div class="sheet-addr" style="margin-bottom:0; margin-top:3px;">${state.lang === 'en' ? w.name : w.en}</div>
       </div>
     </div>
     <div class="sheet-desc">${w.summary}</div>
     <div class="sheet-info-grid">
-      <div class="info-box"><div class="info-box-label">원산지</div><div class="info-box-val">${w.origin}</div></div>
-      <div class="info-box"><div class="info-box-label">도수 · 난이도</div><div class="info-box-val">${w.abv} · ${w.level}</div></div>
+      <div class="info-box"><div class="info-box-label">${tl('원산지', 'Origin', '産地')}</div><div class="info-box-val">${w.origin}</div></div>
+      <div class="info-box"><div class="info-box-label">${tl('도수 · 난이도', 'ABV · Level', '度数・難易度')}</div><div class="info-box-val">${w.abv} · ${w.level}</div></div>
     </div>
-    <div class="sheet-sec-title">테이스팅 노트</div>
+    <div class="sheet-sec-title">${tl('테이스팅 노트', 'Tasting Notes', 'テイスティングノート')}</div>
     <div class="tasting-notes-box">
-      <div class="tasting-row"><span class="tasting-key">향 Nose</span><span class="tasting-val">${w.nose}</span></div>
-      <div class="tasting-row"><span class="tasting-key">맛 Palate</span><span class="tasting-val">${w.palate}</span></div>
-      <div class="tasting-row"><span class="tasting-key">여운 Finish</span><span class="tasting-val">${w.finish}</span></div>
+      <div class="tasting-row"><span class="tasting-key">${tl('향 Nose', 'Nose', '香り')}</span><span class="tasting-val">${w.nose}</span></div>
+      <div class="tasting-row"><span class="tasting-key">${tl('맛 Palate', 'Palate', '味わい')}</span><span class="tasting-val">${w.palate}</span></div>
+      <div class="tasting-row"><span class="tasting-key">${tl('여운 Finish', 'Finish', '余韻')}</span><span class="tasting-val">${w.finish}</span></div>
     </div>
     ${carryingBars.length > 0 ? `
-      <div class="sheet-sec-title">이 위스키를 즐길 수 있는 전국 바 (${carryingBars.length}곳)</div>
+      <div class="sheet-sec-title">${tl('이 위스키를 즐길 수 있는 전국 바 (' + carryingBars.length + '곳)', 'Bars Serving This Bottle (' + carryingBars.length + ')', 'このウイスキーが飲めるバー (' + carryingBars.length + '軒)')}</div>
       <div class="bar-whiskeys" style="margin-bottom:16px;">
-        ${carryingBars.map(b => '<button class="whiskey-tag" style="cursor:pointer;" data-jump-bar="' + b.id + '">' + b.name + ' (' + b.city + ') →</button>').join('')}
+        ${carryingBars.map(b => '<button class="whiskey-tag" style="cursor:pointer;" data-jump-bar="' + b.id + '">' + b.name + ' (' + tRegion(b.city) + ') →</button>').join('')}
       </div>
     ` : `
-      <div class="sheet-sec-title">${w.category} 취향에 어울리는 전국 추천 바</div>
+      <div class="sheet-sec-title">${tl(w.category + ' 취향에 어울리는 전국 추천 바', 'Great Bars for ' + tCat(w.category) + ' Lovers', tCat(w.category) + '好きにおすすめのバー')}</div>
       <div class="bar-whiskeys" style="margin-bottom:16px;">
-        ${styleFallbackBars.map(b => '<button class="whiskey-tag" style="cursor:pointer;" data-jump-bar="' + b.id + '">' + b.name + ' (' + b.city + ') →</button>').join('')}
+        ${styleFallbackBars.map(b => '<button class="whiskey-tag" style="cursor:pointer;" data-jump-bar="' + b.id + '">' + b.name + ' (' + tRegion(b.city) + ') →</button>').join('')}
       </div>
     `}
   `;
@@ -339,8 +348,10 @@ function openWhiskySheet(id) {
       const liked = toggleWhiskyLike(w.id);
       wLikeBtn.classList.toggle('liked', liked);
       const sp = wLikeBtn.querySelector('span');
-      if (sp) sp.textContent = liked ? '찜한 술' : '술 찜하기';
-      showToast(liked ? w.name + '을(를) 찜한 술에 저장했어요' : w.name + ' 찜 해제됨');
+      if (sp) sp.textContent = liked ? tl('찜한 술', 'Saved', '保存済み') : tl('술 찜하기', 'Save Whisky', 'お気に入り');
+      showToast(liked
+        ? tl(w.name + '을(를) 찜한 술에 저장했어요', 'Saved ' + (w.en || w.name), w.name + 'をお気に入りに追加しました')
+        : tl(w.name + ' 찜 해제됨', 'Removed from saved whisky', 'お気に入りから削除しました'));
     });
   }
   sheetScrim.classList.add('open');
@@ -349,23 +360,39 @@ function openWhiskySheet(id) {
 
 // ===== ROLLING POPULAR PLACEHOLDER TICKER =====
 const rollingPhContainer = document.getElementById('searchRollingPh');
+const ROLLING_KEYWORDS_EN = ['Balvenie 12', 'Glenfiddich', 'Macallan', 'Ardbeg 10', 'Hibiki', 'Cheongdam', 'Itaewon', 'Busan'];
+const ROLLING_KEYWORDS_JA = ['バルヴェニー 12年', 'グレンフィディック', 'マッカラン', 'アードベッグ', '響 ハーモニー', '清潭', '梨泰院', '釜山'];
+function getLocalizedRollingKeywords() {
+  if (state.lang === 'en') return ROLLING_KEYWORDS_EN;
+  if (state.lang === 'ja') return ROLLING_KEYWORDS_JA;
+  return ROLLING_KEYWORDS;
+}
 let rollingIdx = 0;
 let rollingCurrentEl = null;
 
+function refreshRollingPlaceholderLang() {
+  if (!rollingCurrentEl) return;
+  const list = getLocalizedRollingKeywords();
+  rollingIdx = rollingIdx % list.length;
+  rollingCurrentEl.textContent = list[rollingIdx];
+}
+
 function initRollingPlaceholder() {
   rollingPhContainer.innerHTML = '';
+  const list0 = getLocalizedRollingKeywords();
   const first = document.createElement('span');
   first.className = 'rolling-ph-item current';
-  first.textContent = ROLLING_KEYWORDS[0];
+  first.textContent = list0[0];
   rollingPhContainer.appendChild(first);
   rollingCurrentEl = first;
 
   setInterval(() => {
     if (state.searchQuery.length > 0) return;
-    const nextIdx = (rollingIdx + 1) % ROLLING_KEYWORDS.length;
+    const list = getLocalizedRollingKeywords();
+    const nextIdx = (rollingIdx + 1) % list.length;
     const incoming = document.createElement('span');
     incoming.className = 'rolling-ph-item';
-    incoming.textContent = ROLLING_KEYWORDS[nextIdx];
+    incoming.textContent = list[nextIdx];
     rollingPhContainer.appendChild(incoming);
 
     void incoming.offsetWidth;
@@ -474,13 +501,13 @@ function renderRecentSearches() {
   if (!box) return;
   box.classList.add('show');
   if (recentSearches.length === 0) {
-    box.innerHTML = `<div class="recent-empty">최근 검색 기록이 아직 없어요.<br/>위스키 이름, 지역(부산·인천·안양·제주), 바 이름을 검색해 보세요!</div>`;
+    box.innerHTML = `<div class="recent-empty">${tl('최근 검색 기록이 아직 없어요.<br/>위스키 이름, 지역(부산·인천·안양·제주), 바 이름을 검색해 보세요!', 'No recent searches yet.<br/>Try a whisky name, neighborhood, or bar.', '最近の検索履歴はありません。<br/>ウイスキー名やエリア、バー名で検索してみましょう。')}</div>`;
     return;
   }
   box.innerHTML = `
     <div class="recent-header">
-      <span class="recent-title">최근 검색어</span>
-      <button type="button" class="recent-clear-all" id="recentClearAllBtn">전체 삭제</button>
+      <span class="recent-title">${tl('최근 검색어', 'Recent Searches', '最近の検索')}</span>
+      <button type="button" class="recent-clear-all" id="recentClearAllBtn">${tl('전체 삭제', 'Clear all', 'すべて削除')}</button>
     </div>
     <div class="recent-list">
       ${recentSearches.map((term, idx) => `
@@ -612,8 +639,8 @@ async function analyzeWhiskyLabelWithAI(file) {
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     const msg = data.status === 503 || data.status === 429
-      ? 'AI 서버가 잠시 혼잡해요. 아래 버튼으로 바로 다시 시도해 보세요!'
-      : (data.error || 'AI 분석 중 오류가 발생했어요');
+      ? tl('AI 서버가 잠시 혼잡해요. 아래 버튼으로 바로 다시 시도해 보세요!', 'AI is busy right now. Tap below to try again.', 'AIサーバーが混み合っています。下のボタンからもう一度お試しください。')
+      : (data.error || tl('AI 분석 중 오류가 발생했어요', 'Something went wrong during label scan.', 'ラベル解析中にエラーが発生しました。'));
     return { error: msg };
   }
   return { result: data };
@@ -622,6 +649,12 @@ async function analyzeWhiskyLabelWithAI(file) {
 function renderScanResultBox(container, payload) {
   if (!container) return;
   const quickBrands = ['발베니', '글렌피딕', '조니워커', '몽키숄더', '글렌모렌지', '아드벡', '메이커스마크', '놉크릭', '제임슨', '맥캘란'];
+  const quickBrandEn = {
+    '발베니': 'Balvenie', '글렌피딕': 'Glenfiddich', '조니워커': 'Johnnie Walker', '몽키숄더': 'Monkey Shoulder',
+    '글렌모렌지': 'Glenmorangie', '아드벡': 'Ardbeg', '메이커스마크': "Maker's Mark", '놉크릭': 'Knob Creek',
+    '제임슨': 'Jameson', '맥캘란': 'Macallan'
+  };
+  const brandDisp = (b) => state.lang === 'en' ? (quickBrandEn[b] || b) : b;
   const statusPill = document.getElementById('scanStatusPill');
   const beamEl = document.getElementById('scanBeamEl');
   const badgeEl = document.getElementById('scanHeaderBadge');
@@ -641,15 +674,15 @@ function renderScanResultBox(container, payload) {
   };
 
   if (payload.notDeployed || payload.notConfigured) {
-    if (statusPill) statusPill.textContent = 'Edge Function 배포 대기 중';
-    if (badgeEl) badgeEl.textContent = '설정 필요';
+    if (statusPill) statusPill.textContent = tl('Edge Function 배포 대기 중', 'Setup Required', 'セットアップが必要');
+    if (badgeEl) badgeEl.textContent = tl('설정 필요', 'Setup', '設定');
     container.innerHTML = `
       <div class="scan-notice-box">
-        Supabase에 <strong>scan-whisky-label</strong> Edge Function과 <code>GEMINI_API_KEY</code>를 등록하면 사진만 찍어도 위스키를 자동 판독해요!
+        ${tl('Supabase에 <strong>scan-whisky-label</strong> Edge Function과 <code>GEMINI_API_KEY</code>를 등록하면 사진만 찍어도 위스키를 자동 판독해요!', 'Deploy the <strong>scan-whisky-label</strong> Edge Function with <code>GEMINI_API_KEY</code> on Supabase to enable instant AI bottle scanning.', 'Supabaseに<strong>scan-whisky-label</strong>と<code>GEMINI_API_KEY</code>を設定すると、写真からウイスキーを自動判定できます。')}
       </div>
-      <div class="sheet-sec-title">직접 브랜드 선택해서 찾기</div>
+      <div class="sheet-sec-title">${tl('직접 브랜드 선택해서 찾기', 'Or pick a popular brand', '人気ブランドから探す')}</div>
       <div class="bar-whiskeys" style="margin-bottom:16px;">
-        ${quickBrands.map(b => '<button class="whiskey-tag" style="cursor:pointer;" data-scan-brand="' + b + '">' + b + '</button>').join('')}
+        ${quickBrands.map(b => '<button class="whiskey-tag" style="cursor:pointer;" data-scan-brand="' + b + '">' + brandDisp(b) + '</button>').join('')}
       </div>
     `;
     bindQuickChips();
@@ -657,15 +690,15 @@ function renderScanResultBox(container, payload) {
   }
 
   if (payload.error) {
-    if (statusPill) statusPill.textContent = '잠시 후 다시 시도';
-    if (badgeEl) badgeEl.textContent = '재시도';
+    if (statusPill) statusPill.textContent = tl('잠시 후 다시 시도', 'Try Again', '再試行');
+    if (badgeEl) badgeEl.textContent = tl('재시도', 'Retry', '再試行');
     container.innerHTML = `
       <div class="scan-notice-box">
         ${escapeScanHtml(payload.error)}
-        ${payload.retryFn ? '<div style="margin-top:10px;"><button type="button" class="scan-ai-primary-btn" id="scanRetrySameBtn">같은 사진으로 다시 분석하기</button></div>' : ''}
+        ${payload.retryFn ? '<div style="margin-top:10px;"><button type="button" class="scan-ai-primary-btn" id="scanRetrySameBtn">' + tl('같은 사진으로 다시 분석하기', 'Scan This Photo Again', '同じ写真で再解析する') + '</button></div>' : ''}
       </div>
       <div class="bar-whiskeys" style="margin-bottom:16px;">
-        ${quickBrands.map(b => '<button class="whiskey-tag" style="cursor:pointer;" data-scan-brand="' + b + '">' + b + '</button>').join('')}
+        ${quickBrands.map(b => '<button class="whiskey-tag" style="cursor:pointer;" data-scan-brand="' + b + '">' + brandDisp(b) + '</button>').join('')}
       </div>
     `;
     if (payload.retryFn) {
@@ -677,41 +710,44 @@ function renderScanResultBox(container, payload) {
 
   const ai = payload.result || {};
   if (!ai.detected) {
-    if (statusPill) statusPill.textContent = '라벨 인식 실패';
-    if (badgeEl) badgeEl.textContent = '다시 촬영';
+    if (statusPill) statusPill.textContent = tl('라벨 인식 실패', 'Label Not Clear', 'ラベルを認識できませんでした');
+    if (badgeEl) badgeEl.textContent = tl('다시 촬영', 'Retake', '撮り直す');
     container.innerHTML = `
       <div class="scan-notice-box">
-        ${escapeScanHtml(ai.notes || '위스키 라벨이 또렷하게 보이지 않아요. 병 정면 라벨이 잘 나오도록 다시 찍어보세요!')}
+        ${escapeScanHtml(ai.notes || tl('위스키 라벨이 또렷하게 보이지 않아요. 병 정면 라벨이 잘 나오도록 다시 찍어보세요!', 'We couldn’t read the label clearly. Try taking a straight-on photo of the front label.', 'ラベルがはっきり写っていません。ボトル正面のラベルが見えるように撮り直してみてください。'))}
       </div>
-      <div class="sheet-sec-title">또는 인기 브랜드 바로 찾기</div>
+      <div class="sheet-sec-title">${tl('또는 인기 브랜드 바로 찾기', 'Or browse popular brands', 'または人気ブランドから探す')}</div>
       <div class="bar-whiskeys" style="margin-bottom:16px;">
-        ${quickBrands.map(b => '<button class="whiskey-tag" style="cursor:pointer;" data-scan-brand="' + b + '">' + b + '</button>').join('')}
+        ${quickBrands.map(b => '<button class="whiskey-tag" style="cursor:pointer;" data-scan-brand="' + b + '">' + brandDisp(b) + '</button>').join('')}
       </div>
     `;
     bindQuickChips();
     return;
   }
 
-  if (statusPill) statusPill.textContent = 'AI 판독 완료 ✓';
+  if (statusPill) statusPill.textContent = tl('AI 판독 완료 ✓', 'Bottle Identified ✓', 'AI判定完了 ✓');
   if (badgeEl) badgeEl.textContent = 'Gemini AI';
 
   const matchedWhiskies = findMatchingWhiskiesFromScan(ai);
   const keyword = ai.searchKeyword || ai.brand || ai.whiskyName || '';
-  const confLabel = ai.confidence === 'high' ? '높은 정확도' : (ai.confidence === 'medium' ? '보통 정확도' : '추정 결과');
+  const confLabel = ai.confidence === 'high'
+    ? tl('높은 정확도', 'High confidence', '高精度')
+    : (ai.confidence === 'medium' ? tl('보통 정확도', 'Medium confidence', '標準精度') : tl('추정 결과', 'Best guess', '推定'));
+  const displayAiName = (state.lang === 'en' && ai.enName) ? ai.enName : (ai.whiskyName || ai.brand || 'Whisky');
 
   container.innerHTML = `
     <div class="scan-ai-card">
       <div class="scan-ai-badges">
-        ${ai.category ? `<span class="whisky-cat-badge">${escapeScanHtml(ai.category)}</span>` : ''}
+        ${ai.category ? `<span class="whisky-cat-badge">${escapeScanHtml(tCat(ai.category))}</span>` : ''}
         ${ai.abv ? `<span class="scan-ai-meta">${escapeScanHtml(ai.abv)}</span>` : ''}
         <span class="scan-ai-meta">· ${confLabel}</span>
       </div>
-      <div class="scan-ai-name">${escapeScanHtml(ai.whiskyName || ai.brand || '위스키')}</div>
-      ${ai.enName ? `<div class="scan-ai-en">${escapeScanHtml(ai.enName)}</div>` : ''}
+      <div class="scan-ai-name">${escapeScanHtml(displayAiName)}</div>
+      ${ai.enName && displayAiName !== ai.enName ? `<div class="scan-ai-en">${escapeScanHtml(ai.enName)}</div>` : ''}
       ${ai.notes ? `<div class="scan-ai-notes">${escapeScanHtml(ai.notes)}</div>` : ''}
       <div class="scan-ai-actions">
-        ${keyword ? `<button type="button" class="scan-ai-primary-btn" id="scanSearchBarsBtn">"${escapeScanHtml(keyword)}" 파는 바 & 정보 검색</button>` : ''}
-        ${matchedWhiskies.length > 0 ? `<button type="button" class="scan-ai-secondary-btn" id="scanOpenWhiskyBtn">${escapeScanHtml(matchedWhiskies[0].name)} 테이스팅 노트 보기</button>` : ''}
+        ${keyword ? `<button type="button" class="scan-ai-primary-btn" id="scanSearchBarsBtn">${tl('"' + escapeScanHtml(keyword) + '" 파는 바 & 정보 검색', 'Find Bars Serving "' + escapeScanHtml(displayAiName) + '"', '「' + escapeScanHtml(keyword) + '」が飲めるバーを検索')}</button>` : ''}
+        ${matchedWhiskies.length > 0 ? `<button type="button" class="scan-ai-secondary-btn" id="scanOpenWhiskyBtn">${tl(escapeScanHtml(matchedWhiskies[0].name) + ' 테이스팅 노트 보기', 'View Tasting Notes for ' + escapeScanHtml(matchedWhiskies[0].en || matchedWhiskies[0].name), escapeScanHtml(matchedWhiskies[0].name) + 'のテイスティングノートを見る')}</button>` : ''}
       </div>
     </div>
   `;
@@ -735,19 +771,19 @@ function openCameraScanSheet(imgUrl, file) {
   const reqId = ++scanRequestSeq;
   sheetBody.innerHTML = `
     <div class="sheet-title-row">
-      <div class="sheet-bar-name">위스키 라벨 스캔</div>
-      <span class="sheet-match" id="scanHeaderBadge">AI 분석 중</span>
+      <div class="sheet-bar-name">${tl('위스키 라벨 스캔', 'Whisky Label Scan', 'ウイスキーラベルスキャン')}</div>
+      <span class="sheet-match" id="scanHeaderBadge">${tl('AI 분석 중', 'Scanning', 'AI解析中')}</span>
     </div>
-    <div class="sheet-addr">찍으신 라벨 사진을 Gemini Vision AI가 분석하고 있어요.</div>
+    <div class="sheet-addr">${tl('찍으신 라벨 사진을 Gemini Vision AI가 분석하고 있어요.', 'Gemini Vision AI is identifying the bottle from your photo.', '撮影したラベル写真をGemini AIが解析しています。')}</div>
     <div class="scan-preview-wrap">
-      <img class="scan-preview-img" src="${imgUrl}" alt="선택된 위스키 라벨" />
+      <img class="scan-preview-img" src="${imgUrl}" alt="bottle label" />
       <div class="scan-beam" id="scanBeamEl"></div>
-      <div class="scan-status-pill" id="scanStatusPill">Gemini AI가 라벨을 판독하고 있어요...</div>
+      <div class="scan-status-pill" id="scanStatusPill">${tl('Gemini AI가 라벨을 판독하고 있어요...', 'Reading the bottle label…', 'ラベルを読み取っています…')}</div>
     </div>
     <div id="scanAiResultBox">
-      <div class="scan-loading-box">라벨의 브랜드·연산·스타일을 읽는 중이에요 (약 1~3초)</div>
+      <div class="scan-loading-box">${tl('라벨의 브랜드·연산·스타일을 읽는 중이에요 (약 1~3초)', 'Identifying brand, age & style… (1–3 sec)', 'ブランド・熟成年数・スタイルを解析中… (約1〜3秒)')}</div>
     </div>
-    <button class="scan-retake-btn" id="scanRetakeBtn">다른 사진 선택 / 다시 찍기</button>
+    <button class="scan-retake-btn" id="scanRetakeBtn">${tl('다른 사진 선택 / 다시 찍기', 'Choose Another Photo / Retake', '別の写真を選ぶ / 撮り直す')}</button>
   `;
   document.getElementById('scanRetakeBtn')?.addEventListener('click', () => {
     cameraFileInput.value = '';
@@ -763,9 +799,9 @@ function openCameraScanSheet(imgUrl, file) {
     const beam = document.getElementById('scanBeamEl');
     const badge = document.getElementById('scanHeaderBadge');
     if (beam) beam.style.display = '';
-    if (pill) pill.textContent = 'Gemini AI가 라벨을 판독하고 있어요...';
-    if (badge) badge.textContent = 'AI 분석 중';
-    if (box) box.innerHTML = '<div class="scan-loading-box">라벨의 브랜드·연산·스타일을 읽는 중이에요 (약 1~3초)</div>';
+    if (pill) pill.textContent = tl('Gemini AI가 라벨을 판독하고 있어요...', 'Reading the bottle label…', 'ラベルを読み取っています…');
+    if (badge) badge.textContent = tl('AI 분석 중', 'Scanning', 'AI解析中');
+    if (box) box.innerHTML = '<div class="scan-loading-box">' + tl('라벨의 브랜드·연산·스타일을 읽는 중이에요 (약 1~3초)', 'Identifying brand, age & style… (1–3 sec)', 'ブランド・熟成年数・スタイルを解析中… (約1〜3秒)') + '</div>';
     analyzeWhiskyLabelWithAI(file)
       .then(payload => {
         if (reqId !== scanRequestSeq) return;
@@ -775,7 +811,7 @@ function openCameraScanSheet(imgUrl, file) {
       .catch(() => {
         if (reqId !== scanRequestSeq) return;
         renderScanResultBox(document.getElementById('scanAiResultBox'), {
-          error: '네트워크 연결을 확인해 주세요',
+          error: tl('네트워크 연결을 확인해 주세요', 'Please check your internet connection', 'ネットワーク接続をご確認ください'),
           retryFn: runScan
         });
       });
@@ -913,7 +949,7 @@ function handleDelegatedSearchAction(e) {
       recentSearches = [];
       persistRecentSearches();
       renderRecentSearches();
-      showToast('최근 검색 기록을 모두 삭제했어요');
+      showToast(tl('최근 검색 기록을 모두 삭제했어요', 'Cleared recent searches', '最近の検索履歴を削除しました'));
     });
     return;
   }
@@ -985,7 +1021,7 @@ function syncDraftChipsUI() {
   });
   const total = preview.matchedWhiskies.length + preview.matchedBars.length;
   const countEl = document.getElementById('filterPreviewCount');
-  if (countEl) countEl.textContent = total + '건';
+  if (countEl) countEl.textContent = tl(total + '건', String(total), total + '件');
 }
 
 function openSearchFilterScreen() {

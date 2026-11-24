@@ -41,16 +41,69 @@ function getGuideBrandsInCategory(catId) {
     });
 }
 
+const GUIDE_CAT_COPY = {
+  '블렌디드': {
+    badge: { en: 'Best to Start', ja: '入門におすすめ' },
+    tagline: { en: 'Smooth, balanced, and effortless to enjoy', ja: 'まろやかでバランスの取れた最初の一杯' },
+    shortDesc: { en: 'Malt and grain whiskies blended in harmony for an easy sip.', ja: 'モルトとグレーンを絶妙に調和させた、飲みやすい王道スタイル。' },
+    whatIsTitle: { en: 'What is Blended Whisky?', ja: 'ブレンデッドウイスキーとは？' },
+    whatIsBody: {
+      en: 'Crafted by master blenders combining single malts and grain whiskies from multiple distilleries. Smooth, consistent, and approachable — ideal for highballs or your first dram.',
+      ja: '複数の蒸留所のモルト原酒とグレーン原酒を、マスターブレンダーが黄金比で調和させたウイスキー。クセが少なく飲みやすいため、ハイボールや入門に最適です。'
+    }
+  },
+  '싱글몰트': {
+    badge: { en: 'Classic Craft', ja: '個性の王道' },
+    tagline: { en: '100% malted barley from a single distillery', ja: '単一蒸留所・大麦モルト100%の個性' },
+    shortDesc: { en: 'Every distillery brings its own fruit, honey, oak, and character.', ja: '水・樽・風土が織りなす多彩な香りとストーリーを楽しめます。' },
+    whatIsTitle: { en: 'What is Single Malt?', ja: 'シングルモルトとは？' },
+    whatIsBody: {
+      en: 'Made from 100% malted barley at a single distillery. Unblended with other houses, it captures pure terroir — from bright orchard fruit and honey to rich sherry and spice.',
+      ja: '単一の蒸留所で大麦麦芽のみを使って造られるウイスキー。果実や蜂蜜、シェリー樽由来の奥深い香りなど、蒸留所ごとの個性を飲み比べる楽しさがあります。'
+    }
+  },
+  '피트': {
+    badge: { en: 'Bold & Smoky', ja: '強烈な個性' },
+    tagline: { en: 'Campfire smoke meets Atlantic sea spray', ja: '焚き火のスモークと潮風の深い余韻' },
+    shortDesc: { en: 'Malted barley dried over peat fires for unmistakable smoky depth.', ja: 'ピート（泥炭）で燻した大麦が生む、虜になるスモーキーさ。' },
+    whatIsTitle: { en: 'What is Peated Whisky?', ja: 'ピートウイスキーとは？' },
+    whatIsBody: {
+      en: 'Iconic to Scotland’s Islay island, barley is dried over burning peat turf. The smoke infuses notes of hearth fire, sea salt, iodine, and dark barbecue — unforgettable once it clicks.',
+      ja: 'スコットランド・アイラ島などで泥炭（ピート）を焚いて大麦を乾燥させることで、焚き火や潮風、燻製のような独特の香りをまとわせた個性派ウイスキーです。'
+    }
+  },
+  '버번': {
+    badge: { en: 'Rich & Sweet', ja: '濃厚な甘み' },
+    tagline: { en: 'Charred new oak and rich corn sweetness', ja: '新樽オークとトウモロコシの豊かなバニラ' },
+    shortDesc: { en: '51%+ corn aged in newly charred American oak for lush vanilla & caramel.', ja: 'トウモロコシ51%以上を焦がした新樽で熟成。濃いバニラとキャラメル香。' },
+    whatIsTitle: { en: 'What is Bourbon & Rye?', ja: 'バーボン・ライとは？' },
+    whatIsBody: {
+      en: 'American whiskey distilled from at least 51% corn and aged exclusively in brand-new charred oak barrels. Expect bold vanilla, caramel, toasted oak, and warming spice.',
+      ja: 'アメリカでトウモロコシを51%以上使用し、内側を焦がした新しいオーク樽のみで熟成。力強いバニラやキャラメル、香ばしいウッディ感が魅力です。'
+    }
+  }
+};
+
+function tDictGroup(gp) {
+  const map = {
+    '전체': { ko: '전체', en: 'All', ja: 'すべて' },
+    '바 · 음용': { ko: '바 · 음용', en: 'Bar & Serving', ja: 'バー・飲み方' },
+    '캐스크 · 숙성': { ko: '캐스크 · 숙성', en: 'Cask & Aging', ja: '樽・熟成' },
+    '심화 · 매니아': { ko: '심화 · 매니아', en: 'Enthusiast', ja: 'マニア向け' }
+  };
+  return (map[gp] && map[gp][state.lang]) || gp;
+}
+
 function openGlossarySheet(index) {
   const item = GUIDE_GLOSSARY[index];
   if (!item) return;
   sheetBody.innerHTML = `
     <div class="sheet-title-row">
       <div class="sheet-bar-name">${escapeGuideHtml(item.term)}</div>
-      <span class="sheet-match">${escapeGuideHtml(item.group || '위스키 사전')}</span>
+      <span class="sheet-match">${escapeGuideHtml(tDictGroup(item.group || '바 · 음용'))}</span>
     </div>
     <div class="sheet-desc" style="margin-top:14px; margin-bottom:14px;">${escapeGuideHtml(item.desc)}</div>
-    <button type="button" class="my-sheet-secondary-cta" id="openFullDictFromItem">위스키 사전 전체 보기 (${GUIDE_GLOSSARY.length}개)</button>
+    <button type="button" class="my-sheet-secondary-cta" id="openFullDictFromItem">${tl('위스키 사전 전체 보기 (' + GUIDE_GLOSSARY.length + '개)', 'View Full Glossary (' + GUIDE_GLOSSARY.length + ' terms)', '用語辞典をすべて見る (' + GUIDE_GLOSSARY.length + '語)')}</button>
   `;
   document.getElementById('openFullDictFromItem')?.addEventListener('click', () => openFullDictionarySheet(item.group || '전체'));
   sheetScrim.classList.add('open');
@@ -66,18 +119,18 @@ function openFullDictionarySheet(activeGroup) {
 
   sheetBody.innerHTML = `
     <div class="sheet-title-row" style="margin-bottom:12px;">
-      <div class="sheet-bar-name">위스키 용어 사전</div>
-      <span class="sheet-match">${items.length}개</span>
+      <div class="sheet-bar-name">${tl('위스키 용어 사전', 'Whisky Glossary', 'ウイスキー用語辞典')}</div>
+      <span class="sheet-match">${tl(items.length + '개', items.length + ' terms', items.length + '語')}</span>
     </div>
     <div class="guide-dict-tabs">
-      ${groups.map(gp => `<button type="button" class="guide-dict-tab ${gp === group ? 'active' : ''}" data-dict-tab="${gp}">${gp}</button>`).join('')}
+      ${groups.map(gp => `<button type="button" class="guide-dict-tab ${gp === group ? 'active' : ''}" data-dict-tab="${gp}">${tDictGroup(gp)}</button>`).join('')}
     </div>
     <div class="guide-dict-list">
       ${items.map(g => `
         <div class="guide-dict-item">
           <div class="guide-dict-head">
             <span class="guide-dict-term">${escapeGuideHtml(g.term)}</span>
-            <span class="guide-dict-group">${escapeGuideHtml(g.group || '')}</span>
+            <span class="guide-dict-group">${escapeGuideHtml(tDictGroup(g.group || ''))}</span>
           </div>
           <div class="guide-dict-desc">${escapeGuideHtml(g.desc)}</div>
         </div>
@@ -96,8 +149,8 @@ function openFullDictionarySheet(activeGroup) {
 function openFullPairingsSheet() {
   sheetBody.innerHTML = `
     <div class="sheet-title-row" style="margin-bottom:14px;">
-      <div class="sheet-bar-name">스타일별 안주 페어링</div>
-      <span class="sheet-match">${GUIDE_PAIRINGS.length}종</span>
+      <div class="sheet-bar-name">${tl('스타일별 안주 페어링', 'Whisky & Food Pairings', 'スタイル別ペアリング')}</div>
+      <span class="sheet-match">${tl(GUIDE_PAIRINGS.length + '종', GUIDE_PAIRINGS.length + ' styles', GUIDE_PAIRINGS.length + '種')}</span>
     </div>
     <div class="guide-dict-list">
       ${GUIDE_PAIRINGS.map(p => `
@@ -130,22 +183,22 @@ function openPairingSheet(pairingId) {
     </div>
     <div class="sheet-addr" style="margin-bottom:14px;">${escapeGuideHtml(p.subtitle)}</div>
 
-    <div class="sheet-sec-title">추천 안주 페어링</div>
+    <div class="sheet-sec-title">${tl('추천 안주 페어링', 'Recommended Bites', 'おすすめのおつまみ')}</div>
     <div class="bar-whiskeys" style="margin-bottom:18px;">
       ${p.foods.map(f => `<span class="whiskey-tag">${escapeGuideHtml(f)}</span>`).join('')}
     </div>
 
     <div class="guide-tip-box" style="margin-bottom:18px;">
-      <div class="guide-tip-label">왜 잘 어울릴까요?</div>
+      <div class="guide-tip-label">${tl('왜 잘 어울릴까요?', 'Why It Works', '相性が良い理由')}</div>
       <div>${escapeGuideHtml(p.why)}</div>
     </div>
 
-    <div class="sheet-sec-title">어울리는 대표 위스키</div>
+    <div class="sheet-sec-title">${tl('어울리는 대표 위스키', 'Great Bottles to Pair', 'おすすめの銘柄')}</div>
     <div class="bar-whiskeys" style="margin-bottom:16px;">
       ${p.examples.map(ex => `<button type="button" class="whiskey-tag" style="cursor:pointer;" data-pairing-whisky="${escapeGuideHtml(ex)}">${escapeGuideHtml(ex)} →</button>`).join('')}
     </div>
 
-    <button type="button" class="my-sheet-secondary-cta" id="openAllPairingsFromDetail">안주 페어링 전체 보기 (${GUIDE_PAIRINGS.length}종)</button>
+    <button type="button" class="my-sheet-secondary-cta" id="openAllPairingsFromDetail">${tl('안주 페어링 전체 보기 (' + GUIDE_PAIRINGS.length + '종)', 'All Food Pairings (' + GUIDE_PAIRINGS.length + ')', 'ペアリング一覧を見る (' + GUIDE_PAIRINGS.length + '種)')}</button>
   `;
 
   document.getElementById('openAllPairingsFromDetail')?.addEventListener('click', openFullPairingsSheet);
@@ -194,8 +247,8 @@ async function askWhiskyGuideAI(question) {
   if (!res.ok) {
     return {
       error: data.status === 503 || data.status === 429
-        ? 'AI 소믈리에 응답이 잠시 혼잡해요. 다시 눌러 재시도해 보세요!'
-        : (data.error || '답변을 불러오지 못했어요')
+        ? tl('AI 소믈리에 응답이 잠시 혼잡해요. 다시 눌러 재시도해 보세요!', 'AI Sommelier is busy right now. Tap below to try again.', 'AIソムリエが混み合っています。もう一度お試しください。')
+        : (data.error || tl('답변을 불러오지 못했어요', 'Couldn’t load an answer. Please try again.', '回答を読み込めませんでした。'))
     };
   }
   return { result: data };
@@ -204,7 +257,7 @@ async function askWhiskyGuideAI(question) {
 function triggerGuideAiAsk(question) {
   const cleanQ = String(question || '').trim();
   if (cleanQ.length < 2) {
-    showToast('궁금한 내용을 2자 이상 입력해 주세요');
+    showToast(tl('궁금한 내용을 2자 이상 입력해 주세요', 'Please enter at least 2 characters', '2文字以上入力してください'));
     return;
   }
   const box = document.getElementById('guideAiAnswerWrap');
@@ -212,8 +265,8 @@ function triggerGuideAiAsk(question) {
   const reqId = ++guideAiSeq;
   box.innerHTML = `
     <div class="guide-ai-card loading">
-      <div class="guide-ai-badge">AI 소믈리에</div>
-      <div class="guide-ai-loading">질문을 정리하고 있어요... (약 1~3초)</div>
+      <div class="guide-ai-badge">${tl('AI 소믈리에', 'AI Sommelier', 'AIソムリエ')}</div>
+      <div class="guide-ai-loading">${tl('질문을 정리하고 있어요... (약 1~3초)', 'Crafting your answer… (1–3 sec)', '回答を作成しています…（約1〜3秒）')}</div>
     </div>
   `;
 
@@ -226,8 +279,8 @@ function triggerGuideAiAsk(question) {
       if (payload.notDeployed || payload.notConfigured) {
         target.innerHTML = `
           <div class="guide-ai-card">
-            <div class="guide-ai-badge">AI 소믈리에 준비 중</div>
-            <div class="guide-ai-body">Supabase에 <strong>ask-whisky-guide</strong> Edge Function을 배포하면 어떤 위스키 질문이든 실시간으로 답변해 드려요!</div>
+            <div class="guide-ai-badge">${tl('AI 소믈리에 준비 중', 'AI Sommelier Setup', 'AIソムリエ準備中')}</div>
+            <div class="guide-ai-body">${tl('Supabase에 <strong>ask-whisky-guide</strong> Edge Function을 배포하면 어떤 위스키 질문이든 실시간으로 답변해 드려요!', 'Deploy the <strong>ask-whisky-guide</strong> Edge Function on Supabase for instant answers to any whisky question.', 'Supabaseに<strong>ask-whisky-guide</strong>をデプロイすると、あらゆる質問にリアルタイムで回答できます。')}</div>
           </div>
         `;
         return;
@@ -236,9 +289,9 @@ function triggerGuideAiAsk(question) {
       if (payload.error) {
         target.innerHTML = `
           <div class="guide-ai-card">
-            <div class="guide-ai-badge">재시도</div>
+            <div class="guide-ai-badge">${tl('재시도', 'Retry', '再試行')}</div>
             <div class="guide-ai-body">${escapeGuideHtml(payload.error)}</div>
-            <button type="button" class="guide-ai-retry-btn" id="guideAiRetryBtn">다시 물어보기</button>
+            <button type="button" class="guide-ai-retry-btn" id="guideAiRetryBtn">${tl('다시 물어보기', 'Ask Again', 'もう一度聞く')}</button>
           </div>
         `;
         document.getElementById('guideAiRetryBtn')?.addEventListener('click', () => triggerGuideAiAsk(cleanQ));
@@ -255,7 +308,7 @@ function triggerGuideAiAsk(question) {
       target.innerHTML = `
         <div class="guide-ai-card">
           <div class="guide-ai-head">
-            <span class="guide-ai-badge">AI 소믈리에</span>
+            <span class="guide-ai-badge">${tl('AI 소믈리에', 'AI Sommelier', 'AIソムリエ')}</span>
             ${ai.title ? `<span class="guide-ai-title">${escapeGuideHtml(ai.title)}</span>` : ''}
           </div>
           <div class="guide-ai-body">${escapeGuideHtml(ai.answer || '')}</div>
@@ -266,7 +319,7 @@ function triggerGuideAiAsk(question) {
           ` : ''}
           ${recName ? `
             <button type="button" class="guide-ai-rec-btn" id="guideAiRecBtn">
-              <span>${escapeGuideHtml(recName)} 자세히 보기</span>
+              <span>${tl(escapeGuideHtml(recName) + ' 자세히 보기', 'Explore ' + escapeGuideHtml(recName), escapeGuideHtml(recName) + 'を詳しく見る')}</span>
               <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
           ` : ''}
@@ -291,9 +344,9 @@ function triggerGuideAiAsk(question) {
       if (!target) return;
       target.innerHTML = `
         <div class="guide-ai-card">
-          <div class="guide-ai-badge">오류</div>
-          <div class="guide-ai-body">네트워크 연결을 확인해 주세요.</div>
-          <button type="button" class="guide-ai-retry-btn" id="guideAiRetryBtn">다시 물어보기</button>
+          <div class="guide-ai-badge">${tl('오류', 'Error', 'エラー')}</div>
+          <div class="guide-ai-body">${tl('네트워크 연결을 확인해 주세요.', 'Please check your internet connection.', 'ネットワーク接続をご確認ください。')}</div>
+          <button type="button" class="guide-ai-retry-btn" id="guideAiRetryBtn">${tl('다시 물어보기', 'Ask Again', 'もう一度聞く')}</button>
         </div>
       `;
       document.getElementById('guideAiRetryBtn')?.addEventListener('click', () => triggerGuideAiAsk(cleanQ));
@@ -340,8 +393,8 @@ function renderGuideSearchPanel(query) {
         <div class="guide-ai-prompt-left">
           <span class="guide-ai-spark">✦</span>
           <div>
-            <div class="guide-ai-prompt-title">"${escapeGuideHtml(raw)}" AI 소믈리에에게 물어보기</div>
-            <div class="guide-ai-prompt-sub">용어·추천·페어링·보관법 무엇이든 바로 답변해 드려요</div>
+            <div class="guide-ai-prompt-title">${tl('"' + escapeGuideHtml(raw) + '" AI 소믈리에에게 물어보기', 'Ask AI Sommelier about "' + escapeGuideHtml(raw) + '"', '「' + escapeGuideHtml(raw) + '」をAIソムリエに聞く')}</div>
+            <div class="guide-ai-prompt-sub">${tl('용어·추천·페어링·보관법 무엇이든 바로 답변해 드려요', 'Instant answers on terms, bottles, pairings & storage', '用語・おすすめ銘柄・ペアリング何でもお答えします')}</div>
           </div>
         </div>
         <div class="guide-arrow"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
@@ -350,15 +403,15 @@ function renderGuideSearchPanel(query) {
 
     ${matchedGlossary.length > 0 ? `
       <div class="guide-sec-label" style="margin-top:16px;">
-        <span>위스키 사전</span>
-        <span class="guide-sec-count">${matchedGlossary.length}건</span>
+        <span>${tl('위스키 사전', 'Glossary', '用語辞典')}</span>
+        <span class="guide-sec-count">${tl(matchedGlossary.length + '건', String(matchedGlossary.length), matchedGlossary.length + '件')}</span>
       </div>
       <div class="guide-search-list">
         ${matchedGlossary.map(({ g, idx }) => `
           <button type="button" class="guide-search-item" data-gs-glossary="${idx}">
             <div class="guide-dict-head">
               <span class="guide-dict-term">${escapeGuideHtml(g.term)}</span>
-              <span class="guide-dict-group">${escapeGuideHtml(g.group || '')}</span>
+              <span class="guide-dict-group">${escapeGuideHtml(tDictGroup(g.group || ''))}</span>
             </div>
             <div class="guide-search-snippet">${escapeGuideHtml(g.desc)}</div>
           </button>
@@ -368,8 +421,8 @@ function renderGuideSearchPanel(query) {
 
     ${matchedPairings.length > 0 ? `
       <div class="guide-sec-label" style="margin-top:16px;">
-        <span>안주 페어링</span>
-        <span class="guide-sec-count">${matchedPairings.length}건</span>
+        <span>${tl('안주 페어링', 'Food Pairings', 'ペアリング')}</span>
+        <span class="guide-sec-count">${tl(matchedPairings.length + '건', String(matchedPairings.length), matchedPairings.length + '件')}</span>
       </div>
       <div class="guide-search-list">
         ${matchedPairings.map(p => `
@@ -386,15 +439,15 @@ function renderGuideSearchPanel(query) {
 
     ${matchedWhiskies.length > 0 ? `
       <div class="guide-sec-label" style="margin-top:16px;">
-        <span>수록 위스키</span>
-        <span class="guide-sec-count">${matchedWhiskies.length}종</span>
+        <span>${tl('수록 위스키', 'Whiskies', '収録ウイスキー')}</span>
+        <span class="guide-sec-count">${tl(matchedWhiskies.length + '종', String(matchedWhiskies.length), matchedWhiskies.length + '種')}</span>
       </div>
       <div class="guide-search-list">
         ${matchedWhiskies.map(w => `
           <button type="button" class="guide-search-item" data-gs-whisky="${w.id}">
             <div class="guide-dict-head">
-              <span class="guide-dict-term">${escapeGuideHtml(w.name)}</span>
-              <span class="guide-dict-group">${escapeGuideHtml(w.category)} · ${escapeGuideHtml(w.abv)}</span>
+              <span class="guide-dict-term">${escapeGuideHtml(state.lang === 'en' && w.en ? w.en : w.name)}</span>
+              <span class="guide-dict-group">${escapeGuideHtml(tCat(w.category))} · ${escapeGuideHtml(w.abv)}</span>
             </div>
             <div class="guide-search-snippet">${escapeGuideHtml(w.summary)}</div>
           </button>
@@ -403,7 +456,7 @@ function renderGuideSearchPanel(query) {
     ` : ''}
 
     ${totalLocal === 0 ? `
-      <div class="guide-search-empty">사전에 바로 일치하는 항목이 없어요.<br/>위 <strong>AI 소믈리에에게 물어보기</strong>를 눌러 바로 답변을 받아보세요!</div>
+      <div class="guide-search-empty">${tl('사전에 바로 일치하는 항목이 없어요.<br/>위 <strong>AI 소믈리에에게 물어보기</strong>를 눌러 바로 답변을 받아보세요!', 'No direct glossary matches.<br/>Tap <strong>Ask AI Sommelier</strong> above for an instant answer!', '辞典に一致する項目がありません。<br/>上の<strong>AIソムリエに聞く</strong>からすぐ回答を受け取れます。')}</div>
     ` : ''}
   `;
 
@@ -428,10 +481,11 @@ function updateGuideHeader() {
     titleEl.textContent = 'speakeasy';
   } else if (guideState.level === 2) {
     backBtn.classList.add('visible');
-    titleEl.textContent = guideState.categoryId + ' 가이드';
+    titleEl.textContent = tl(guideState.categoryId + ' 가이드', tCat(guideState.categoryId) + ' Guide', tCat(guideState.categoryId) + 'ガイド');
   } else {
     backBtn.classList.add('visible');
-    titleEl.textContent = guideState.brandName;
+    const storyMeta = GUIDE_BRAND_STORIES[guideState.brandName];
+    titleEl.textContent = (state.lang === 'en' && storyMeta && storyMeta.en) ? storyMeta.en : guideState.brandName;
   }
 }
 
@@ -481,13 +535,13 @@ function renderGuideView(opts) {
   // ===== LEVEL 1: ARCHIVE SEARCH + DICTIONARY + PAIRINGS + 4 CATEGORIES =====
   if (guideState.level === 1) {
     container.innerHTML = `
-      <div class="guide-hero-title">위스키 아카이브</div>
-      <div class="guide-hero-sub">용어 사전과 페어링부터 증류소별 라인업, AI 소믈리에 질문까지 한곳에서 찾아보세요.</div>
+      <div class="guide-hero-title">${tl('위스키 아카이브', 'Whisky Archive', 'ウイスキーアーカイブ')}</div>
+      <div class="guide-hero-sub">${tl('용어 사전과 페어링부터 증류소별 라인업, AI 소믈리에 질문까지 한곳에서 찾아보세요.', 'Explore whisky styles, tasting terms, food pairings, and ask our AI sommelier anything.', '用語辞典やペアリングから蒸留所別ラインナップ、AIソムリエへの質問までこれひとつで。')}</div>
 
       <div class="guide-search-bar">
         <svg class="guide-search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" class="guide-search-input" id="guideSearchInput" value="${escapeGuideHtml(guideState.searchQuery)}" placeholder="용어, 페어링, 궁금한 위스키 질문하기" autocomplete="off" />
-        <button type="button" class="guide-search-clear ${guideState.searchQuery ? 'show' : ''}" id="guideSearchClearBtn" aria-label="검색어 지우기">
+        <input type="text" class="guide-search-input" id="guideSearchInput" value="${escapeGuideHtml(guideState.searchQuery)}" placeholder="${tl('용어, 페어링, 궁금한 위스키 질문하기', 'Search terms, pairings, or ask AI…', '用語・ペアリング検索やAIに質問…')}" autocomplete="off" />
+        <button type="button" class="guide-search-clear ${guideState.searchQuery ? 'show' : ''}" id="guideSearchClearBtn" aria-label="Clear">
           <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
@@ -501,10 +555,10 @@ function renderGuideView(opts) {
               <span class="guide-quick-icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
               </span>
-              <span class="guide-quick-count">${GUIDE_GLOSSARY.length}개</span>
+              <span class="guide-quick-count">${tl(GUIDE_GLOSSARY.length + '개', GUIDE_GLOSSARY.length + ' terms', GUIDE_GLOSSARY.length + '語')}</span>
             </div>
-            <div class="guide-quick-title">용어 사전</div>
-            <div class="guide-quick-sub">바 · 캐스크 · 심화</div>
+            <div class="guide-quick-title">${tl('용어 사전', 'Glossary', '用語辞典')}</div>
+            <div class="guide-quick-sub">${tl('바 · 캐스크 · 심화', 'Bar · Cask · Deep Dive', 'バー・樽・マニア向け')}</div>
           </button>
 
           <button type="button" class="guide-quick-card" id="openFullPairingsBtn">
@@ -512,36 +566,40 @@ function renderGuideView(opts) {
               <span class="guide-quick-icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24"><path d="M8 22h8"/><path d="M12 11v11"/><path d="M17 2H7l1.2 7.2A4 4 0 0 0 12 12.5a4 4 0 0 0 3.8-3.3L17 2z"/></svg>
               </span>
-              <span class="guide-quick-count">${GUIDE_PAIRINGS.length}종</span>
+              <span class="guide-quick-count">${tl(GUIDE_PAIRINGS.length + '종', GUIDE_PAIRINGS.length + ' styles', GUIDE_PAIRINGS.length + '種')}</span>
             </div>
-            <div class="guide-quick-title">안주 페어링</div>
-            <div class="guide-quick-sub">스타일별 추천 조합</div>
+            <div class="guide-quick-title">${tl('안주 페어링', 'Food Pairings', 'ペアリング')}</div>
+            <div class="guide-quick-sub">${tl('스타일별 추천 조합', 'Curated bites by style', 'スタイル別おすすめ')}</div>
           </button>
         </div>
 
         <div class="guide-sec-label">
-          <span>위스키 4대 종류</span>
-          <span class="guide-sec-count">총 ${WHISKIES.length}종 수록</span>
+          <span>${tl('위스키 4대 종류', '4 Core Whisky Styles', 'ウイスキー4大スタイル')}</span>
+          <span class="guide-sec-count">${tl('총 ' + WHISKIES.length + '종 수록', WHISKIES.length + ' bottles', '全' + WHISKIES.length + '種収録')}</span>
         </div>
         <div class="guide-cat-list">
           ${GUIDE_CATEGORIES.map(cat => {
             const count = getGuideWhiskiesByCategory(cat.id).length;
+            const loc = GUIDE_CAT_COPY[cat.id];
+            const catBadge = (loc && loc.badge[state.lang]) || cat.badge;
+            const catTagline = (loc && loc.tagline[state.lang]) || cat.tagline;
+            const catDesc = (loc && loc.shortDesc[state.lang]) || cat.shortDesc;
             return `
               <div class="guide-cat-card" data-guide-cat="${cat.id}">
                 <div class="guide-cat-top">
-                  <img class="guide-cat-art" src="${cat.image}" alt="${cat.name} 일러스트" />
+                  <img class="guide-cat-art" src="${cat.image}" alt="${tCat(cat.id)}" />
                   <div class="guide-cat-top-row">
-                    <span class="guide-cat-badge">${cat.badge}</span>
-                    <span class="guide-cat-count">${count}종 수록</span>
+                    <span class="guide-cat-badge">${catBadge}</span>
+                    <span class="guide-cat-count">${tl(count + '종 수록', count + ' bottles', count + '種')}</span>
                   </div>
                   <div class="guide-cat-heading">
-                    <span class="guide-cat-name">${cat.name}</span>
+                    <span class="guide-cat-name">${tCat(cat.id)}</span>
                     <span class="guide-cat-en">${cat.en}</span>
                   </div>
                 </div>
                 <div class="guide-cat-body">
-                  <div class="guide-cat-tagline">${cat.tagline}</div>
-                  <div class="guide-cat-desc">${cat.shortDesc}</div>
+                  <div class="guide-cat-tagline">${catTagline}</div>
+                  <div class="guide-cat-desc">${catDesc}</div>
                   <div class="guide-cat-footer">
                     <div class="guide-mini-brands">
                       ${cat.highlights.slice(0, 3).map(h => `<span class="guide-mini-pill">${h}</span>`).join('')}
@@ -609,20 +667,25 @@ function renderGuideView(opts) {
     if (!cat) return;
     const brands = getGuideBrandsInCategory(cat.id);
 
+    const loc = GUIDE_CAT_COPY[cat.id];
+    const catBadge = (loc && loc.badge[state.lang]) || cat.badge;
+    const catWhatTitle = (loc && loc.whatIsTitle[state.lang]) || cat.whatIsTitle;
+    const catWhatBody = (loc && loc.whatIsBody[state.lang]) || cat.whatIsBody;
+
     container.innerHTML = `
       <div class="guide-breadcrumb">
-        <button class="guide-crumb-btn" id="crumbToRoot">가이드</button>
+        <button class="guide-crumb-btn" id="crumbToRoot">${tl('가이드', 'Guide', 'ガイド')}</button>
         <span class="guide-crumb-sep">›</span>
-        <span class="guide-crumb-current">${cat.name}</span>
+        <span class="guide-crumb-current">${tCat(cat.id)}</span>
       </div>
 
       <div class="guide-concept-card">
         <div class="guide-concept-photo-wrap">
-          <img class="guide-concept-art" src="${cat.image}" alt="${cat.name} 일러스트" />
+          <img class="guide-concept-art" src="${cat.image}" alt="${tCat(cat.id)}" />
         </div>
-        <span class="guide-concept-eyebrow">${cat.en} · ${cat.badge}</span>
-        <div class="guide-concept-title">${cat.whatIsTitle}</div>
-        <div class="guide-concept-body">${cat.whatIsBody}</div>
+        <span class="guide-concept-eyebrow">${cat.en} · ${catBadge}</span>
+        <div class="guide-concept-title">${catWhatTitle}</div>
+        <div class="guide-concept-body">${catWhatBody}</div>
         <div class="guide-facts-list">
           ${cat.facts.map(f => `
             <div class="guide-fact-row">
@@ -632,16 +695,16 @@ function renderGuideView(opts) {
           `).join('')}
         </div>
         <div class="match-bars" style="margin-bottom:0;">
-          <div class="match-bar-item"><span class="match-bar-label">달콤함</span><div class="match-bar-track"><div class="match-bar-fill" style="width:${cat.profile.sweet}%"></div></div><span class="match-bar-text">${cat.profile.sweet}%</span></div>
-          <div class="match-bar-item"><span class="match-bar-label">스모키</span><div class="match-bar-track"><div class="match-bar-fill" style="width:${cat.profile.smoky}%"></div></div><span class="match-bar-text">${cat.profile.smoky}%</span></div>
-          <div class="match-bar-item"><span class="match-bar-label">바디감</span><div class="match-bar-track"><div class="match-bar-fill" style="width:${cat.profile.body}%"></div></div><span class="match-bar-text">${cat.profile.body}%</span></div>
-          <div class="match-bar-item"><span class="match-bar-label">입문 추천</span><div class="match-bar-track"><div class="match-bar-fill" style="width:${cat.profile.beginner}%"></div></div><span class="match-bar-text">${cat.profile.beginner}%</span></div>
+          <div class="match-bar-item"><span class="match-bar-label">${tl('달콤함', 'Sweet', '甘み')}</span><div class="match-bar-track"><div class="match-bar-fill" style="width:${cat.profile.sweet}%"></div></div><span class="match-bar-text">${cat.profile.sweet}%</span></div>
+          <div class="match-bar-item"><span class="match-bar-label">${tl('스모키', 'Smoky', 'スモーク')}</span><div class="match-bar-track"><div class="match-bar-fill" style="width:${cat.profile.smoky}%"></div></div><span class="match-bar-text">${cat.profile.smoky}%</span></div>
+          <div class="match-bar-item"><span class="match-bar-label">${tl('바디감', 'Body', 'ボディ')}</span><div class="match-bar-track"><div class="match-bar-fill" style="width:${cat.profile.body}%"></div></div><span class="match-bar-text">${cat.profile.body}%</span></div>
+          <div class="match-bar-item"><span class="match-bar-label">${tl('입문 추천', 'Beginner', '入門向き')}</span><div class="match-bar-track"><div class="match-bar-fill" style="width:${cat.profile.beginner}%"></div></div><span class="match-bar-text">${cat.profile.beginner}%</span></div>
         </div>
       </div>
 
       <div class="guide-sec-label">
-        <span>대표 ${cat.name} 브랜드</span>
-        <span class="guide-sec-count">${brands.length}개 브랜드</span>
+        <span>${tl('대표 ' + cat.name + ' 브랜드', 'Signature ' + tCat(cat.id) + ' Brands', '代表的な' + tCat(cat.id) + 'ブランド')}</span>
+        <span class="guide-sec-count">${tl(brands.length + '개 브랜드', brands.length + ' brands', brands.length + 'ブランド')}</span>
       </div>
 
       <div class="guide-brand-list">
@@ -655,8 +718,8 @@ function renderGuideView(opts) {
               ${renderWhiskyBottleSVG(item.bottles[0], 'thumb-sm')}
               <div class="guide-brand-info">
                 <div class="guide-brand-top">
-                  <span class="guide-brand-name">${item.brand}</span>
-                  <span class="guide-brand-count">${item.bottles.length}종</span>
+                  <span class="guide-brand-name">${state.lang === 'en' && storyMeta && storyMeta.en ? storyMeta.en : item.brand}</span>
+                  <span class="guide-brand-count">${tl(item.bottles.length + '종', item.bottles.length + (item.bottles.length === 1 ? ' bottle' : ' bottles'), item.bottles.length + '種')}</span>
                 </div>
                 <div class="guide-brand-sub">${previewText}</div>
               </div>
@@ -696,33 +759,41 @@ function renderGuideView(opts) {
   const brandOrigin = storyMeta ? storyMeta.origin : (sample ? sample.origin : '');
   const brandStory = storyMeta
     ? storyMeta.story
-    : `${guideState.brandName}은(는) ${brandOrigin} 지역의 개성이 살아있는 대표적인 ${guideState.categoryId} 위스키 브랜드입니다. ${sample ? sample.summary : ''}`;
+    : tl(
+        `${guideState.brandName}은(는) ${brandOrigin} 지역의 개성이 살아있는 대표적인 ${guideState.categoryId} 위스키 브랜드입니다. ${sample ? sample.summary : ''}`,
+        `${brandEn || guideState.brandName} is a signature ${tCat(guideState.categoryId).toLowerCase()} house known for distinctive character.`,
+        `${guideState.brandName}は、地域の個性が際立つ代表的な${tCat(guideState.categoryId)}ブランドです。`
+      );
   const brandTip = storyMeta
     ? storyMeta.tip
-    : `아래 라인업 중 도수와 난이도를 참고해 취향에 맞는 바틀부터 가볍게 시작해 보세요.`;
+    : tl(
+        '아래 라인업 중 도수와 난이도를 참고해 취향에 맞는 바틀부터 가볍게 시작해 보세요.',
+        'Browse the lineup below by ABV and style to find the best bottle for your palate.',
+        '下のラインナップから度数やスタイルを見て、気になるボトルから試してみてください。'
+      );
 
   container.innerHTML = `
     <div class="guide-breadcrumb">
-      <button class="guide-crumb-btn" id="crumbToRoot">가이드</button>
+      <button class="guide-crumb-btn" id="crumbToRoot">${tl('가이드', 'Guide', 'ガイド')}</button>
       <span class="guide-crumb-sep">›</span>
-      <button class="guide-crumb-btn" id="crumbToCat">${cat ? cat.name : guideState.categoryId}</button>
+      <button class="guide-crumb-btn" id="crumbToCat">${tCat(cat ? cat.id : guideState.categoryId)}</button>
       <span class="guide-crumb-sep">›</span>
-      <span class="guide-crumb-current">${guideState.brandName}</span>
+      <span class="guide-crumb-current">${state.lang === 'en' && brandEn ? brandEn : guideState.brandName}</span>
     </div>
 
     <div class="guide-concept-card">
       <span class="guide-concept-eyebrow">${brandEn} · ${brandOrigin}</span>
-      <div class="guide-concept-title">${guideState.brandName}이란?</div>
+      <div class="guide-concept-title">${tl(guideState.brandName + '이란?', 'About ' + (brandEn || guideState.brandName), guideState.brandName + 'について')}</div>
       <div class="guide-concept-body">${brandStory}</div>
       <div class="guide-tip-box">
-        <div class="guide-tip-label">입문 · 테이스팅 팁</div>
+        <div class="guide-tip-label">${tl('입문 · 테이스팅 팁', 'Tasting Tip', 'テイスティングのコツ')}</div>
         <div>${brandTip}</div>
       </div>
     </div>
 
     <div class="guide-sec-label">
-      <span>대표 라인업 알아보기</span>
-      <span class="guide-sec-count">${bottles.length}종</span>
+      <span>${tl('대표 라인업 알아보기', 'Signature Lineup', '代表ラインナップ')}</span>
+      <span class="guide-sec-count">${tl(bottles.length + '종', bottles.length + ' bottles', bottles.length + '種')}</span>
     </div>
 
     <div class="guide-bottle-list">
@@ -734,10 +805,10 @@ function renderGuideView(opts) {
             ${renderWhiskyBottleSVG(w, '')}
             <div class="guide-bottle-meta">
               <div class="guide-bottle-top">
-                <span class="guide-bottle-name">${w.name}</span>
+                <span class="guide-bottle-name">${state.lang === 'en' && w.en ? w.en : w.name}</span>
                 <div style="display:flex; align-items:center; gap:6px;">
                   <span class="guide-bottle-abv">${w.abv}</span>
-                  <button type="button" class="guide-bottle-like-btn ${isWLiked ? 'liked' : ''}" data-whisky-like="${w.id}" aria-label="술 찜하기">
+                  <button type="button" class="guide-bottle-like-btn ${isWLiked ? 'liked' : ''}" data-whisky-like="${w.id}" aria-label="${tl('술 찜하기', 'Save whisky', 'お気に入りに追加')}">
                     <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                   </button>
                 </div>
@@ -747,7 +818,7 @@ function renderGuideView(opts) {
             </div>
           </div>
           <div class="guide-bottle-footer">
-            <span>향 · 맛 · 여운 테이스팅 노트 보기</span>
+            <span>${tl('향 · 맛 · 여운 테이스팅 노트 보기', 'View Nose · Palate · Finish', '香り・味わい・余韻を見る')}</span>
             <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
           </div>
         </div>
@@ -756,7 +827,7 @@ function renderGuideView(opts) {
     </div>
 
     <button class="guide-find-bar-btn" id="guideFindBarsBtn">
-      <span>${guideState.brandName} 즐길 수 있는 바 검색하기</span>
+      <span>${tl(guideState.brandName + ' 즐길 수 있는 바 검색하기', 'Find Bars Serving ' + (brandEn || guideState.brandName), guideState.brandName + 'が飲めるバーを探す')}</span>
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M7 17L17 7"/><polyline points="8 7 17 7 17 16"/></svg>
     </button>
   `;
@@ -782,7 +853,12 @@ function renderGuideView(opts) {
       const w = WHISKIES.find(x => x.id === id);
       const liked = toggleWhiskyLike(id);
       btn.classList.toggle('liked', liked);
-      if (w) showToast(liked ? w.name + '을(를) 찜한 술에 저장했어요' : w.name + ' 찜 해제됨');
+      if (w) {
+        const wLabel = state.lang === 'en' && w.en ? w.en : w.name;
+        showToast(liked
+          ? tl(w.name + '을(를) 찜한 술에 저장했어요', 'Saved ' + wLabel, w.name + 'をお気に入りに保存しました')
+          : tl(w.name + ' 찜 해제됨', 'Removed ' + wLabel, w.name + 'を解除しました'));
+      }
     });
   });
 
