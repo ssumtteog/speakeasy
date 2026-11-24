@@ -8,12 +8,12 @@
   --map-area-halo: rgba(255, 255, 255, 0.92);
 }
 html[data-theme="dark"] {
-  --map-ctrl-bg: rgba(18, 26, 22, 0.92);
-  --map-ctrl-border: rgba(247, 244, 240, 0.14);
-  --map-label-bg: rgba(16, 24, 20, 0.92);
-  --map-label-text: #F7F4F0;
-  --map-area-text: rgba(247, 244, 240, 0.52);
-  --map-area-halo: rgba(18, 26, 22, 0.90);
+  --map-ctrl-bg: rgba(28, 29, 31, 0.92);
+  --map-ctrl-border: rgba(255, 255, 255, 0.12);
+  --map-label-bg: rgba(24, 25, 27, 0.94);
+  --map-label-text: #F5F5F7;
+  --map-area-text: rgba(245, 245, 247, 0.54);
+  --map-area-halo: rgba(18, 18, 19, 0.90);
 }
 
 .view-map {
@@ -26,7 +26,7 @@ html[data-theme="dark"] {
   background: var(--bg);
 }
 .view-map.active {
-  transform: translateY(0);
+  transform: none;
   opacity: 1;
   pointer-events: auto;
 }
@@ -44,7 +44,7 @@ html[data-theme="dark"] {
   filter: saturate(0.45) brightness(1.03) contrast(0.94);
 }
 html[data-theme="dark"] .map-stage {
-  background: #141B18;
+  background: #161719;
 }
 html[data-theme="dark"] #leafletMap .leaflet-tile-pane {
   filter: invert(93%) hue-rotate(180deg) saturate(0.46) brightness(0.90) contrast(0.94);
@@ -63,17 +63,17 @@ html[data-theme="dark"] #leafletMap .leaflet-tile-pane {
   transform: translate(-50%, -50%);
   white-space: nowrap;
   font-family: 'Pretendard', -apple-system, sans-serif;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--map-area-text);
   text-shadow:
-    0 0 4px var(--map-area-halo),
-    0 0 8px var(--map-area-halo);
+    0 0 5px var(--map-area-halo),
+    0 0 10px var(--map-area-halo);
   letter-spacing: -0.3px;
   pointer-events: none;
   user-select: none;
 }
-.se-area-label.is-city { font-size: 13px; }
-.se-area-label.is-district { font-size: 11.5px; font-weight: 600; }
+.se-area-label.is-city { font-size: 13px; font-weight: 700; }
+.se-area-label.is-district { font-size: 12px; font-weight: 600; }
 
 /* User Current GPS Location Blue Dot */
 .se-user-loc {
@@ -168,8 +168,8 @@ html[data-theme="dark"] #leafletMap .leaflet-tile-pane {
   transition: transform 0.18s cubic-bezier(0.32, 0.72, 0, 1);
 }
 html[data-theme="dark"] .se-pin-dot {
-  background: #2C5240;
-  border-color: rgba(247, 244, 240, 0.92);
+  background: #2F664E;
+  border-color: rgba(245, 245, 247, 0.90);
 }
 .se-pin.is-explore.is-selected .se-pin-dot {
   transform: scale(1.32);
@@ -286,9 +286,9 @@ html[data-theme="dark"] .se-pin-dot {
   color: #FFFFFF;
 }
 html[data-theme="dark"] .map-chip.active {
-  background: #C9A86C;
-  border-color: #C9A86C;
-  color: #14221B;
+  background: #2D2F34;
+  border-color: rgba(255, 255, 255, 0.22);
+  color: #F5F5F7;
 }
 
 /* ===== RIGHT CIRCULAR FLOATING BUTTONS ===== */
@@ -322,14 +322,24 @@ html[data-theme="dark"] .map-chip.active {
   stroke-linecap: round; stroke-linejoin: round;
 }
 .map-round-btn.active {
-  background: #C9A86C;
-  border-color: #C9A86C;
+  background: var(--gold);
+  border-color: var(--gold);
   color: #162921;
+}
+html[data-theme="dark"] .map-round-btn.active {
+  background: #2F664E;
+  border-color: #2F664E;
+  color: #FFFFFF;
 }
 .map-round-btn.explore-on {
   background: #1E3A2F;
   border-color: #C9A86C;
   color: #F7F4F0;
+}
+html[data-theme="dark"] .map-round-btn.explore-on {
+  background: #2E2E32;
+  border-color: rgba(255, 255, 255, 0.22);
+  color: #F2F2F5;
 }
 .map-round-badge {
   position: absolute;
@@ -343,6 +353,11 @@ html[data-theme="dark"] .map-chip.active {
   font-size: 10px;
   font-weight: 700;
   display: flex; align-items: center; justify-content: center;
+}
+html[data-theme="dark"] .map-round-badge {
+  background: #2F664E;
+  color: #FFFFFF;
+  border-color: #121213;
 }
 
 /* ===== BOTTOM FLOATING LIST PILL & PLACE PREVIEW CARD ===== */

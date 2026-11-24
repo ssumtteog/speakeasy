@@ -141,9 +141,9 @@
             <div class="results-heading" id="resultsHeading">추천 바 <span>0곳</span></div>
           </div>
           <div class="sort-bar" id="sortBar">
-            <button class="sort-option active" data-sort="match">취향 일치순</button>
-            <button class="sort-option" data-sort="distance">가까운 거리순</button>
-            <button class="sort-option" data-sort="price">낮은 가격순</button>
+            <button type="button" class="sort-option active" data-sort="match">취향 일치순</button>
+            <button type="button" class="sort-option" data-sort="distance">가까운 거리순</button>
+            <button type="button" class="sort-option" data-sort="price">낮은 가격순</button>
           </div>
           <div class="pref-pills" id="prefPills"></div>
           <div class="results-list" id="resultsList"></div>
@@ -390,6 +390,9 @@
         </div>
       </div>
 
+      <!-- FULL-SCREEN FIRST-LAUNCH ONBOARDING (3 INTRO SLIDES + SIGNUP/LOGIN GATEWAY) -->
+      <div class="onboarding-screen" id="onboardingScreen" aria-hidden="true"></div>
+
       <!-- FULL-SCREEN SETTINGS PAGE (OPENED FROM MY PAGE GEAR ICON) -->
       <div class="sub-screen settings-screen" id="settingsScreen" aria-hidden="true">
         <div class="filter-screen-header">
@@ -413,16 +416,31 @@
         <div class="auth-screen-body" id="authScreenBody"></div>
       </div>
 
+      <!-- FULL-SCREEN BAR REVIEW COMPOSER (STARS + TAGS + PHOTOS + TEXT) -->
+      <div class="sub-screen review-write-screen" id="reviewWriteScreen" aria-hidden="true">
+        <div class="filter-screen-header">
+          <button type="button" class="filter-header-close" id="reviewWriteCloseBtn" aria-label="리뷰 작성 닫기">
+            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <div class="filter-header-title">리뷰 작성하기</div>
+          <div style="width:34px;"></div>
+        </div>
+        <div class="sub-screen-body review-write-body" id="reviewWriteBody"></div>
+      </div>
+
+      <!-- PHOTO LIGHTBOX FOR REVIEW IMAGES -->
+      <div class="review-lightbox" id="reviewLightbox" aria-hidden="true">
+        <img id="reviewLightboxImg" src="" alt="리뷰 사진 확대" />
+      </div>
+
+      <!-- HIDDEN REVIEW PHOTO PICKER -->
+      <input type="file" id="reviewPhotoInput" accept="image/*" multiple style="display:none" />
+
       <!-- BAR DETAIL SHEET -->
       <div class="sheet-scrim" id="sheetScrim"></div>
       <div class="detail-sheet" id="detailSheet">
         <div class="sheet-handle-wrap" id="sheetCloseHandle"><div class="sheet-handle"></div></div>
         <div class="sheet-scroll" id="sheetBody"></div>
-      </div>
-
-      <!-- 19+ ADULT VERIFICATION GATE (FIRST LAUNCH) -->
-      <div class="age-gate-overlay" id="ageGateOverlay" role="dialog" aria-modal="true" aria-label="성인 확인">
-        <div class="age-gate-card" id="ageGateCard"></div>
       </div>
 
       <!-- HIDDEN PROFILE AVATAR PICKER -->

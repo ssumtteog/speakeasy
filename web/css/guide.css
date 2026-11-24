@@ -6,7 +6,7 @@
   pointer-events: none;
 }
 .view-guide.active {
-  transform: translateY(0);
+  transform: none;
   opacity: 1;
   pointer-events: auto;
 }
@@ -94,6 +94,16 @@
   padding: 15px 18px;
   display: flex; flex-direction: column; justify-content: space-between;
   overflow: hidden;
+}
+html[data-theme="dark"] .guide-cat-top {
+  background-color: #1A2420;
+}
+html[data-theme="dark"] .guide-cat-art,
+html[data-theme="dark"] .guide-concept-art {
+  filter: saturate(0.80) brightness(0.84);
+}
+html[data-theme="dark"] .guide-concept-photo-wrap {
+  background-color: #1A2420;
 }
 .guide-cat-top::after {
   content: '';
@@ -333,11 +343,11 @@
   pointer-events: none;
 }
 .guide-bottle-like-btn.liked {
-  border-color: rgba(201, 168, 108, 0.55);
-  background: rgba(201, 168, 108, 0.16);
+  border-color: var(--pill-border);
+  background: var(--accent-soft);
 }
 .guide-bottle-like-btn.liked svg {
-  stroke: #C9A86C; fill: #C9A86C;
+  stroke: var(--gold); fill: var(--gold);
 }
 .whisky-like-pill {
   display: inline-flex; align-items: center; gap: 5px;
@@ -351,12 +361,12 @@
   width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2;
 }
 .whisky-like-pill.liked {
-  border-color: rgba(201, 168, 108, 0.6);
-  background: rgba(201, 168, 108, 0.18);
+  border-color: var(--pill-border);
+  background: var(--accent-soft);
   color: var(--whiskey-text);
 }
 .whisky-like-pill.liked svg {
-  stroke: #C9A86C; fill: #C9A86C;
+  stroke: var(--gold); fill: var(--gold);
 }
 .guide-bottle-en {
   font-size: 12px; color: var(--muted); margin-bottom: 8px;
@@ -384,4 +394,289 @@
 .guide-find-bar-btn:active,
 .guide-find-bar-btn.is-pressed {
   background: var(--map-accent); border-color: var(--map-accent); color: #FFF;
+}
+html[data-theme="dark"] .guide-find-bar-btn:active,
+html[data-theme="dark"] .guide-find-bar-btn.is-pressed {
+  background: #2F664E; border-color: #2F664E; color: #FFFFFF;
+}
+
+/* ===== GUIDE ARCHIVE SEARCH BAR, PAIRINGS, DICTIONARY & AI SOMMELIER ===== */
+.guide-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 44px;
+  padding: 0 12px 0 14px;
+  border-radius: 100px;
+  background: var(--surface);
+  border: 1px solid var(--card-border);
+  margin-bottom: 22px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.guide-search-bar:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(30, 58, 47, 0.08);
+}
+html[data-theme="dark"] .guide-search-bar:focus-within {
+  border-color: #3B7D60;
+  box-shadow: 0 0 0 3px rgba(59, 125, 96, 0.16);
+}
+.guide-search-icon {
+  width: 16px; height: 16px; flex-shrink: 0;
+  stroke: var(--muted); fill: none; stroke-width: 2;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.guide-search-input {
+  flex: 1; min-width: 0; height: 100%;
+  border: none; outline: none; background: transparent;
+  font-family: inherit; font-size: 14px; font-weight: 400;
+  color: var(--text);
+  -webkit-user-select: text; user-select: text;
+}
+.guide-search-input::placeholder { color: var(--muted); }
+.guide-search-clear {
+  display: none;
+  width: 26px; height: 26px; border-radius: 50%;
+  border: none; background: var(--divider); color: var(--text-light);
+  align-items: center; justify-content: center;
+  cursor: pointer; touch-action: manipulation; flex-shrink: 0;
+}
+.guide-search-clear.show { display: inline-flex; }
+.guide-search-clear svg {
+  width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2.2;
+}
+
+.guide-sec-action {
+  border: none; background: transparent; padding: 2px 0;
+  font-family: inherit; font-size: 12.5px; font-weight: 600;
+  color: var(--map-accent); cursor: pointer; touch-action: manipulation;
+}
+
+/* Symmetric 2-Column Utility Entry Grid (Dictionary + Food Pairings) */
+.guide-quick-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.guide-quick-card {
+  text-align: left;
+  font-family: inherit;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  padding: 14px;
+  box-shadow: var(--card-shadow);
+  cursor: pointer;
+  touch-action: manipulation;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.15s ease, border-color 0.2s ease;
+}
+.guide-quick-card:active {
+  transform: scale(0.975);
+  border-color: var(--accent);
+}
+.guide-quick-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.guide-quick-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  background: rgba(30, 58, 47, 0.07);
+  border: 1px solid rgba(30, 58, 47, 0.24);
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+html[data-theme="dark"] .guide-quick-icon {
+  background: rgba(47, 102, 78, 0.16);
+  border-color: rgba(75, 148, 115, 0.44);
+  color: #7EC4A3;
+}
+.guide-quick-icon svg {
+  width: 17px;
+  height: 17px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.guide-quick-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--map-accent);
+}
+.guide-quick-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.25px;
+  margin-bottom: 2px;
+}
+.guide-quick-sub {
+  font-size: 12px;
+  color: var(--text-light);
+}
+
+/* Dictionary Sheet Tabs & List */
+.guide-dict-tabs {
+  display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
+  margin-bottom: 14px; padding-bottom: 2px;
+}
+.guide-dict-tabs::-webkit-scrollbar { display: none; }
+.guide-dict-tab {
+  flex-shrink: 0;
+  padding: 7px 12px; border-radius: 100px;
+  border: 1px solid var(--chip-border);
+  background: transparent; color: var(--text-light);
+  font-family: inherit; font-size: 12.5px; font-weight: 600;
+  cursor: pointer; touch-action: manipulation;
+}
+.guide-dict-tab.active {
+  background: var(--accent); border-color: var(--accent); color: #FFFFFF;
+}
+html[data-theme="dark"] .guide-dict-tab.active {
+  background: #2E2E32; border-color: rgba(255, 255, 255, 0.20); color: #F2F2F5;
+}
+.guide-dict-list,
+.guide-search-list {
+  display: flex; flex-direction: column; gap: 9px;
+}
+.guide-dict-item,
+.guide-search-item {
+  width: 100%; text-align: left; font-family: inherit;
+  background: var(--surface);
+  border: 1px solid var(--card-border);
+  border-radius: 15px;
+  padding: 12px 14px;
+}
+.guide-search-item {
+  cursor: pointer; touch-action: manipulation;
+  transition: transform 0.14s ease, border-color 0.18s ease;
+}
+.guide-search-item:active { transform: scale(0.985); border-color: var(--accent); }
+.guide-dict-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  margin-bottom: 5px;
+}
+.guide-dict-term {
+  font-size: 14px; font-weight: 700; color: var(--text);
+}
+.guide-dict-group {
+  font-size: 11px; font-weight: 600; color: var(--pill-text);
+  background: var(--accent-soft); padding: 2px 8px; border-radius: 100px;
+  white-space: nowrap; flex-shrink: 0;
+}
+.guide-dict-desc {
+  font-size: 13px; color: var(--text-light); line-height: 1.52;
+}
+.guide-search-snippet {
+  font-size: 12.5px; color: var(--text-light); line-height: 1.45;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.guide-search-empty {
+  margin-top: 14px;
+  padding: 20px 14px;
+  border-radius: 16px;
+  border: 1px dashed var(--chip-border);
+  background: var(--surface);
+  text-align: center;
+  font-size: 13px; color: var(--text-light); line-height: 1.55;
+}
+
+/* AI Sommelier Prompt & Answer Card */
+.guide-ai-prompt-btn {
+  width: 100%;
+  background: var(--card-bg);
+  border: 1px solid var(--pill-border);
+  border-radius: 18px;
+  padding: 13px 14px;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  text-align: left; font-family: inherit;
+  cursor: pointer; touch-action: manipulation;
+  box-shadow: var(--card-shadow);
+  transition: transform 0.15s ease, border-color 0.2s ease;
+}
+.guide-ai-prompt-btn:active { transform: scale(0.985); }
+.guide-ai-prompt-left {
+  display: flex; align-items: center; gap: 11px; min-width: 0;
+}
+.guide-ai-spark {
+  width: 34px; height: 34px; border-radius: 11px; flex-shrink: 0;
+  background: var(--accent-soft);
+  border: 1px solid var(--pill-border);
+  color: var(--map-accent);
+  font-size: 16px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.guide-ai-prompt-title {
+  font-size: 13.5px; font-weight: 700; color: var(--text);
+  line-height: 1.35; word-break: break-word;
+}
+.guide-ai-prompt-sub {
+  font-size: 12px; color: var(--text-light); margin-top: 2px;
+}
+.guide-ai-card {
+  background: var(--card-bg);
+  border: 1px solid var(--pill-border);
+  border-radius: 18px;
+  padding: 15px 16px;
+  box-shadow: var(--card-shadow);
+}
+.guide-ai-head {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 9px;
+}
+.guide-ai-badge {
+  display: inline-block;
+  padding: 3px 9px; border-radius: 100px;
+  background: var(--accent-soft);
+  border: 0.8px solid var(--pill-border);
+  color: var(--pill-text);
+  font-size: 11.5px; font-weight: 700;
+}
+.guide-ai-title {
+  font-size: 14.5px; font-weight: 700; color: var(--text);
+}
+.guide-ai-loading {
+  margin-top: 8px;
+  font-size: 13px; color: var(--text-light);
+}
+.guide-ai-body {
+  font-size: 13.5px; color: var(--text); line-height: 1.6;
+  white-space: pre-wrap;
+}
+.guide-ai-tags {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-top: 11px;
+}
+.guide-ai-tag {
+  padding: 3px 9px; border-radius: 100px;
+  background: var(--surface); border: 0.7px solid var(--card-border);
+  font-size: 11.5px; font-weight: 600; color: var(--text-light);
+}
+.guide-ai-rec-btn {
+  margin-top: 12px; width: 100%;
+  padding: 10px 14px; border-radius: 12px;
+  border: 1px solid var(--map-border);
+  background: var(--map-soft); color: var(--map-accent);
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; touch-action: manipulation;
+}
+.guide-ai-rec-btn svg {
+  width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.2;
+}
+.guide-ai-retry-btn {
+  margin-top: 10px;
+  padding: 8px 14px; border-radius: 100px;
+  border: none; background: var(--accent); color: #FFFFFF;
+  font-family: inherit; font-size: 12.5px; font-weight: 600;
+  cursor: pointer; touch-action: manipulation;
 }

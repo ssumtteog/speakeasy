@@ -34,15 +34,14 @@ export interface UserProfile {
 
 interface BridgeContextValue {
   theme: SpeakeasyTheme;
-  likes: string[];
-  whiskyLikes: string[];
+  likes: string[] | null;
+  whiskyLikes: string[] | null;
   tastingNotes: unknown[] | null;
-  account: UserAccount | null;
-  profile: UserProfile;
-  lang: SpeakeasyLang;
-  ageVerified: boolean;
-  prefs: UserPrefs;
-  region: string;
+  account: UserAccount | null | undefined;
+  profile: UserProfile | null;
+  lang: SpeakeasyLang | null;
+  prefs: UserPrefs | null;
+  region: string | null;
   userLocation: UserCoords | null;
   pendingSearchQuery: string | null;
   consumePendingSearchQuery: () => string | null;
@@ -54,7 +53,6 @@ interface BridgeContextValue {
   setAccountFromWeb: (nextAccount: UserAccount | null, sourceTab: SpeakeasyTabKey) => void;
   setProfileFromWeb: (nextProfile: UserProfile, sourceTab: SpeakeasyTabKey) => void;
   setLangFromWeb: (nextLang: SpeakeasyLang, sourceTab: SpeakeasyTabKey) => void;
-  setAgeVerifiedFromWeb: (verified: boolean, sourceTab: SpeakeasyTabKey) => void;
   setPrefsFromWeb: (nextPrefs: UserPrefs, nextRegion: string, sourceTab: SpeakeasyTabKey) => void;
   requestNativeLocation: (autoCenter?: boolean | 'force') => Promise<void>;
   navigateToSearchWithQuery: (query: string) => void;
@@ -67,15 +65,14 @@ const SpeakeasyBridgeContext = createContext<BridgeContextValue | null>(null);
 
 export function SpeakeasyBridgeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<SpeakeasyTheme>('light');
-  const [likes, setLikes] = useState<string[]>([]);
-  const [whiskyLikes, setWhiskyLikes] = useState<string[]>([]);
+  const [likes, setLikes] = useState<string[] | null>(null);
+  const [whiskyLikes, setWhiskyLikes] = useState<string[] | null>(null);
   const [tastingNotes, setTastingNotes] = useState<unknown[] | null>(null);
-  const [account, setAccount] = useState<UserAccount | null>(null);
-  const [profile, setProfile] = useState<UserProfile>({ name: '스피크이지 멤버', avatar: '' });
-  const [lang, setLang] = useState<SpeakeasyLang>('ko');
-  const [ageVerified, setAgeVerified] = useState<boolean>(false);
-  const [prefs, setPrefs] = useState<UserPrefs>({ mood: 1, price: 4, space: 3, taste: 4 });
-  const [region, setRegion] = useState<string>('전체');
+  const [account, setAccount] = useState<UserAccount | null | undefined>(undefined);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [lang, setLang] = useState<SpeakeasyLang | null>(null);
+  const [prefs, setPrefs] = useState<UserPrefs | null>(null);
+  const [region, setRegion] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<UserCoords | null>(null);
   const pendingSearchRef = useRef<string | null>(null);
   const webViewsRef = useRef<Partial<Record<SpeakeasyTabKey, WebView | null>>>({});
@@ -184,18 +181,6 @@ export function SpeakeasyBridgeProvider({ children }: { children: React.ReactNod
     [broadcastJS]
   );
 
-  const setAgeVerifiedFromWeb = useCallback(
-    (verified: boolean, sourceTab: SpeakeasyTabKey) => {
-      setAgeVerified(verified);
-      Haptics.selectionAsync().catch(() => {});
-      broadcastJS(
-        `window.__speakeasyBridge && window.__speakeasyBridge.syncAgeVerified(${JSON.stringify(verified)}); true;`,
-        sourceTab
-      );
-    },
-    [broadcastJS]
-  );
-
   const setPrefsFromWeb = useCallback(
     (nextPrefs: UserPrefs, nextRegion: string, sourceTab: SpeakeasyTabKey) => {
       setPrefs(nextPrefs);
@@ -271,7 +256,6 @@ export function SpeakeasyBridgeProvider({ children }: { children: React.ReactNod
         account,
         profile,
         lang,
-        ageVerified,
         prefs,
         region,
         userLocation,
@@ -285,7 +269,6 @@ export function SpeakeasyBridgeProvider({ children }: { children: React.ReactNod
         setAccountFromWeb,
         setProfileFromWeb,
         setLangFromWeb,
-        setAgeVerifiedFromWeb,
         setPrefsFromWeb,
         requestNativeLocation,
         navigateToSearchWithQuery,

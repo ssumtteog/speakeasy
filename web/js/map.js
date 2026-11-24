@@ -1,8 +1,9 @@
-// ===== VIEW 5: CLEAN COLORFUL 2D MAP (LAND + WATER + MAJOR ROADS + SUBWAY LINES ONLY — ZERO POIs/ALLEYS) =====
+// ===== VIEW 5: ULTRA-CLEAN TEXT-FREE 2D MAP + CURATED AREA ANCHORS ONLY =====
 const mapState = {
   initialized: false,
   leafletMap: null,
   tileLayer: null,
+  areaLabelsLayer: null,
   userLocMarker: null,
   markersLayer: null,
   city: '전체',
@@ -12,14 +13,93 @@ const mapState = {
   hasCenteredOnUser: false
 };
 
-// Clean pastel Korean 2D tiles:
-// - s.t:2|p.v:off        -> ALL POIs OFF (museums, markets, shops, restaurants)
-// - s.t:51|p.v:off       -> ALL tiny residential alleys OFF
-// - s.t:3|s.e:l.i|p.v:off -> ALL road number shields OFF (70, 88, 6, 30, 1...)
-// - s.t:5|s.e:l.i|p.v:off -> ALL mountain/natural icons OFF (남산 icon etc.)
-// - s.t:1|s.e:l.i|p.v:off -> ALL admin icons OFF
+// Pure geometry 2D tiles (ZERO road names ㅇㅇ로, ZERO dong names ㅇㅇ동, ZERO POIs/stations/icons):
+// - s.e:l|p.v:off  -> ALL map text & icons OFF (pure clean land + river + roads + subway lines image!)
+// - s.t:2|p.v:off  -> ALL POIs OFF
+// - s.t:51|p.v:off -> ALL tiny residential alleys OFF
 function getCleanColorfulTileUrl() {
-  return 'https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=ko&apistyle=s.t%3A2%7Cp.v%3Aoff%2Cs.t%3A51%7Cp.v%3Aoff%2Cs.t%3A3%7Cs.e%3Al.i%7Cp.v%3Aoff%2Cs.t%3A5%7Cs.e%3Al.i%7Cp.v%3Aoff%2Cs.t%3A1%7Cs.e%3Al.i%7Cp.v%3Aoff';
+  return 'https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=ko&apistyle=s.e%3Al%7Cp.v%3Aoff%2Cs.t%3A2%7Cp.v%3Aoff%2Cs.t%3A51%7Cp.v%3Aoff';
+}
+
+// Curated minimal area anchors ONLY (no ㅇㅇ동 / ㅇㅇ로 — clean landmark neighborhood names only)
+const MAP_CITY_LABELS = [
+  { name: '서울', lat: 37.5665, lng: 126.9780 },
+  { name: '인천', lat: 37.4563, lng: 126.7052 },
+  { name: '수원', lat: 37.2636, lng: 127.0286 },
+  { name: '강릉', lat: 37.7519, lng: 128.8761 },
+  { name: '대전', lat: 36.3504, lng: 127.3845 },
+  { name: '전주', lat: 35.8242, lng: 127.1480 },
+  { name: '광주', lat: 35.1595, lng: 126.8526 },
+  { name: '대구', lat: 35.8714, lng: 128.6014 },
+  { name: '부산', lat: 35.1796, lng: 129.0756 },
+  { name: '제주', lat: 33.4996, lng: 126.5312 }
+];
+
+const MAP_DISTRICT_LABELS = [
+  // 서울 주요 권역
+  { name: '이태원', lat: 37.5345, lng: 126.9946 },
+  { name: '용산', lat: 37.5299, lng: 126.9648 },
+  { name: '한남', lat: 37.5348, lng: 127.0095 },
+  { name: '강남', lat: 37.4980, lng: 127.0276 },
+  { name: '청담', lat: 37.5245, lng: 127.0474 },
+  { name: '압구정', lat: 37.5271, lng: 127.0285 },
+  { name: '신사', lat: 37.5165, lng: 127.0205 },
+  { name: '성수', lat: 37.5446, lng: 127.0560 },
+  { name: '잠실', lat: 37.5133, lng: 127.1001 },
+  { name: '여의도', lat: 37.5219, lng: 126.9245 },
+  { name: '목동', lat: 37.5262, lng: 126.8752 },
+  { name: '홍대', lat: 37.5563, lng: 126.9236 },
+  { name: '연남', lat: 37.5656, lng: 126.9255 },
+  { name: '합정', lat: 37.5495, lng: 126.9138 },
+  { name: '서촌', lat: 37.5795, lng: 126.9708 },
+  { name: '을지로', lat: 37.5663, lng: 126.9910 },
+  { name: '종로', lat: 37.5704, lng: 126.9831 },
+  { name: '광화문', lat: 37.5759, lng: 126.9768 },
+  { name: '서래마을', lat: 37.4955, lng: 126.9975 },
+  { name: '삼성', lat: 37.5089, lng: 127.0631 },
+  { name: '건대', lat: 37.5404, lng: 127.0692 },
+  { name: '혜화', lat: 37.5821, lng: 127.0019 },
+  { name: '마포', lat: 37.5396, lng: 126.9459 },
+  { name: '신촌', lat: 37.5559, lng: 126.9369 },
+  { name: '방배', lat: 37.4814, lng: 126.9976 },
+  { name: '노원', lat: 37.6542, lng: 127.0568 },
+  // 경기 · 인천
+  { name: '판교', lat: 37.3948, lng: 127.1112 },
+  { name: '분당', lat: 37.3595, lng: 127.1086 },
+  { name: '안양', lat: 37.3943, lng: 126.9568 },
+  { name: '일산', lat: 37.6584, lng: 126.7745 },
+  { name: '송도', lat: 37.3860, lng: 126.6435 },
+  { name: '부평', lat: 37.4900, lng: 126.7235 },
+  // 지방 주요 권역
+  { name: '서면', lat: 35.1578, lng: 129.0598 },
+  { name: '해운대', lat: 35.1631, lng: 129.1635 },
+  { name: '광안리', lat: 35.1532, lng: 129.1189 },
+  { name: '남포', lat: 35.0979, lng: 129.0355 },
+  { name: '동성로', lat: 35.8693, lng: 128.5956 },
+  { name: '둔산', lat: 36.3512, lng: 127.3782 },
+  { name: '상무', lat: 35.1528, lng: 126.8515 },
+  { name: '서귀포', lat: 33.2541, lng: 126.5601 }
+];
+
+function refreshAreaLabels() {
+  if (!mapState.leafletMap || !mapState.areaLabelsLayer || typeof L === 'undefined') return;
+  mapState.areaLabelsLayer.clearLayers();
+  const z = mapState.leafletMap.getZoom();
+  const list = z <= 10 ? MAP_CITY_LABELS : MAP_DISTRICT_LABELS;
+  const cls = z <= 10 ? 'is-city' : 'is-district';
+
+  list.forEach(item => {
+    L.marker([item.lat, item.lng], {
+      interactive: false,
+      keyboard: false,
+      zIndexOffset: -50,
+      icon: L.divIcon({
+        className: 'se-area-wrap',
+        iconSize: [0, 0],
+        html: `<div class="se-area-label ${cls}">${item.name}</div>`
+      })
+    }).addTo(mapState.areaLabelsLayer);
+  });
 }
 
 function updateMapTileTheme() {
@@ -392,7 +472,9 @@ function initLeafletEngine() {
   }).addTo(map);
 
   mapState.leafletMap = map;
+  mapState.areaLabelsLayer = L.layerGroup().addTo(map);
   mapState.markersLayer = L.layerGroup().addTo(map);
+  refreshAreaLabels();
 
   if (state.userLocation) {
     updateMapUserLocation(state.userLocation.lat, state.userLocation.lng, false);
@@ -401,6 +483,7 @@ function initLeafletEngine() {
 
   // Re-deconflict marker spacing smoothly whenever zoom level changes
   map.on('zoomend', () => {
+    refreshAreaLabels();
     updateZoomLabelState();
     refreshMapMarkers();
   });

@@ -30,6 +30,11 @@
   .location-chip:hover:not(.active) { border-color: var(--accent); background: rgba(30, 58, 47, 0.06); }
   .slider-dot:hover .outer { transform: scale(1.06); }
   .cta-button:hover { transform: translateY(-2px); background: var(--accent-secondary); box-shadow: 0 8px 26px rgba(30, 58, 47, 0.34); }
+  html[data-theme="dark"] .cta-button:hover {
+    transform: translateY(-2px);
+    background: #3A7A5E;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.40);
+  }
   .nav-item:hover:not(.active) { background: var(--nav-hover-bg); }
   .btn-naver:hover,
   .sheet-naver-cta:hover {
@@ -89,7 +94,7 @@ html.native-tabs-mode .view-home {
 html.native-tabs-mode .view-results,
 html.native-tabs-mode .view-search,
 html.native-tabs-mode .view-guide {
-  padding-top: calc(var(--native-inset-top, env(safe-area-inset-top, 0px)) + 64px);
+  padding-top: calc(var(--native-inset-top, env(safe-area-inset-top, 0px)) + 72px);
   padding-bottom: calc(var(--native-tabbar-top, 84px) + 28px);
 }
 html.native-tabs-mode .cta-container {

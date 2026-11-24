@@ -240,7 +240,6 @@ function applyLanguage(lang, silentNative) {
     else if (state.view === 'results') headerTitle.textContent = t('headerResults');
   }
 
-  if (typeof renderAgeGateContent === 'function') renderAgeGateContent();
   if (state.view === 'my' && typeof renderMyView === 'function') renderMyView();
 }
 
@@ -253,17 +252,8 @@ function setProfileState(nextProfile, silentNative) {
   safeSetStorage('speakeasy-profile', JSON.stringify(state.profile));
   if (!silentNative) {
     postToNative({ type: 'PROFILE', profile: state.profile });
-    if (typeof scheduleCloudSync === 'function') scheduleCloudSync();
+    if (typeof scheduleCloudSync === 'function') scheduleCloudSync('profile');
   }
-  if (state.view === 'my' && typeof renderMyView === 'function') renderMyView();
-}
-
-function setAgeVerifiedState(verified, silentNative) {
-  state.ageVerified = !!verified;
-  safeSetStorage('speakeasy-age-verified', state.ageVerified ? 'true' : 'false');
-  if (!silentNative) postToNative({ type: 'AGE_VERIFIED', ageVerified: state.ageVerified });
-  const gate = document.getElementById('ageGateOverlay');
-  if (gate) gate.classList.toggle('open', !state.ageVerified);
   if (state.view === 'my' && typeof renderMyView === 'function') renderMyView();
 }
 
@@ -338,14 +328,28 @@ function scalePhone() {
 // ===== THEME (LIGHT / DARK) =====
 const themeMeta = document.getElementById('themeColorMeta');
 const savedTheme = safeGetStorage('speakeasy-theme');
+function forceHeaderGlassRepaint() {
+  const hdr = document.querySelector('.fixed-header');
+  if (!hdr) return;
+  // Invalidate iOS WKWebView backdrop-filter cache immediately when theme flips
+  hdr.style.webkitBackdropFilter = 'none';
+  hdr.style.backdropFilter = 'none';
+  void hdr.offsetHeight;
+  requestAnimationFrame(() => {
+    hdr.style.webkitBackdropFilter = '';
+    hdr.style.backdropFilter = '';
+  });
+}
+
 function applyTheme(theme, silentNative) {
   if (theme === 'dark') {
     document.documentElement.setAttribute('data-theme', 'dark');
-    themeMeta.setAttribute('content', '#0F1613');
+    themeMeta.setAttribute('content', '#121213');
   } else {
     document.documentElement.removeAttribute('data-theme');
     themeMeta.setAttribute('content', '#FFFFFF');
   }
+  forceHeaderGlassRepaint();
   if (!silentNative) postToNative({ type: 'THEME', theme: theme === 'dark' ? 'dark' : 'light' });
   if (typeof updateMapTileTheme === 'function') updateMapTileTheme(theme === 'dark' ? 'dark' : 'light');
   if (state.view === 'my' && typeof renderMyView === 'function') renderMyView();
@@ -367,7 +371,7 @@ function toggleWhiskyLike(whiskyId) {
   const arr = Array.from(state.likedWhiskies);
   safeSetStorage('speakeasy-liked-whiskies', JSON.stringify(arr));
   postToNative({ type: 'WHISKY_LIKES', whiskyLikes: arr });
-  if (typeof scheduleCloudSync === 'function') scheduleCloudSync();
+  if (typeof scheduleCloudSync === 'function') scheduleCloudSync('whisky_likes');
   if (state.view === 'my' && typeof renderMyView === 'function') renderMyView();
   if (state.view === 'guide' && guideState && guideState.level === 3 && typeof renderGuideView === 'function') {
     document.querySelectorAll('[data-whisky-like="' + whiskyId + '"]').forEach(btn => {

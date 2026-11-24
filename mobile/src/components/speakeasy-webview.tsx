@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
-import { Linking, StyleSheet, View } from 'react-native';
+import { Keyboard, Linking, Platform, StyleSheet, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { WebView, type WebViewMessageEvent, type WebViewProps } from 'react-native-webview';
@@ -15,7 +15,7 @@ import {
   type SpeakeasyTabKey,
   type SpeakeasyTheme,
 } from '@/context/speakeasy-bridge';
-import { SPEAKEASY_HTML } from '@/generated/speakeasyHtml';
+import { SPEAKEASY_HTML, SPEAKEASY_HTML_VERSION } from '@/generated/speakeasyHtml';
 
 interface Props {
   tab: SpeakeasyTabKey;
@@ -32,7 +32,6 @@ export function SpeakeasyWebView({ tab }: Props) {
     account,
     profile,
     lang,
-    ageVerified,
     prefs,
     region,
     userLocation,
@@ -44,7 +43,6 @@ export function SpeakeasyWebView({ tab }: Props) {
     setAccountFromWeb,
     setProfileFromWeb,
     setLangFromWeb,
-    setAgeVerifiedFromWeb,
     setPrefsFromWeb,
     requestNativeLocation,
     navigateToSearchWithQuery,
@@ -57,29 +55,29 @@ export function SpeakeasyWebView({ tab }: Props) {
     return () => registerWebView(tab, null);
   }, [tab, registerWebView]);
 
-  // Always sync latest shared state & recalculate map viewport whenever a native tab gains focus
+  // Always sync latest shared state (only fields already reported by a tab) & recalculate map viewport
   useFocusEffect(
     useCallback(() => {
       const wv = webViewRef.current;
       if (!wv) return;
       wv.injectJavaScript(`
         if (window.__speakeasyBridge) {
+          window.__speakeasyBridge.ensureRootTab(${JSON.stringify(tab)});
           window.__speakeasyBridge.setTheme(${JSON.stringify(theme)});
-          window.__speakeasyBridge.syncLikes(${JSON.stringify(likes)});
-          window.__speakeasyBridge.syncWhiskyLikes(${JSON.stringify(whiskyLikes)});
+          ${likes !== null ? `window.__speakeasyBridge.syncLikes(${JSON.stringify(likes)});` : ''}
+          ${whiskyLikes !== null ? `window.__speakeasyBridge.syncWhiskyLikes(${JSON.stringify(whiskyLikes)});` : ''}
           ${tastingNotes !== null ? `window.__speakeasyBridge.syncTastingNotes(${JSON.stringify(tastingNotes)});` : ''}
-          window.__speakeasyBridge.syncAccount(${JSON.stringify(account)});
-          window.__speakeasyBridge.syncProfile(${JSON.stringify(profile)});
-          window.__speakeasyBridge.syncLang(${JSON.stringify(lang)});
-          ${ageVerified ? 'window.__speakeasyBridge.syncAgeVerified(true);' : ''}
-          window.__speakeasyBridge.syncPrefs(${JSON.stringify(prefs)}, ${JSON.stringify(region)});
+          ${account !== undefined ? `window.__speakeasyBridge.syncAccount(${JSON.stringify(account)});` : ''}
+          ${profile !== null ? `window.__speakeasyBridge.syncProfile(${JSON.stringify(profile)});` : ''}
+          ${lang !== null ? `window.__speakeasyBridge.syncLang(${JSON.stringify(lang)});` : ''}
+          ${prefs !== null ? `window.__speakeasyBridge.syncPrefs(${JSON.stringify(prefs)}, ${JSON.stringify(region || '전체')});` : ''}
           ${userLocation ? `window.__speakeasyBridge.setUserLocation(${userLocation.lat}, ${userLocation.lng}, false);` : ''}
         }
         ${tab === 'map' ? 'window.__speakeasyMapFocus && window.__speakeasyMapFocus();' : ''}
         ${tab === 'my' ? 'typeof renderMyView === "function" && renderMyView();' : ''}
         true;
       `);
-    }, [tab, theme, likes, whiskyLikes, tastingNotes, account, profile, lang, ageVerified, prefs, region, userLocation])
+    }, [tab, theme, likes, whiskyLikes, tastingNotes, account, profile, lang, prefs, region, userLocation])
   );
 
   // On iOS NativeTabs, insets.bottom may already include the native tab bar height (~83pt),
@@ -97,6 +95,29 @@ export function SpeakeasyWebView({ tab }: Props) {
       true;
     `);
   }, [insets.top, insets.bottom, tabBarTopPx]);
+
+  // Forward native iOS/Android soft keyboard height into WebView so sheets & auth inputs lift above keyboard
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    const subShow = Keyboard.addListener(showEvent, (e) => {
+      const kbHeight = Math.round(e.endCoordinates?.height || 0);
+      webViewRef.current?.injectJavaScript(`
+        window.__speakeasyKeyboardChange && window.__speakeasyKeyboardChange(${kbHeight});
+        true;
+      `);
+    });
+    const subHide = Keyboard.addListener(hideEvent, () => {
+      webViewRef.current?.injectJavaScript(`
+        window.__speakeasyKeyboardChange && window.__speakeasyKeyboardChange(0);
+        true;
+      `);
+    });
+    return () => {
+      subShow.remove();
+      subHide.remove();
+    };
+  }, []);
 
   const injectedBeforeLoad = useMemo(() => {
     const topPx = Math.round(insets.top);
@@ -121,15 +142,15 @@ export function SpeakeasyWebView({ tab }: Props) {
       document.documentElement.style.setProperty('--native-inset-bottom', '${Math.round(insets.bottom)}px');
       document.documentElement.style.setProperty('--native-tabbar-top', '${tabBarTopPx}px');
       if (window.__speakeasyBridge) {
+        window.__speakeasyBridge.ensureRootTab(${JSON.stringify(tab)});
         window.__speakeasyBridge.setTheme(${JSON.stringify(theme)});
-        window.__speakeasyBridge.syncLikes(${JSON.stringify(likes)});
-        window.__speakeasyBridge.syncWhiskyLikes(${JSON.stringify(whiskyLikes)});
+        ${likes !== null ? `window.__speakeasyBridge.syncLikes(${JSON.stringify(likes)});` : ''}
+        ${whiskyLikes !== null ? `window.__speakeasyBridge.syncWhiskyLikes(${JSON.stringify(whiskyLikes)});` : ''}
         ${tastingNotes !== null ? `window.__speakeasyBridge.syncTastingNotes(${JSON.stringify(tastingNotes)});` : ''}
-        window.__speakeasyBridge.syncAccount(${JSON.stringify(account)});
-        window.__speakeasyBridge.syncProfile(${JSON.stringify(profile)});
-        window.__speakeasyBridge.syncLang(${JSON.stringify(lang)});
-        ${ageVerified ? 'window.__speakeasyBridge.syncAgeVerified(true);' : ''}
-        window.__speakeasyBridge.syncPrefs(${JSON.stringify(prefs)}, ${JSON.stringify(region)});
+        ${account !== undefined ? `window.__speakeasyBridge.syncAccount(${JSON.stringify(account)});` : ''}
+        ${profile !== null ? `window.__speakeasyBridge.syncProfile(${JSON.stringify(profile)});` : ''}
+        ${lang !== null ? `window.__speakeasyBridge.syncLang(${JSON.stringify(lang)});` : ''}
+        ${prefs !== null ? `window.__speakeasyBridge.syncPrefs(${JSON.stringify(prefs)}, ${JSON.stringify(region || '전체')});` : ''}
         ${userLocation ? `window.__speakeasyBridge.setUserLocation(${userLocation.lat}, ${userLocation.lng}, true);` : ''}
       }
       true;
@@ -142,7 +163,7 @@ export function SpeakeasyWebView({ tab }: Props) {
         );
       }
     }
-  }, [tab, theme, likes, whiskyLikes, tastingNotes, account, profile, lang, ageVerified, prefs, region, userLocation, insets.top, insets.bottom, tabBarTopPx, consumePendingSearchQuery]);
+  }, [tab, theme, likes, whiskyLikes, tastingNotes, account, profile, lang, prefs, region, userLocation, insets.top, insets.bottom, tabBarTopPx, consumePendingSearchQuery]);
 
   const handleMessage = useCallback(
     (event: WebViewMessageEvent) => {
@@ -162,8 +183,6 @@ export function SpeakeasyWebView({ tab }: Props) {
           setProfileFromWeb(msg.profile, tab);
         } else if (msg.type === 'LANG' && (msg.lang === 'ko' || msg.lang === 'en' || msg.lang === 'ja')) {
           setLangFromWeb(msg.lang as SpeakeasyLang, tab);
-        } else if (msg.type === 'AGE_VERIFIED' && typeof msg.ageVerified === 'boolean') {
-          setAgeVerifiedFromWeb(msg.ageVerified, tab);
         } else if (msg.type === 'PREFS' && msg.prefs) {
           setPrefsFromWeb(msg.prefs, msg.region || '전체', tab);
         } else if (msg.type === 'REQUEST_LOCATION') {
@@ -177,7 +196,7 @@ export function SpeakeasyWebView({ tab }: Props) {
         // Ignore malformed messages
       }
     },
-    [tab, setThemeFromWeb, setLikesFromWeb, setWhiskyLikesFromWeb, setTastingNotesFromWeb, setAccountFromWeb, setProfileFromWeb, setLangFromWeb, setAgeVerifiedFromWeb, setPrefsFromWeb, requestNativeLocation, navigateToSearchWithQuery, navigateToTab]
+    [tab, setThemeFromWeb, setLikesFromWeb, setWhiskyLikesFromWeb, setTastingNotesFromWeb, setAccountFromWeb, setProfileFromWeb, setLangFromWeb, setPrefsFromWeb, requestNativeLocation, navigateToSearchWithQuery, navigateToTab]
   );
 
   const handleShouldStartLoad = useCallback((req: ShouldStartLoadRequest) => {
@@ -197,11 +216,12 @@ export function SpeakeasyWebView({ tab }: Props) {
     return true;
   }, []);
 
-  const bgColor = theme === 'dark' ? '#0F1613' : '#FFFFFF';
+  const bgColor = theme === 'dark' ? '#121213' : '#FFFFFF';
 
   return (
     <View style={[styles.container, { backgroundColor: bgColor }]}>
       <TypedWebView
+        key={SPEAKEASY_HTML_VERSION}
         ref={webViewRef}
         source={{ html: SPEAKEASY_HTML, baseUrl: 'https://speakeasy.local/' }}
         originWhitelist={['*']}

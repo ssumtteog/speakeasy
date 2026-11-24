@@ -16,7 +16,7 @@ function persistTastingNotes(silentNative) {
   safeSetStorage('speakeasy-tasting-notes', JSON.stringify(myTastingNotes));
   if (!silentNative) {
     postToNative({ type: 'TASTING_NOTES', tastingNotes: myTastingNotes });
-    scheduleCloudSync();
+    scheduleCloudSync('tasting_notes');
   }
 }
 
@@ -27,9 +27,23 @@ function setTastingNotesFromSync(notesArr) {
   if (state.view === 'my' && typeof renderMyView === 'function') renderMyView();
 }
 
-// ===== SUPABASE CLOUD SYNC (profile, likes, whisky_likes, tasting_notes, prefs, region) =====
+// ===== SUPABASE CLOUD SYNC (PARTIAL-FIELD SAFE PATCH + FULL UPSERT FALLBACK) =====
 let cloudSyncTimer = null;
 let isHydratingFromCloud = false;
+let hasCloudRow = false;
+const pendingCloudFields = new Set();
+
+function buildCloudFieldPayload(fields) {
+  const payload = { updated_at: new Date().toISOString() };
+  const includeAll = !fields || fields.size === 0;
+  if (includeAll || fields.has('profile')) payload.profile = state.profile;
+  if (includeAll || fields.has('likes')) payload.likes = Array.from(state.likes);
+  if (includeAll || fields.has('whisky_likes')) payload.whisky_likes = Array.from(state.likedWhiskies);
+  if (includeAll || fields.has('tasting_notes')) payload.tasting_notes = myTastingNotes;
+  if (includeAll || fields.has('prefs')) payload.prefs = state.prefs;
+  if (includeAll || fields.has('region')) payload.region = state.region;
+  return payload;
+}
 
 async function refreshSupabaseSession() {
   if (!hasLiveSupabase() || !state.account || !state.account.refreshToken) return false;
@@ -77,45 +91,103 @@ async function supabaseAuthedFetch(path, options, allowRetry) {
   return res;
 }
 
-async function pushUserDataToCloud() {
-  if (isHydratingFromCloud) return false;
-  if (!hasLiveSupabase() || !state.account || !state.account.accessToken || !state.account.userId) return false;
+async function ensureAccountUserId() {
+  if (!state.account || !state.account.accessToken) return false;
+  if (state.account.userId) return true;
   try {
-    const payload = {
-      user_id: state.account.userId,
-      profile: state.profile,
-      likes: Array.from(state.likes),
-      whisky_likes: Array.from(state.likedWhiskies),
-      tasting_notes: myTastingNotes,
-      prefs: state.prefs,
-      region: state.region,
-      updated_at: new Date().toISOString()
-    };
+    const res = await supabaseAuthedFetch('/auth/v1/user', { method: 'GET' });
+    if (!res || !res.ok) return false;
+    const u = await res.json();
+    if (u && u.id) {
+      setAccountState({ ...state.account, userId: u.id });
+      return true;
+    }
+  } catch (e) {}
+  return false;
+}
+
+async function pushUserDataToCloud(fieldsSet) {
+  if (isHydratingFromCloud) return false;
+  if (!hasLiveSupabase() || !state.account || !state.account.accessToken) return false;
+  if (!state.account.userId) {
+    const okId = await ensureAccountUserId();
+    if (!okId) return false;
+  }
+  const uid = encodeURIComponent(state.account.userId);
+  try {
+    // 1) When updating specific fields, PATCH only those fields so other tabs never overwrite untouched columns
+    if (fieldsSet && fieldsSet.size > 0) {
+      const partialPayload = buildCloudFieldPayload(fieldsSet);
+      const patchRes = await supabaseAuthedFetch('/rest/v1/user_data?user_id=eq.' + uid, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify(partialPayload)
+      });
+      if (patchRes && patchRes.ok) {
+        const updatedRows = await patchRes.json().catch(() => []);
+        if (Array.isArray(updatedRows) && updatedRows.length > 0) {
+          hasCloudRow = true;
+          return true;
+        }
+      }
+    }
+
+    // 2) Full upsert (initial creation or explicit full push)
+    const fullPayload = Object.assign({ user_id: state.account.userId }, buildCloudFieldPayload(null));
     const res = await supabaseAuthedFetch('/rest/v1/user_data?on_conflict=user_id', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Prefer': 'resolution=merge-duplicates,return=minimal'
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(fullPayload)
     });
-    return !!(res && res.ok);
+    if (res && res.ok) {
+      hasCloudRow = true;
+      return true;
+    }
+    return false;
   } catch (e) {
     return false;
   }
 }
 
-function scheduleCloudSync() {
+async function flushCloudSync(forceAll) {
+  clearTimeout(cloudSyncTimer);
+  cloudSyncTimer = null;
+  if (forceAll) {
+    pendingCloudFields.clear();
+    return pushUserDataToCloud(null);
+  }
+  if (pendingCloudFields.size === 0) return true;
+  const snapshot = new Set(pendingCloudFields);
+  pendingCloudFields.clear();
+  const ok = await pushUserDataToCloud(snapshot);
+  if (!ok) {
+    snapshot.forEach(f => pendingCloudFields.add(f));
+  }
+  return ok;
+}
+
+function scheduleCloudSync(fieldName) {
   if (isHydratingFromCloud) return;
-  if (!hasLiveSupabase() || !state.account || !state.account.accessToken || !state.account.userId) return;
+  if (!hasLiveSupabase() || !state.account || !state.account.accessToken) return;
+  if (fieldName) pendingCloudFields.add(fieldName);
   clearTimeout(cloudSyncTimer);
   cloudSyncTimer = setTimeout(() => {
-    pushUserDataToCloud();
-  }, 450);
+    flushCloudSync(false);
+  }, 200);
 }
 
 async function pullUserDataFromCloud() {
-  if (!hasLiveSupabase() || !state.account || !state.account.accessToken || !state.account.userId) return false;
+  if (!hasLiveSupabase() || !state.account || !state.account.accessToken) return false;
+  if (!state.account.userId) {
+    const okId = await ensureAccountUserId();
+    if (!okId) return false;
+  }
   try {
     const uid = encodeURIComponent(state.account.userId);
     const res = await supabaseAuthedFetch('/rest/v1/user_data?user_id=eq.' + uid + '&select=*', {
@@ -124,9 +196,11 @@ async function pullUserDataFromCloud() {
     if (!res || !res.ok) return false;
     const rows = await res.json();
     if (!Array.isArray(rows) || rows.length === 0) {
-      await pushUserDataToCloud();
+      hasCloudRow = false;
+      await flushCloudSync(true);
       return true;
     }
+    hasCloudRow = true;
     const row = rows[0];
     isHydratingFromCloud = true;
     try {
@@ -175,6 +249,34 @@ async function pullUserDataFromCloud() {
   }
 }
 
+function resetLocalUserRecords() {
+  isHydratingFromCloud = true;
+  try {
+    state.likes = new Set();
+    safeSetStorage('speakeasy-likes', '[]');
+    postToNative({ type: 'LIKES', likes: [] });
+    if (typeof updateLikeBadge === 'function') updateLikeBadge();
+    if (typeof refreshMapMarkers === 'function') refreshMapMarkers();
+
+    state.likedWhiskies = new Set();
+    safeSetStorage('speakeasy-liked-whiskies', '[]');
+    postToNative({ type: 'WHISKY_LIKES', whiskyLikes: [] });
+
+    myTastingNotes = [];
+    safeSetStorage('speakeasy-tasting-notes', '[]');
+    postToNative({ type: 'TASTING_NOTES', tastingNotes: [] });
+
+    setProfileState({ name: '스피크이지 멤버', avatar: '' }, false);
+
+    if (state.view === 'my' && typeof renderMyView === 'function') renderMyView();
+    if (state.view === 'results' || state.view === 'likes') renderResults();
+    if (state.view === 'search') renderSearchResults();
+    if (state.view === 'guide') renderGuideView();
+  } finally {
+    isHydratingFromCloud = false;
+  }
+}
+
 function getLocalUsers() {
   try {
     const arr = JSON.parse(safeGetStorage('speakeasy-local-users') || '[]');
@@ -186,10 +288,7 @@ function saveLocalUsers(arr) {
 }
 
 const PROVIDER_META = {
-  email:  { label: '이메일', badge: '이메일', demoEmail: 'member@speakeasy.app' },
-  apple:  { label: 'Apple',  badge: 'Apple',  demoEmail: 'member@privaterelay.appleid.com' },
-  naver:  { label: '네이버', badge: '네이버', demoEmail: 'speakeasy@naver.com' },
-  google: { label: 'Google', badge: 'Google', demoEmail: 'speakeasy@gmail.com' }
+  email: { label: '이메일', badge: '이메일', demoEmail: 'member@speakeasy.app' }
 };
 
 function hasLiveSupabase() {
@@ -197,6 +296,11 @@ function hasLiveSupabase() {
 }
 
 function setAccountState(nextAccount, silentNative) {
+  const prevKey = (state.account && (state.account.userId || state.account.email)) || '';
+  const nextKey = (nextAccount && (nextAccount.userId || nextAccount.email)) || '';
+  if (prevKey !== nextKey && typeof invalidateMyBarReviewsCache === 'function') {
+    invalidateMyBarReviewsCache();
+  }
   state.account = nextAccount || null;
   if (state.account) safeSetStorage('speakeasy-account', JSON.stringify(state.account));
   else safeSetStorage('speakeasy-account', 'null');
@@ -205,29 +309,34 @@ function setAccountState(nextAccount, silentNative) {
   if (document.getElementById('settingsScreen')?.classList.contains('open')) renderSettingsScreen();
 }
 
-function handleSocialLogin(provider) {
-  const meta = PROVIDER_META[provider] || PROVIDER_META.apple;
-  if (hasLiveSupabase() && (provider === 'google' || provider === 'apple')) {
-    const redirectTo = encodeURIComponent(window.location.href);
-    const authUrl = window.SPEAKEASY_SUPABASE.url.replace(/\/$/, '') +
-      '/auth/v1/authorize?provider=' + encodeURIComponent(provider) + '&redirect_to=' + redirectTo;
-    window.open(authUrl, '_blank');
-    showToast(meta.label + ' 인증 창을 열었어요');
-    return;
+async function handleSocialLogout() {
+  let syncedBeforeLogout = false;
+  if (state.account && state.account.accessToken) {
+    // Always flush full current state to Supabase BEFORE clearing session so nothing is ever lost
+    syncedBeforeLogout = await flushCloudSync(true);
+    try {
+      await supabaseAuthedFetch('/auth/v1/logout', { method: 'POST' }, false);
+    } catch (e) {}
   }
-  setAccountState({
-    provider,
-    name: state.profile.name || '스피크이지 멤버',
-    email: meta.demoEmail,
-    signedInAt: Date.now()
-  });
-  closeAuthScreen();
-  showToast(meta.label + ' 계정으로 로그인했어요 (Supabase 연결 시 실인증 전환)');
-}
-
-function handleSocialLogout() {
+  hasCloudRow = false;
+  pendingCloudFields.clear();
   setAccountState(null);
-  showToast(state.lang === 'en' ? 'Signed out' : (state.lang === 'ja' ? 'ログアウトしました' : '로그아웃되었어요'));
+  if (syncedBeforeLogout) {
+    resetLocalUserRecords();
+    showToast(
+      state.lang === 'en'
+        ? 'Signed out · Your records are safely saved in your account'
+        : (state.lang === 'ja'
+          ? 'ログアウトしました（記録はアカウントに保存されています）'
+          : '로그아웃되었어요 · 기록은 계정에 안전하게 보관돼요')
+    );
+  } else {
+    showToast(
+      state.lang === 'en'
+        ? 'Signed out'
+        : (state.lang === 'ja' ? 'ログアウトしました' : '로그아웃되었어요')
+    );
+  }
 }
 
 function jumpToTab(tabName) {
@@ -247,60 +356,8 @@ function findMatchingWhiskyForNote(name) {
   return found || WHISKIES[0];
 }
 
-// ===== 19+ ADULT VERIFICATION GATE =====
-let ageGateBlocked = false;
-function renderAgeGateContent() {
-  const card = document.getElementById('ageGateCard');
-  if (!card) return;
-  const cutoffYear = new Date().getFullYear() - 19;
-  if (ageGateBlocked) {
-    card.innerHTML = `
-      <div class="age-gate-emblem restricted">19</div>
-      <div class="age-gate-title">${t('ageBlockedTitle')}</div>
-      <div class="age-gate-desc">${t('ageBlockedDesc')}</div>
-      <button type="button" class="age-gate-btn secondary" id="ageGateRetryBtn">${t('ageBlockedRetry')}</button>
-    `;
-    document.getElementById('ageGateRetryBtn')?.addEventListener('click', () => {
-      ageGateBlocked = false;
-      renderAgeGateContent();
-    });
-    return;
-  }
-
-  const yearHint = state.lang === 'ko'
-    ? cutoffYear + '년 이전 출생자 이용 가능'
-    : (state.lang === 'ja' ? cutoffYear + '年以前生まれの方' : 'Born in ' + cutoffYear + ' or earlier');
-
-  card.innerHTML = `
-    <div class="age-gate-emblem">19+</div>
-    <div class="age-gate-brand">speakeasy</div>
-    <div class="age-gate-title">${t('ageGateTitle')}</div>
-    <div class="age-gate-desc">${t('ageGateDesc')}</div>
-    <div class="age-gate-year-pill">${yearHint}</div>
-    <button type="button" class="age-gate-btn primary" id="ageGateConfirmBtn">${t('ageGateYes')}</button>
-    <button type="button" class="age-gate-btn secondary" id="ageGateDenyBtn">${t('ageGateNo')}</button>
-    <div class="age-gate-foot">${t('ageGateFoot')}</div>
-  `;
-
-  document.getElementById('ageGateConfirmBtn')?.addEventListener('click', () => {
-    setAgeVerifiedState(true);
-    showToast(state.lang === 'en' ? 'Age verified (19+)' : (state.lang === 'ja' ? '成人確認が完了しました' : '만 19세 이상 확인이 완료되었어요'));
-  });
-  document.getElementById('ageGateDenyBtn')?.addEventListener('click', () => {
-    ageGateBlocked = true;
-    renderAgeGateContent();
-  });
-}
-
-function initAgeGate() {
-  const overlay = document.getElementById('ageGateOverlay');
-  if (!overlay) return;
-  renderAgeGateContent();
-  overlay.classList.toggle('open', !state.ageVerified);
-}
-
-// ===== FULL-SCREEN LOGIN / SIGNUP SCREEN (MATCHING USER DESIGN) =====
-let authMode = 'login'; // 'login' | 'signup'
+// ===== FULL-SCREEN LOGIN / SIGNUP / PASSWORD RESET SCREEN (EMAIL ONLY) =====
+let authMode = 'login'; // 'login' | 'signup' | 'reset'
 let authEmailDraft = '';
 let authPwVisible = false;
 
@@ -309,7 +366,7 @@ function isValidEmail(str) {
 }
 
 function openAuthScreen(mode) {
-  authMode = mode === 'signup' ? 'signup' : 'login';
+  authMode = mode === 'signup' ? 'signup' : (mode === 'reset' ? 'reset' : 'login');
   authPwVisible = false;
   renderAuthScreen();
   const el = document.getElementById('authScreen');
@@ -327,7 +384,43 @@ function closeAuthScreen() {
   }
 }
 
-async function submitEmailAuth(email, password, name) {
+async function submitPasswordReset(email) {
+  const cleanEmail = String(email || '').trim().toLowerCase();
+  if (!isValidEmail(cleanEmail)) {
+    showToast('올바른 이메일 주소를 입력해 주세요');
+    return;
+  }
+  if (!hasLiveSupabase()) {
+    showToast('Supabase 연결 후 비밀번호 재설정을 사용할 수 있어요');
+    return;
+  }
+  const base = window.SPEAKEASY_SUPABASE.url.replace(/\/$/, '');
+  const key = window.SPEAKEASY_SUPABASE.anonKey;
+  try {
+    const res = await fetch(base + '/auth/v1/recover', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': key },
+      body: JSON.stringify({ email: cleanEmail })
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      const rawErr = String(data.error_description || data.msg || data.message || '').toLowerCase();
+      if (rawErr.includes('rate limit')) {
+        showToast('요청이 너무 많아요. 잠시 후 다시 시도해 주세요');
+      } else {
+        showToast('비밀번호 재설정 메일 발송에 실패했어요');
+      }
+      return;
+    }
+    authMode = 'login';
+    renderAuthScreen();
+    showToast('비밀번호 재설정 메일을 보냈어요! 메일함을 확인해 주세요');
+  } catch (e) {
+    showToast('네트워크 연결을 확인해 주세요');
+  }
+}
+
+async function submitEmailAuth(email, password, name, confirmPassword) {
   const cleanEmail = String(email || '').trim().toLowerCase();
   const cleanPw = String(password || '');
   const cleanName = String(name || '').trim();
@@ -338,6 +431,10 @@ async function submitEmailAuth(email, password, name) {
   }
   if (cleanPw.length < 6) {
     showToast('비밀번호는 6자 이상 입력해 주세요');
+    return;
+  }
+  if (authMode === 'signup' && cleanPw !== String(confirmPassword || '')) {
+    showToast('비밀번호가 서로 일치하지 않아요');
     return;
   }
 
@@ -392,13 +489,15 @@ async function submitEmailAuth(email, password, name) {
       };
       setAccountState(nextAcc);
       if (authMode === 'signup') {
-        setProfileState({ ...state.profile, name: resolvedName });
-        await pushUserDataToCloud();
+        isHydratingFromCloud = true;
+        setProfileState({ ...state.profile, name: resolvedName }, false);
+        isHydratingFromCloud = false;
+        await flushCloudSync(true);
       } else {
-        setProfileState({ ...state.profile, name: resolvedName }, true);
         await pullUserDataFromCloud();
       }
       closeAuthScreen();
+      if (typeof closeOnboardingScreen === 'function') closeOnboardingScreen(true);
       showToast(authMode === 'signup' ? '회원가입이 완료되었어요!' : '로그인 및 기록 동기화 완료!');
       return;
     } catch (err) {
@@ -407,7 +506,7 @@ async function submitEmailAuth(email, password, name) {
     }
   }
 
-  // Local account verification fallback (real email/password check until Supabase keys are connected)
+  // Local account verification fallback
   const users = getLocalUsers();
   if (authMode === 'signup') {
     if (users.some(u => u.email === cleanEmail)) {
@@ -420,6 +519,7 @@ async function submitEmailAuth(email, password, name) {
     setProfileState({ ...state.profile, name: newName });
     setAccountState({ provider: 'email', name: newName, email: cleanEmail, signedInAt: Date.now() });
     closeAuthScreen();
+    if (typeof closeOnboardingScreen === 'function') closeOnboardingScreen(true);
     showToast('회원가입 후 로그인되었어요!');
   } else {
     const matched = users.find(u => u.email === cleanEmail);
@@ -434,6 +534,7 @@ async function submitEmailAuth(email, password, name) {
     }
     setAccountState({ provider: 'email', name: resolvedName, email: cleanEmail, signedInAt: Date.now() });
     closeAuthScreen();
+    if (typeof closeOnboardingScreen === 'function') closeOnboardingScreen(true);
     showToast('로그인되었어요!');
   }
 }
@@ -442,15 +543,18 @@ function renderAuthScreen() {
   const body = document.getElementById('authScreenBody');
   if (!body) return;
   const isSignup = authMode === 'signup';
+  const isReset = authMode === 'reset';
   const emailValid = isValidEmail(authEmailDraft);
 
   body.innerHTML = `
     <div class="auth-hero">
-      <span class="auth-eyebrow">${isSignup ? 'NEW MEMBER' : 'SPEAKEASY MEMBER'}</span>
-      <div class="auth-title">${isSignup ? '회원가입' : '로그인'}</div>
-      <div class="auth-subtitle">${isSignup
-        ? '내 취향에 맞는 위스키 바와 테이스팅 노트를 한곳에 보관해 보세요.'
-        : '저장한 바와 찜한 위스키, 나만의 테이스팅 노트를 이어서 확인해요.'
+      <span class="auth-eyebrow">${isReset ? 'PASSWORD RESET' : (isSignup ? 'NEW MEMBER' : 'SPEAKEASY MEMBER')}</span>
+      <div class="auth-title">${isReset ? '비밀번호 찾기' : (isSignup ? '회원가입' : '로그인')}</div>
+      <div class="auth-subtitle">${isReset
+        ? '가입하신 이메일 주소를 입력하시면 비밀번호 재설정 링크를 보내드려요.'
+        : (isSignup
+          ? '내 취향에 맞는 위스키 바와 테이스팅 노트를 한곳에 보관해 보세요.'
+          : '저장한 바와 찜한 위스키, 나만의 테이스팅 노트를 이어서 확인해요.')
       }</div>
     </div>
 
@@ -474,50 +578,54 @@ function renderAuthScreen() {
         </div>
       </div>
 
-      <div class="auth-field">
-        <label class="auth-label" for="authPwInput">비밀번호</label>
-        <div class="auth-input-box">
-          <input type="${authPwVisible ? 'text' : 'password'}" class="auth-input" id="authPwInput" placeholder="6자 이상 입력해 주세요" autocomplete="${isSignup ? 'new-password' : 'current-password'}" />
-          <button type="button" class="auth-eye-btn" id="authPwToggleBtn" aria-label="비밀번호 표시 전환">
-            ${authPwVisible
-              ? '<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
-              : '<svg viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
-            }
-          </button>
+      ${!isReset ? `
+        <div class="auth-field">
+          <label class="auth-label" for="authPwInput">비밀번호</label>
+          <div class="auth-input-box">
+            <input type="${authPwVisible ? 'text' : 'password'}" class="auth-input" id="authPwInput" placeholder="6자 이상 입력해 주세요" autocomplete="${isSignup ? 'new-password' : 'current-password'}" />
+            <button type="button" class="auth-eye-btn" id="authPwToggleBtn" aria-label="비밀번호 표시 전환">
+              ${authPwVisible
+                ? '<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
+                : '<svg viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+              }
+            </button>
+          </div>
         </div>
-      </div>
+      ` : ''}
 
-      <button type="submit" class="auth-submit-btn" id="authSubmitBtn">${isSignup ? '가입하고 시작하기' : '로그인하기'}</button>
+      ${isSignup ? `
+        <div class="auth-field">
+          <label class="auth-label" for="authPwConfirmInput">비밀번호 확인</label>
+          <div class="auth-input-box">
+            <input type="${authPwVisible ? 'text' : 'password'}" class="auth-input" id="authPwConfirmInput" placeholder="비밀번호를 한 번 더 입력해 주세요" autocomplete="new-password" />
+          </div>
+        </div>
+      ` : ''}
+
+      ${(!isSignup && !isReset) ? `
+        <div class="auth-forgot-row">
+          <button type="button" class="auth-forgot-btn" id="authForgotBtn">비밀번호를 잊으셨나요?</button>
+        </div>
+      ` : ''}
+
+      <button type="submit" class="auth-submit-btn" id="authSubmitBtn">${isReset ? '재설정 메일 보내기' : (isSignup ? '가입하고 시작하기' : '이메일로 로그인')}</button>
     </form>
 
-    <div class="auth-divider">
-      <span>간편 로그인</span>
-    </div>
-
-    <div class="auth-social-cards">
-      <button type="button" class="auth-social-card apple" data-auth-social="apple" aria-label="Apple 로그인">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.365 1.43c0 1.14-.493 2.27-1.177 3.08-.744.9-1.99 1.57-2.987 1.57-.12 0-.23-.02-.3-.03-.01-.06-.04-.22-.04-.39 0-1.15.572-2.27 1.206-2.98.804-.94 2.142-1.64 3.248-1.68.03.13.05.28.05.43zm4.565 15.71c-.03.07-.463 1.58-1.518 3.12-.945 1.34-1.94 2.71-3.43 2.71-1.517 0-1.9-.88-3.63-.88-1.698 0-2.302.91-3.67.91-1.377 0-2.332-1.26-3.428-2.8-1.287-1.82-2.323-4.63-2.323-7.28 0-4.28 2.797-6.55 5.552-6.55 1.448 0 2.675.95 3.6.95.865 0 2.222-1.01 3.902-1.01.613 0 2.886.06 4.374 2.19-.13.09-2.383 1.37-2.383 4.19 0 3.26 2.854 4.42 2.955 4.45z"/></svg>
-        <span>Apple</span>
-      </button>
-      <button type="button" class="auth-social-card google" data-auth-social="google" aria-label="Google 로그인">
-        <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.2-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.31 24 12 24z"/><path fill="#FBBC05" d="M5.27 14.29c-.25-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.98-3.09z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.98 3.09c.95-2.85 3.6-4.96 6.73-4.96z"/></svg>
-        <span>Google</span>
-      </button>
-      <button type="button" class="auth-social-card naver" data-auth-social="naver" aria-label="네이버 로그인">
-        <svg viewBox="0 0 24 24" fill="#03C75A"><path d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg>
-        <span>네이버</span>
-      </button>
-    </div>
-
     <div class="auth-switch-row">
-      <span>${isSignup ? '이미 계정이 있으신가요?' : '스피크이지가 처음이신가요?'}</span>
-      <button type="button" class="auth-switch-btn" id="authSwitchModeBtn">${isSignup ? '로그인' : '회원가입'}</button>
+      ${isReset ? `
+        <span>비밀번호가 기억나셨나요?</span>
+        <button type="button" class="auth-switch-btn" id="authSwitchModeBtn">로그인으로 돌아가기</button>
+      ` : `
+        <span>${isSignup ? '이미 계정이 있으신가요?' : '스피크이지가 처음이신가요?'}</span>
+        <button type="button" class="auth-switch-btn" id="authSwitchModeBtn">${isSignup ? '로그인' : '회원가입'}</button>
+      `}
     </div>
   `;
 
   const emailEl = document.getElementById('authEmailInput');
   const checkEl = document.getElementById('authEmailCheck');
   const pwEl = document.getElementById('authPwInput');
+  const pwConfirmEl = document.getElementById('authPwConfirmInput');
 
   emailEl?.addEventListener('input', (e) => {
     authEmailDraft = e.target.value;
@@ -526,24 +634,32 @@ function renderAuthScreen() {
 
   document.getElementById('authPwToggleBtn')?.addEventListener('click', () => {
     const curPw = pwEl ? pwEl.value : '';
+    const curConfirm = pwConfirmEl ? pwConfirmEl.value : '';
     authPwVisible = !authPwVisible;
     renderAuthScreen();
     const newPwEl = document.getElementById('authPwInput');
+    const newConfirmEl = document.getElementById('authPwConfirmInput');
     if (newPwEl) { newPwEl.value = curPw; newPwEl.focus(); }
+    if (newConfirmEl) { newConfirmEl.value = curConfirm; }
+  });
+
+  document.getElementById('authForgotBtn')?.addEventListener('click', () => {
+    authMode = 'reset';
+    renderAuthScreen();
   });
 
   document.getElementById('authForm')?.addEventListener('submit', (e) => {
     e.preventDefault();
+    if (isReset) {
+      submitPasswordReset(emailEl?.value || '');
+      return;
+    }
     const nameVal = document.getElementById('authNameInput')?.value || '';
-    submitEmailAuth(emailEl?.value || '', pwEl?.value || '', nameVal);
-  });
-
-  body.querySelectorAll('[data-auth-social]').forEach(btn => {
-    btn.addEventListener('click', () => handleSocialLogin(btn.dataset.authSocial));
+    submitEmailAuth(emailEl?.value || '', pwEl?.value || '', nameVal, pwConfirmEl?.value || '');
   });
 
   document.getElementById('authSwitchModeBtn')?.addEventListener('click', () => {
-    authMode = isSignup ? 'login' : 'signup';
+    authMode = isReset ? 'login' : (isSignup ? 'login' : 'signup');
     renderAuthScreen();
   });
 }
@@ -600,21 +716,20 @@ function renderSettingsScreen() {
           <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
         </div>
       </button>
-    </div>
 
-    <div class="settings-section-label">${state.lang === 'en' ? 'Compliance & Policies' : (state.lang === 'ja' ? '認証・規約' : '인증 및 약관')}</div>
-    <div class="my-settings-card">
-      <button type="button" class="my-setting-row" id="setAgeRow">
+      <button type="button" class="my-setting-row" id="setOnboardingRow">
         <div class="my-setting-left">
-          <span class="my-setting-title">${t('settingAge')}</span>
-          <span class="my-setting-sub">${state.ageVerified ? t('ageVerifiedSub') : t('agePendingSub')}</span>
+          <span class="my-setting-title">앱 소개 다시 보기</span>
+          <span class="my-setting-sub">speakeasy 첫 진입 온보딩 화면 보기</span>
         </div>
-        <div class="my-setting-right">
-          <span class="my-age-status ${state.ageVerified ? 'ok' : ''}">${state.ageVerified ? t('ageVerifiedBadge') : t('agePendingBadge')}</span>
-          <div class="guide-arrow"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+        <div class="guide-arrow">
+          <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
         </div>
       </button>
+    </div>
 
+    <div class="settings-section-label">${state.lang === 'en' ? 'Policies' : (state.lang === 'ja' ? '利用規約' : '약관 및 정책')}</div>
+    <div class="my-settings-card">
       <button type="button" class="my-setting-row" id="setTermsRow">
         <div class="my-setting-left">
           <span class="my-setting-title">${t('settingTerms')}</span>
@@ -635,10 +750,28 @@ function renderSettingsScreen() {
             <span class="my-setting-sub">${providerMeta.badge} · ${acc.email}</span>
           </div>
         </div>
-        <button type="button" class="my-setting-row danger" id="setLogoutRow">
+        <button type="button" class="my-setting-row" id="setChangePwRow">
+          <div class="my-setting-left">
+            <span class="my-setting-title">비밀번호 변경</span>
+            <span class="my-setting-sub">새 비밀번호로 변경하기</span>
+          </div>
+          <div class="guide-arrow">
+            <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+        </button>
+        <button type="button" class="my-setting-row" id="setLogoutRow">
           <div class="my-setting-left">
             <span class="my-setting-title">${t('logout')}</span>
             <span class="my-setting-sub">${providerMeta.label} ${t('logoutSub')}</span>
+          </div>
+          <div class="guide-arrow">
+            <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+        </button>
+        <button type="button" class="my-setting-row danger" id="setDeleteAccountRow">
+          <div class="my-setting-left">
+            <span class="my-setting-title">회원 탈퇴</span>
+            <span class="my-setting-sub">계정 및 저장된 모든 기록 영구 삭제</span>
           </div>
           <div class="guide-arrow">
             <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
@@ -648,7 +781,7 @@ function renderSettingsScreen() {
         <button type="button" class="my-setting-row" id="setLoginRow">
           <div class="my-setting-left">
             <span class="my-setting-title">로그인 / 회원가입</span>
-            <span class="my-setting-sub">이메일 · Apple · Google · 네이버로 간편 로그인</span>
+            <span class="my-setting-sub">이메일로 로그인하고 내 기록을 동기화하세요</span>
           </div>
           <div class="guide-arrow">
             <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
@@ -665,10 +798,125 @@ function renderSettingsScreen() {
     requestWebUserLocation(false);
     showToast('현재 위치를 업데이트하고 있어요');
   });
-  document.getElementById('setAgeRow')?.addEventListener('click', openAgeInfoSheet);
+  document.getElementById('setOnboardingRow')?.addEventListener('click', () => {
+    closeSettingsScreen();
+    openOnboardingScreen(0);
+  });
   document.getElementById('setTermsRow')?.addEventListener('click', () => openTermsSheet('terms'));
   document.getElementById('setLoginRow')?.addEventListener('click', () => openAuthScreen('login'));
+  document.getElementById('setChangePwRow')?.addEventListener('click', openChangePasswordSheet);
   document.getElementById('setLogoutRow')?.addEventListener('click', handleSocialLogout);
+  document.getElementById('setDeleteAccountRow')?.addEventListener('click', openDeleteAccountSheet);
+}
+
+function openChangePasswordSheet() {
+  sheetBody.innerHTML = `
+    <div class="sheet-title-row" style="margin-bottom:14px;">
+      <div class="sheet-bar-name">비밀번호 변경</div>
+      <span class="sheet-match">계정 보안</span>
+    </div>
+
+    <div class="note-form-field">
+      <label class="note-form-label" for="newPwInput">새 비밀번호</label>
+      <input type="password" class="note-form-input" id="newPwInput" placeholder="6자 이상 입력해 주세요" autocomplete="new-password" />
+    </div>
+
+    <div class="note-form-field">
+      <label class="note-form-label" for="newPwConfirmInput">새 비밀번호 확인</label>
+      <input type="password" class="note-form-input" id="newPwConfirmInput" placeholder="비밀번호를 한 번 더 입력해 주세요" autocomplete="new-password" />
+    </div>
+
+    <button type="button" class="note-save-cta" id="saveNewPwBtn">비밀번호 변경하기</button>
+  `;
+
+  document.getElementById('saveNewPwBtn')?.addEventListener('click', async () => {
+    const pw1 = document.getElementById('newPwInput')?.value || '';
+    const pw2 = document.getElementById('newPwConfirmInput')?.value || '';
+    if (pw1.length < 6) {
+      showToast('비밀번호는 6자 이상 입력해 주세요');
+      return;
+    }
+    if (pw1 !== pw2) {
+      showToast('비밀번호가 서로 일치하지 않아요');
+      return;
+    }
+    if (!hasLiveSupabase() || !state.account || !state.account.accessToken) {
+      showToast('로그인 상태를 확인해 주세요');
+      return;
+    }
+    try {
+      const res = await supabaseAuthedFetch('/auth/v1/user', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw1 })
+      });
+      if (!res || !res.ok) {
+        const data = res ? await res.json().catch(() => ({})) : {};
+        showToast(data.msg || data.message || '비밀번호 변경에 실패했어요');
+        return;
+      }
+      closeDetailSheet();
+      showToast('비밀번호가 변경되었어요!');
+    } catch (e) {
+      showToast('네트워크 연결을 확인해 주세요');
+    }
+  });
+
+  sheetScrim.classList.add('open');
+  detailSheet.classList.add('open');
+}
+
+function openDeleteAccountSheet() {
+  const email = state.account?.email || '';
+  sheetBody.innerHTML = `
+    <div class="sheet-title-row" style="margin-bottom:14px;">
+      <div class="sheet-bar-name">회원 탈퇴</div>
+      <span class="sheet-match">주의</span>
+    </div>
+
+    <div class="danger-confirm-box">
+      <strong>${email}</strong> 계정을 탈퇴하면 저장한 바, 찜한 위스키, 테이스팅 노트 등 모든 기록이 영구 삭제되며 다시 복구할 수 없어요.
+    </div>
+
+    <button type="button" class="danger-confirm-btn" id="confirmDeleteAccountBtn">네, 영구 탈퇴할게요</button>
+    <button type="button" class="my-sheet-secondary-cta" id="cancelDeleteAccountBtn">취소</button>
+  `;
+
+  document.getElementById('cancelDeleteAccountBtn')?.addEventListener('click', closeDetailSheet);
+  document.getElementById('confirmDeleteAccountBtn')?.addEventListener('click', async () => {
+    if (!hasLiveSupabase() || !state.account || !state.account.accessToken) {
+      showToast('로그인 상태를 확인해 주세요');
+      return;
+    }
+    const btn = document.getElementById('confirmDeleteAccountBtn');
+    if (btn) { btn.disabled = true; btn.textContent = '탈퇴 처리 중...'; }
+    try {
+      const res = await supabaseAuthedFetch('/rest/v1/rpc/delete_own_account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{}'
+      });
+      if (!res || !res.ok) {
+        if (btn) { btn.disabled = false; btn.textContent = '네, 영구 탈퇴할게요'; }
+        showToast('Supabase에 delete_own_account 함수를 먼저 등록해 주세요');
+        return;
+      }
+      hasCloudRow = false;
+      pendingCloudFields.clear();
+      clearTimeout(cloudSyncTimer);
+      setAccountState(null);
+      resetLocalUserRecords();
+      closeDetailSheet();
+      closeSettingsScreen();
+      showToast('회원 탈퇴가 완료되었어요');
+    } catch (e) {
+      if (btn) { btn.disabled = false; btn.textContent = '네, 영구 탈퇴할게요'; }
+      showToast('네트워크 연결을 확인해 주세요');
+    }
+  });
+
+  sheetScrim.classList.add('open');
+  detailSheet.classList.add('open');
 }
 
 document.getElementById('settingsCloseBtn')?.addEventListener('click', closeSettingsScreen);
@@ -1173,10 +1421,192 @@ function openAddTastingNoteSheet() {
   detailSheet.classList.add('open');
 }
 
+// ===== MY BAR REVIEWS COLLECTION (FROM SUPABASE public.bar_reviews) =====
+let myBarReviewsCache = null; // null = not fetched yet, [] = empty
+let myBarReviewsFetchedUid = '';
+let myBarReviewsFetchedAt = 0;
+
+function invalidateMyBarReviewsCache() {
+  myBarReviewsCache = null;
+  myBarReviewsFetchedUid = '';
+  myBarReviewsFetchedAt = 0;
+}
+
+function updateMyBarReviewsSubText(list) {
+  const countEl = document.getElementById('myReviewsStatCount');
+  if (!countEl) return;
+  if (!state.account || !state.account.accessToken) {
+    countEl.textContent = '0';
+    return;
+  }
+  const arr = Array.isArray(list) ? list : [];
+  countEl.textContent = String(arr.length);
+}
+
+async function fetchMyBarReviews(force) {
+  if (!hasLiveSupabase() || !state.account || !state.account.accessToken) {
+    myBarReviewsCache = [];
+    myBarReviewsFetchedUid = '';
+    myBarReviewsFetchedAt = 0;
+    return [];
+  }
+  if (!state.account.userId && typeof ensureAccountUserId === 'function') {
+    await ensureAccountUserId();
+  }
+  const uid = state.account.userId;
+  if (!uid) return [];
+  const isFresh = myBarReviewsCache !== null && myBarReviewsFetchedUid === uid && (Date.now() - myBarReviewsFetchedAt < 5000);
+  if (!force && isFresh) {
+    return myBarReviewsCache;
+  }
+  try {
+    const res = await supabaseAuthedFetch(
+      '/rest/v1/bar_reviews?user_id=eq.' + encodeURIComponent(uid) + '&select=id,bar_id,author_name,rating,content,tags,photos,created_at&order=created_at.desc&limit=50',
+      { method: 'GET' }
+    );
+    if (!res || !res.ok) return myBarReviewsCache || [];
+    const rows = await res.json();
+    myBarReviewsCache = Array.isArray(rows) ? rows : [];
+    myBarReviewsFetchedUid = uid;
+    myBarReviewsFetchedAt = Date.now();
+    return myBarReviewsCache;
+  } catch (e) {
+    return myBarReviewsCache || [];
+  }
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && state.view === 'my' && state.account && state.account.accessToken) {
+    fetchMyBarReviews(true).then(updateMyBarReviewsSubText);
+  }
+});
+
+async function openMyBarReviewsSheet() {
+  if (!state.account || !state.account.accessToken) {
+    sheetBody.innerHTML = `
+      <div class="sheet-title-row" style="margin-bottom:14px;">
+        <div class="sheet-bar-name">내가 쓴 바 리뷰</div>
+        <span class="sheet-match">로그인 필요</span>
+      </div>
+      <div class="my-empty-card" style="margin-bottom:6px;">
+        <div class="my-empty-text">로그인하면 내가 작성한 바 후기와 별점을<br/>한곳에서 모아보고 관리할 수 있어요!</div>
+        <button type="button" class="my-empty-btn" id="myRevLoginBtn">이메일로 로그인하기</button>
+      </div>
+    `;
+    document.getElementById('myRevLoginBtn')?.addEventListener('click', () => {
+      closeDetailSheet();
+      openAuthScreen('login');
+    });
+    sheetScrim.classList.add('open');
+    detailSheet.classList.add('open');
+    return;
+  }
+
+  sheetBody.innerHTML = `
+    <div class="sheet-title-row" style="margin-bottom:14px;">
+      <div class="sheet-bar-name">내가 쓴 바 리뷰</div>
+      <span class="sheet-match">불러오는 중...</span>
+    </div>
+    <div class="review-empty-box">작성한 바 후기를 불러오고 있어요...</div>
+  `;
+  sheetScrim.classList.add('open');
+  detailSheet.classList.add('open');
+
+  const reviews = await fetchMyBarReviews(true);
+  renderMyBarReviewsSheetBody(reviews);
+  if (state.view === 'my') renderMyView();
+}
+
+function renderMyBarReviewsSheetBody(reviews) {
+  const list = Array.isArray(reviews) ? reviews : [];
+  sheetBody.innerHTML = `
+    <div class="sheet-title-row" style="margin-bottom:14px;">
+      <div class="sheet-bar-name">내가 쓴 바 리뷰</div>
+      <span class="sheet-match">${list.length}개</span>
+    </div>
+    ${list.length > 0 ? `
+      <div class="review-list" style="margin-bottom:8px;">
+        ${list.map(r => {
+          const bar = BARS.find(b => b.id === r.bar_id);
+          const barName = bar ? bar.name : r.bar_id;
+          const barRegion = bar ? (bar.city + ' · ' + bar.region) : '';
+          const tags = Array.isArray(r.tags) ? r.tags : [];
+          const photos = Array.isArray(r.photos) ? r.photos : [];
+          return `
+            <div class="review-card">
+              <div class="review-card-top">
+                <div>
+                  <button type="button" class="my-review-bar-link" data-jump-review-bar="${r.bar_id}">
+                    <span>${escapeReviewHtml(barName)}</span>
+                    ${barRegion ? `<span class="my-review-bar-region">${escapeReviewHtml(barRegion)}</span>` : ''}
+                  </button>
+                  <div class="review-card-meta" style="margin-top:4px;">
+                    <span class="review-stars-inline">${renderStarsText(r.rating)}</span>
+                    <span class="review-date">${formatReviewDate(r.created_at)}</span>
+                  </div>
+                </div>
+                <button type="button" class="review-del-btn" data-my-del-review="${escapeReviewHtml(r.id)}">삭제</button>
+              </div>
+              ${tags.length > 0 ? `
+                <div class="review-card-tags">
+                  ${tags.map(tg => `<span class="review-card-tag">#${escapeReviewHtml(tg)}</span>`).join('')}
+                </div>
+              ` : ''}
+              ${photos.length > 0 ? `
+                <div class="review-card-photos">
+                  ${photos.map(src => `<img class="review-card-photo" src="${src}" alt="후기 사진" data-zoom-my-photo="1" />`).join('')}
+                </div>
+              ` : ''}
+              <div class="review-card-content">${escapeReviewHtml(r.content)}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    ` : `
+      <div class="my-empty-card" style="margin-bottom:6px;">
+        <div class="my-empty-text">아직 작성한 바 리뷰가 없어요.<br/>마음에 드는 바 상세 화면에서 첫 후기를 남겨보세요!</div>
+        <button type="button" class="my-empty-btn" id="myRevExploreBtn">바 둘러보러 가기</button>
+      </div>
+    `}
+  `;
+
+  sheetBody.querySelector('#myRevExploreBtn')?.addEventListener('click', () => {
+    closeDetailSheet();
+    jumpToTab('home');
+  });
+
+  sheetBody.querySelectorAll('[data-jump-review-bar]').forEach(btn => {
+    btn.addEventListener('click', () => openDetailSheet(btn.dataset.jumpReviewBar));
+  });
+
+  sheetBody.querySelectorAll('[data-zoom-my-photo]').forEach(img => {
+    img.addEventListener('click', () => openReviewLightbox(img.src));
+  });
+
+  sheetBody.querySelectorAll('[data-my-del-review]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const revId = btn.dataset.myDelReview;
+      btn.disabled = true;
+      const ok = await deleteBarReview(revId);
+      if (ok) {
+        invalidateMyBarReviewsCache();
+        const refreshed = await fetchMyBarReviews(true);
+        if (typeof preloadAllBarRatings === 'function') preloadAllBarRatings();
+        renderMyBarReviewsSheetBody(refreshed);
+        if (state.view === 'my') renderMyView();
+      } else {
+        btn.disabled = false;
+      }
+    });
+  });
+}
+
 // ===== MAIN MY PAGE RENDERER (PURE PROFILE + COLLECTIONS + WRITE NOTE + GEAR TO SETTINGS) =====
 function renderMyView() {
   const container = document.getElementById('myContent');
   if (!container) return;
+  const viewMyEl = document.getElementById('viewMy');
+  const prevScroll = viewMyEl ? viewMyEl.scrollTop : 0;
 
   const savedBarsCount = BARS.filter(b => state.likes.has(b.id)).length;
   const likedWhiskiesCount = WHISKIES.filter(w => state.likedWhiskies.has(w.id)).length;
@@ -1242,23 +1672,46 @@ function renderMyView() {
       </div>
     </div>
 
-    <!-- 2. 3-COLUMN COLLECTIONS (저장한 바 · 테이스팅 노트 · 찜한 술) -->
-    <div class="my-stats-grid">
-      <button type="button" class="my-stat-box" id="myStatSaved">
+    <!-- 2. MY RECORDS 2x2 COLLECTION GRID (저장한 바 · 찜한 술 · 테이스팅 노트 · 내가 쓴 바 리뷰) -->
+    <div class="my-section-head">
+      <span class="my-section-title">${state.lang === 'en' ? 'My Collection' : (state.lang === 'ja' ? 'マイコレクション' : '내 기록 모아보기')}</span>
+      <span class="my-section-sub">${state.lang === 'en' ? 'Saved & Written' : (state.lang === 'ja' ? '保存・記録' : '저장 · 작성')}</span>
+    </div>
+    <div class="my-records-grid">
+      <button type="button" class="my-record-tile" id="myStatSaved">
+        <div class="my-record-top">
+          <span class="my-record-label">${t('savedBars')}</span>
+          <span class="my-record-chevron">›</span>
+        </div>
         <div class="my-stat-num">${savedBarsCount}<span>${t('unitPlace')}</span></div>
-        <div class="my-stat-label">${t('savedBars')} ›</div>
       </button>
-      <button type="button" class="my-stat-box" id="myStatNotes">
-        <div class="my-stat-num">${myTastingNotes.length}<span>${t('unitNote')}</span></div>
-        <div class="my-stat-label">${t('tastingNotes')} ›</div>
-      </button>
-      <button type="button" class="my-stat-box" id="myStatWhiskies">
+
+      <button type="button" class="my-record-tile" id="myStatWhiskies">
+        <div class="my-record-top">
+          <span class="my-record-label">${t('likedWhiskies')}</span>
+          <span class="my-record-chevron">›</span>
+        </div>
         <div class="my-stat-num">${likedWhiskiesCount}<span>${t('unitBottle')}</span></div>
-        <div class="my-stat-label">${t('likedWhiskies')} ›</div>
+      </button>
+
+      <button type="button" class="my-record-tile" id="myStatNotes">
+        <div class="my-record-top">
+          <span class="my-record-label">${t('tastingNotes')}</span>
+          <span class="my-record-chevron">›</span>
+        </div>
+        <div class="my-stat-num">${myTastingNotes.length}<span>${t('unitNote')}</span></div>
+      </button>
+
+      <button type="button" class="my-record-tile" id="myBarReviewsBtn">
+        <div class="my-record-top">
+          <span class="my-record-label">${state.lang === 'en' ? 'Bar Reviews' : (state.lang === 'ja' ? 'バーレビュー' : '내가 쓴 바 리뷰')}</span>
+          <span class="my-record-chevron">›</span>
+        </div>
+        <div class="my-stat-num"><strong id="myReviewsStatCount">${acc && Array.isArray(myBarReviewsCache) ? myBarReviewsCache.length : 0}</strong><span>${t('unitNote')}</span></div>
       </button>
     </div>
 
-    <!-- 3. TASTING NOTE WRITE ACTION (COMPACT — NEVER GROWS VERTICALLY) -->
+    <!-- 3. TASTING NOTE WRITE ACTION -->
     <button type="button" class="my-write-note-card" id="myAddNoteBtn">
       <div class="my-write-note-icon">
         <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -1292,5 +1745,230 @@ function renderMyView() {
   document.getElementById('myStatNotes')?.addEventListener('click', openTastingNotesCollectionSheet);
   document.getElementById('myStatWhiskies')?.addEventListener('click', openLikedWhiskiesCollectionSheet);
   document.getElementById('myAddNoteBtn')?.addEventListener('click', openAddTastingNoteSheet);
+  document.getElementById('myBarReviewsBtn')?.addEventListener('click', openMyBarReviewsSheet);
   document.getElementById('myTasteStripBtn')?.addEventListener('click', () => jumpToTab('home'));
+  if (viewMyEl) viewMyEl.scrollTop = prevScroll;
+
+  if (acc && acc.accessToken) {
+    fetchMyBarReviews(false).then(updateMyBarReviewsSubText);
+  }
+}
+
+// ===== FIRST-LAUNCH ONBOARDING (3 SWIPE INTRO SLIDES + SIGNUP / LOGIN GATEWAY) =====
+let onboardingActiveIndex = 0;
+
+function closeOnboardingScreen(markDone) {
+  if (markDone !== false) {
+    safeSetStorage('speakeasy-onboarding-done', 'true');
+  }
+  const el = document.getElementById('onboardingScreen');
+  if (el) {
+    el.classList.remove('open');
+    el.setAttribute('aria-hidden', 'true');
+  }
+}
+
+function updateOnboardingIndicators(idx) {
+  onboardingActiveIndex = Math.max(0, Math.min(3, idx));
+  const el = document.getElementById('onboardingScreen');
+  if (!el) return;
+  el.querySelectorAll('.ob-dot').forEach((dot, i) => {
+    dot.classList.toggle('active', i === onboardingActiveIndex);
+  });
+  const skipBtn = document.getElementById('obSkipBtn');
+  const nextBtn = document.getElementById('obNextBtn');
+  const footer = document.getElementById('obFooter');
+  const isLast = onboardingActiveIndex === 3;
+  if (skipBtn) skipBtn.style.visibility = isLast ? 'hidden' : 'visible';
+  if (footer) footer.classList.toggle('is-last', isLast);
+  if (nextBtn) {
+    nextBtn.textContent = onboardingActiveIndex === 2 ? '시작하기' : '다음';
+  }
+}
+
+function openOnboardingScreen(startIdx) {
+  const el = document.getElementById('onboardingScreen');
+  if (!el) return;
+  onboardingActiveIndex = typeof startIdx === 'number' ? startIdx : 0;
+
+  el.innerHTML = `
+    <div class="ob-top-bar">
+      <span class="ob-brand">speakeasy</span>
+      <button type="button" class="ob-skip-btn" id="obSkipBtn">건너뛰기</button>
+    </div>
+
+    <div class="onboarding-slides" id="onboardingSlides">
+      <!-- SLIDE 1: TASTE CURATION -->
+      <section class="ob-slide">
+        <div class="ob-visual-card">
+          <div class="ob-visual-eyebrow">01 · CURATION</div>
+          <div class="ob-mock-sliders">
+            <div class="ob-mock-row">
+              <span>분위기</span>
+              <div class="ob-mock-track"><div class="ob-mock-fill" style="width:24%"></div><div class="ob-mock-orb" style="left:24%"></div></div>
+            </div>
+            <div class="ob-mock-row">
+              <span>가격대</span>
+              <div class="ob-mock-track"><div class="ob-mock-fill" style="width:68%"></div><div class="ob-mock-orb" style="left:68%"></div></div>
+            </div>
+            <div class="ob-mock-row">
+              <span>공간</span>
+              <div class="ob-mock-track"><div class="ob-mock-fill" style="width:45%"></div><div class="ob-mock-orb" style="left:45%"></div></div>
+            </div>
+            <div class="ob-mock-row">
+              <span>취향</span>
+              <div class="ob-mock-track"><div class="ob-mock-fill" style="width:82%"></div><div class="ob-mock-orb" style="left:82%"></div></div>
+            </div>
+          </div>
+          <div class="ob-mock-chips">
+            <span class="ob-mock-chip active">조용한 바</span>
+            <span class="ob-mock-chip">혼술 추천</span>
+            <span class="ob-mock-chip">취향 96% 일치</span>
+          </div>
+        </div>
+        <div class="ob-copy">
+          <h2 class="ob-title">취향으로 찾는<br/>나만의 위스키 바</h2>
+          <p class="ob-desc">분위기, 가격대, 공간, 위스키 스타일.<br/>네 가지 감각에 꼭 맞는 전국 바를 추천해 드려요.</p>
+        </div>
+      </section>
+
+      <!-- SLIDE 2: BEGINNER GUIDE + AI LABEL SCAN & ARCHIVE -->
+      <section class="ob-slide">
+        <div class="ob-visual-card">
+          <div class="ob-visual-eyebrow">02 · GUIDE &amp; AI</div>
+          <div class="ob-scan-frame">
+            <div class="ob-scan-corner tl"></div>
+            <div class="ob-scan-corner tr"></div>
+            <div class="ob-scan-corner bl"></div>
+            <div class="ob-scan-corner br"></div>
+            <div class="ob-scan-line"></div>
+            <div class="ob-scan-bottle">
+              <div class="ob-bottle-neck"></div>
+              <div class="ob-bottle-body">
+                <div class="ob-bottle-label">
+                  <span>SINGLE MALT</span>
+                  <strong>12Y</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="ob-mock-chips">
+            <span class="ob-mock-chip active">초보자 가이드</span>
+            <span class="ob-mock-chip">AI 라벨 판독</span>
+            <span class="ob-mock-chip">사전 · 페어링</span>
+          </div>
+        </div>
+        <div class="ob-copy">
+          <h2 class="ob-title">초보자 가이드부터<br/>AI 라벨 스캔까지</h2>
+          <p class="ob-desc">위스키가 처음이어도 쉽게 알아갈 수 있어요.<br/>4대 위스키 입문 가이드·용어 사전·안주 페어링과<br/>AI 라벨 판독·소믈리에까지 한 번에 담아뒀어요.</p>
+        </div>
+      </section>
+
+      <!-- SLIDE 3: MINIMAL MAP & TASTING LOG -->
+      <section class="ob-slide">
+        <div class="ob-visual-card">
+          <div class="ob-visual-eyebrow">03 · MAP &amp; LOG</div>
+          <div class="ob-map-mock">
+            <div class="ob-map-road r1"></div>
+            <div class="ob-map-road r2"></div>
+            <div class="ob-map-river"></div>
+            <span class="ob-map-area a1">이태원</span>
+            <span class="ob-map-area a2">청담</span>
+            <span class="ob-map-area a3">성수</span>
+            <div class="ob-map-pin p1"></div>
+            <div class="ob-map-pin p2"></div>
+          </div>
+          <div class="ob-mock-review">
+            <span class="ob-mock-stars">★★★★★</span>
+            <span class="ob-mock-review-txt">바텐더 추천이 완벽했던 조용한 공간</span>
+          </div>
+        </div>
+        <div class="ob-copy">
+          <h2 class="ob-title">나만의 바 지도와<br/>위스키 테이스팅 기록</h2>
+          <p class="ob-desc">저장한 바를 깔끔한 지도 위 핀으로 모아두고,<br/>테이스팅 노트와 방문 리뷰를 한곳에 남겨 보세요.</p>
+        </div>
+      </section>
+
+      <!-- SLIDE 4: WELCOME GATEWAY (SIGNUP / LOGIN / EXPLORE) -->
+      <section class="ob-slide ob-slide-welcome">
+        <div class="ob-welcome-copy">
+          <span class="ob-welcome-eyebrow">WELCOME TO SPEAKEASY</span>
+          <h2 class="ob-welcome-title">speakeasy가<br/>처음이신가요?</h2>
+          <p class="ob-welcome-desc">이메일 계정을 연결하면 찜한 바와 테이스팅 노트,<br/>내가 쓴 리뷰가 언제든 안전하게 동기화돼요.</p>
+        </div>
+        <div class="ob-welcome-actions">
+          <button type="button" class="ob-choice-btn primary" id="obSignupBtn">
+            <span>네, 처음이에요</span>
+            <small>회원가입 및 이메일 연동</small>
+          </button>
+          <button type="button" class="ob-choice-btn secondary" id="obLoginBtn">
+            <span>아니요, 써봤어요</span>
+            <small>로그인하고 바로 시작하기</small>
+          </button>
+          <button type="button" class="ob-guest-btn" id="obGuestBtn">로그인 없이 먼저 둘러보기</button>
+        </div>
+      </section>
+    </div>
+
+    <div class="ob-footer" id="obFooter">
+      <div class="ob-dots" id="obDots">
+        <span class="ob-dot active"></span>
+        <span class="ob-dot"></span>
+        <span class="ob-dot"></span>
+        <span class="ob-dot"></span>
+      </div>
+      <button type="button" class="ob-next-btn" id="obNextBtn">다음</button>
+    </div>
+  `;
+
+  const slidesEl = document.getElementById('onboardingSlides');
+  if (slidesEl) {
+    slidesEl.addEventListener('scroll', () => {
+      const w = slidesEl.clientWidth || 1;
+      const idx = Math.round(slidesEl.scrollLeft / w);
+      if (idx !== onboardingActiveIndex) updateOnboardingIndicators(idx);
+    }, { passive: true });
+  }
+
+  document.getElementById('obSkipBtn')?.addEventListener('click', () => {
+    if (!slidesEl) return;
+    slidesEl.scrollTo({ left: slidesEl.clientWidth * 3, behavior: 'smooth' });
+    updateOnboardingIndicators(3);
+  });
+
+  document.getElementById('obNextBtn')?.addEventListener('click', () => {
+    if (!slidesEl) return;
+    const nextIdx = Math.min(3, onboardingActiveIndex + 1);
+    slidesEl.scrollTo({ left: slidesEl.clientWidth * nextIdx, behavior: 'smooth' });
+    updateOnboardingIndicators(nextIdx);
+  });
+
+  document.getElementById('obSignupBtn')?.addEventListener('click', () => {
+    openAuthScreen('signup');
+  });
+
+  document.getElementById('obLoginBtn')?.addEventListener('click', () => {
+    openAuthScreen('login');
+  });
+
+  document.getElementById('obGuestBtn')?.addEventListener('click', () => {
+    closeOnboardingScreen(true);
+  });
+
+  el.classList.add('open');
+  el.setAttribute('aria-hidden', 'false');
+  updateOnboardingIndicators(onboardingActiveIndex);
+  if (slidesEl && onboardingActiveIndex > 0) {
+    requestAnimationFrame(() => {
+      slidesEl.scrollLeft = slidesEl.clientWidth * onboardingActiveIndex;
+    });
+  }
+}
+
+// Auto-launch onboarding once on first visit (Home tab only in native shell)
+if (
+  safeGetStorage('speakeasy-onboarding-done') !== 'true' &&
+  (!window.__SPEAKEASY_NATIVE__ || window.__SPEAKEASY_INITIAL_TAB__ === 'home')
+) {
+  openOnboardingScreen(0);
 }

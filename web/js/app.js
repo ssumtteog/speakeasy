@@ -1,4 +1,24 @@
 // ===== VIEW NAVIGATION =====
+const viewScrollMemory = {};
+let lastViewBeforeLikes = null;
+
+function getRootTabView() {
+  return window.__SPEAKEASY_INITIAL_TAB__ || 'home';
+}
+
+function getViewElByName(name) {
+  const map = {
+    home: 'viewHome',
+    results: 'viewResults',
+    likes: 'viewResults',
+    search: 'viewSearch',
+    guide: 'viewGuide',
+    map: 'viewMap',
+    my: 'viewMy'
+  };
+  return map[name] ? document.getElementById(map[name]) : null;
+}
+
 function setActiveNavTab(tabName) {
   document.querySelectorAll('.nav-item').forEach(n => {
     const isMatch = n.dataset.tab === tabName;
@@ -7,8 +27,16 @@ function setActiveNavTab(tabName) {
   });
 }
 
-function setView(nextView) {
+function setView(nextView, opts) {
   closeDetailSheet();
+  const prevView = state.view;
+  const prevEl = getViewElByName(prevView);
+  if (prevEl && prevView && prevView !== nextView) {
+    viewScrollMemory[prevView] = prevEl.scrollTop;
+  }
+  if (nextView === 'likes' && prevView !== 'likes') {
+    lastViewBeforeLikes = prevView || getRootTabView();
+  }
   state.view = nextView;
   const homeEl = document.getElementById('viewHome');
   const resEl = document.getElementById('viewResults');
@@ -34,6 +62,9 @@ function setView(nextView) {
     backBtn.classList.remove('visible');
     titleEl.textContent = 'speakeasy';
     setActiveNavTab('home');
+    if (typeof viewScrollMemory.home === 'number') {
+      requestAnimationFrame(() => { homeEl.scrollTop = viewScrollMemory.home; });
+    }
   } else if (nextView === 'search') {
     homeEl.classList.add('behind');
     searchEl.classList.add('active');
@@ -42,12 +73,18 @@ function setView(nextView) {
     titleEl.textContent = 'speakeasy';
     setActiveNavTab('search');
     renderSearchResults();
+    if (typeof viewScrollMemory.search === 'number') {
+      requestAnimationFrame(() => { searchEl.scrollTop = viewScrollMemory.search; });
+    }
   } else if (nextView === 'guide') {
     homeEl.classList.add('behind');
     guideEl.classList.add('active');
     ctaEl.classList.add('hidden');
     setActiveNavTab('guide');
-    renderGuideView();
+    renderGuideView({ preserveScroll: true });
+    if (typeof viewScrollMemory.guide === 'number') {
+      requestAnimationFrame(() => { guideEl.scrollTop = viewScrollMemory.guide; });
+    }
   } else if (nextView === 'map') {
     homeEl.classList.add('behind');
     if (mapEl) mapEl.classList.add('active');
@@ -64,9 +101,16 @@ function setView(nextView) {
     titleEl.textContent = typeof t === 'function' ? t('headerMy') : '마이 페이지';
     setActiveNavTab('my');
     if (typeof renderMyView === 'function') renderMyView();
+    if (myEl && typeof viewScrollMemory.my === 'number') {
+      requestAnimationFrame(() => { myEl.scrollTop = viewScrollMemory.my; });
+    }
   } else {
     renderResults();
-    resEl.scrollTop = 0;
+    if (opts && opts.resetScroll) {
+      resEl.scrollTop = 0;
+    } else if (typeof viewScrollMemory[nextView] === 'number') {
+      requestAnimationFrame(() => { resEl.scrollTop = viewScrollMemory[nextView]; });
+    }
     homeEl.classList.add('behind');
     resEl.classList.add('active');
     ctaEl.classList.add('hidden');
@@ -122,6 +166,13 @@ window.__speakeasyBridge = {
       setView('my');
     }
   },
+  ensureRootTab(tab) {
+    if (!tab) return;
+    // Prevent non-home native tabs (especially My Page) from ever getting trapped in Home view
+    if (tab !== 'home' && state.view === 'home') {
+      setView(tab);
+    }
+  },
   setTheme(theme) {
     safeSetStorage('speakeasy-theme', theme);
     applyTheme(theme, true);
@@ -142,7 +193,7 @@ window.__speakeasyBridge = {
       state.likedWhiskies = new Set(arr);
       safeSetStorage('speakeasy-liked-whiskies', JSON.stringify(arr));
       if (state.view === 'my' && typeof renderMyView === 'function') renderMyView();
-      if (state.view === 'guide' && typeof renderGuideView === 'function') renderGuideView();
+      if (state.view === 'guide' && typeof renderGuideView === 'function') renderGuideView({ preserveScroll: true });
     }
   },
   syncAccount(acc) {
@@ -161,9 +212,6 @@ window.__speakeasyBridge = {
   },
   syncLang(lang) {
     if (typeof applyLanguage === 'function') applyLanguage(lang, true);
-  },
-  syncAgeVerified(verified) {
-    if (typeof setAgeVerifiedState === 'function') setAgeVerifiedState(!!verified, true);
   },
   syncPrefs(prefs, region) {
     if (prefs && typeof prefs === 'object') {
@@ -194,6 +242,8 @@ window.__speakeasyBridge = {
   let activeViewEl = null;
 
   function getBackableViewEl() {
+    const rwEl = document.getElementById('reviewWriteScreen');
+    if (rwEl && rwEl.classList.contains('open')) return rwEl;
     if (detailSheet && detailSheet.classList.contains('open')) return null;
     const authEl = document.getElementById('authScreen');
     if (authEl && authEl.classList.contains('open')) return authEl;
@@ -218,10 +268,15 @@ window.__speakeasyBridge = {
 
   function isInsideHorizontalScroll(target) {
     if (!target || !target.closest) return false;
-    return !!target.closest('.location-scroll, .glossary-strip, .whisky-shelf, .whisky-search-shelf, .slider-track, .map-chips-scroll, #leafletMap');
+    return !!target.closest('input, textarea, #sortBar, .sort-option, .onboarding-screen, .onboarding-slides, .location-scroll, .glossary-strip, .pairing-strip, .whisky-shelf, .whisky-search-shelf, .slider-track, .map-chips-scroll, #leafletMap, #searchCancelBtn, #searchClearBtn, #recentClearAllBtn, [data-recent-del]');
   }
 
   function triggerBackAction() {
+    const rwEl = document.getElementById('reviewWriteScreen');
+    if (rwEl && rwEl.classList.contains('open') && typeof closeReviewWriteScreen === 'function') {
+      closeReviewWriteScreen();
+      return;
+    }
     const authEl = document.getElementById('authScreen');
     if (authEl && authEl.classList.contains('open') && typeof closeAuthScreen === 'function') {
       closeAuthScreen();
@@ -239,7 +294,11 @@ window.__speakeasyBridge = {
     }
     if (state.view === 'search' && typeof handleSearchBack === 'function' && handleSearchBack()) return;
     if (state.view === 'guide' && typeof handleGuideBack === 'function' && handleGuideBack()) return;
-    setView('home');
+    if (state.view === 'likes') {
+      setView(lastViewBeforeLikes || getRootTabView());
+      return;
+    }
+    setView(getRootTabView());
   }
 
   const viewsContainer = document.getElementById('phoneFrame');
@@ -351,7 +410,7 @@ updateLikeBadge();
 updateCtaCount();
 scalePhone();
 if (typeof applyLanguage === 'function') applyLanguage(state.lang, true);
-if (typeof initAgeGate === 'function') initAgeGate();
+if (typeof preloadAllBarRatings === 'function') preloadAllBarRatings();
 if (
   typeof pullUserDataFromCloud === 'function' &&
   state.account &&
@@ -368,3 +427,74 @@ window.addEventListener('load', () => positionAllOrbs(true));
 window.addEventListener('resize', scalePhone);
 window.addEventListener('orientationchange', () => setTimeout(scalePhone, 80));
 if (window.visualViewport) window.visualViewport.addEventListener('resize', scalePhone);
+
+// ===== RESPONSIVE KEYBOARD AVOIDANCE (iOS / Android WebView + Mobile Web) =====
+(function initKeyboardAvoidance() {
+  let currentKbHeight = 0;
+
+  function isEditableEl(el) {
+    if (!el || !el.tagName) return false;
+    const tag = el.tagName.toUpperCase();
+    return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+  }
+
+  function scrollInputAboveKeyboard(el) {
+    if (!isEditableEl(el)) return;
+    if (el.id === 'searchInput' || el.id === 'mapSearchInput') {
+      try { window.scrollTo(0, 0); } catch (e) {}
+      return;
+    }
+    const target = el.closest('.auth-field, .note-form-field') || el;
+    const scrollBox = el.closest('.auth-screen-body, .sheet-scroll, .sub-screen-body, .view');
+    if (!scrollBox) {
+      try { target.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+      return;
+    }
+    const boxRect = scrollBox.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    const visibleBottom = Math.min(boxRect.bottom, window.innerHeight - currentKbHeight - 18);
+    const visibleTop = boxRect.top + 16;
+
+    if (targetRect.bottom > visibleBottom) {
+      scrollBox.scrollBy({
+        top: targetRect.bottom - visibleBottom + 24,
+        behavior: 'smooth'
+      });
+    } else if (targetRect.top < visibleTop) {
+      scrollBox.scrollBy({
+        top: targetRect.top - visibleTop - 16,
+        behavior: 'smooth'
+      });
+    }
+  }
+
+  function applyKeyboardHeight(kbHeight) {
+    const h = Math.max(0, Math.round(Number(kbHeight) || 0));
+    currentKbHeight = h;
+    document.documentElement.style.setProperty('--keyboard-height', h + 'px');
+    document.documentElement.classList.toggle('keyboard-open', h > 0);
+    if (h > 0 && isEditableEl(document.activeElement)) {
+      const active = document.activeElement;
+      setTimeout(() => scrollInputAboveKeyboard(active), 60);
+      setTimeout(() => scrollInputAboveKeyboard(active), 240);
+    }
+  }
+
+  window.__speakeasyKeyboardChange = applyKeyboardHeight;
+
+  document.addEventListener('focusin', (e) => {
+    if (!isEditableEl(e.target)) return;
+    const el = e.target;
+    setTimeout(() => scrollInputAboveKeyboard(el), 120);
+    setTimeout(() => scrollInputAboveKeyboard(el), 320);
+  });
+
+  // Fallback for mobile Safari / Chrome when running outside React Native WebView
+  if (!window.__SPEAKEASY_NATIVE__ && window.visualViewport) {
+    const syncViewportKb = () => {
+      const diff = Math.round(window.innerHeight - window.visualViewport.height);
+      applyKeyboardHeight(diff > 100 ? diff : 0);
+    };
+    window.visualViewport.addEventListener('resize', syncViewportKb);
+  }
+})();

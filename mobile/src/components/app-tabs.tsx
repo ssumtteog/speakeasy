@@ -12,10 +12,10 @@ const TAB_LABELS: Record<SpeakeasyLang, { home: string; search: string; guide: s
 export default function AppTabs() {
   const { theme, lang } = useSpeakeasyBridge();
   const isDark = theme === 'dark';
-  const labels = TAB_LABELS[lang] || TAB_LABELS.ko;
+  const labels = TAB_LABELS[lang ?? 'ko'] || TAB_LABELS.ko;
 
-  const activeColor = isDark ? '#C9A86C' : '#1E3A2F';
-  const inactiveColor = isDark ? '#8B9A93' : '#74827B';
+  const activeColor = isDark ? '#F2F2F5' : '#1E3A2F';
+  const inactiveColor = isDark ? '#7C7C84' : '#74827B';
 
   return (
     <NativeTabs
@@ -27,8 +27,8 @@ export default function AppTabs() {
       }}
       minimizeBehavior="never"
       blurEffect={isDark ? 'systemChromeMaterialDark' : 'systemChromeMaterialLight'}
-      backgroundColor={Platform.OS === 'android' ? (isDark ? '#16211C' : '#FFFFFF') : undefined}
-      indicatorColor={isDark ? 'rgba(201,168,108,0.2)' : 'rgba(30,58,47,0.12)'}>
+      backgroundColor={Platform.OS === 'android' ? (isDark ? '#1C1C1E' : '#FFFFFF') : undefined}
+      indicatorColor={isDark ? 'rgba(255,255,255,0.10)' : 'rgba(30,58,47,0.12)'}>
       <NativeTabs.Trigger name="index">
         <NativeTabs.Trigger.Label>{labels.home}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon

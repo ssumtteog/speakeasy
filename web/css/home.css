@@ -43,6 +43,11 @@
   color: #FFF; font-weight: 600;
   box-shadow: 0 4px 14px rgba(30, 58, 47, 0.24);
 }
+html[data-theme="dark"] .location-chip.active {
+  background: #2E2E32; border-color: rgba(255, 255, 255, 0.18);
+  color: #F2F2F5; font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.24);
+}
 
 .section-divider {
   height: 1px; background: var(--divider);
@@ -98,6 +103,9 @@
     height 0.22s cubic-bezier(0.48, 0.04, 0.2, 1),
     transform 0.14s cubic-bezier(0.45, 0.05, 0.55, 0.95);
   will-change: left, width, height, transform;
+}
+html[data-theme="dark"] .slider-orb {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.34);
 }
 .slider-orb.flowing {
   transform: translate(-50%, -50%) scaleX(1.22) scaleY(0.86);
@@ -178,4 +186,23 @@
   background: rgba(201, 168, 108, 0.24); padding: 3px 12px; border-radius: 100px;
   font-size: 14px; font-weight: 600; color: #F7ECDA;
   border: 0.5px solid rgba(201, 168, 108, 0.45);
+}
+html[data-theme="dark"] .cta-button {
+  background: #2F664E;
+  color: #FFFFFF;
+  font-weight: 600;
+  border: none;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.34);
+}
+html[data-theme="dark"] .cta-button:active {
+  background: #26533F;
+}
+html[data-theme="dark"] .cta-button svg {
+  stroke: #FFFFFF;
+}
+html[data-theme="dark"] .cta-count {
+  background: rgba(255, 255, 255, 0.14);
+  color: #FFFFFF;
+  border: none;
+  font-weight: 600;
 }

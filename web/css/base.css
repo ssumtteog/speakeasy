@@ -58,60 +58,60 @@
   --side-pad: 28px;
 }
 
-/* ===== DARK MODE (DEEP FOREST LOUNGE + iOS DARK GLASS) ===== */
+/* ===== DARK MODE (FORMULA 1: APPLE/STARBUCKS STYLE — 90% NEUTRAL GRAY + SCALE-SHIFTED GREEN + MICRO GOLD) ===== */
 html[data-theme="dark"] {
-  --bg: #0F1613;
-  --surface: #16211C;
-  --card-bg: rgba(22, 33, 28, 0.88);
-  --card-border: rgba(247, 244, 240, 0.10);
-  --card-shadow: 0 8px 26px rgba(0, 0, 0, 0.42);
-  --text: #F7F4F0;
-  --text-brand: #C9A86C;
-  --text-light: #96A89E;
-  --accent: #2C5240;
-  --accent-secondary: #1E3A2F;
+  --bg: #121213;
+  --surface: #1C1C1E;
+  --card-bg: #1E1E20;
+  --card-border: rgba(255, 255, 255, 0.08);
+  --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.42);
+  --text: #F2F2F5;
+  --text-brand: #F2F2F5;
+  --text-light: #98989F;
+  --accent: #2F664E;
+  --accent-secondary: #3A7A5E;
   --gold: #C9A86C;
-  --accent-soft: rgba(201, 168, 108, 0.15);
-  --accent-track: rgba(201, 168, 108, 0.78);
-  --wave-ripple-bg: rgba(201, 168, 108, 0.24);
-  --track-neutral: #223029;
-  --dot-bg: #18231E;
-  --dot-inactive: #283A32;
-  --dot-outer-active: rgba(201, 168, 108, 0.24);
-  --orb-core: #C9A86C;
-  --orb-shadow: 0 2px 10px rgba(201, 168, 108, 0.34);
-  --muted: #76887F;
-  --chip-border: rgba(247, 244, 240, 0.16);
-  --divider: rgba(247, 244, 240, 0.08);
-  --glass-bg: rgba(22, 34, 29, 0.28);
-  --glass-header-bg: rgba(15, 22, 19, 0.42);
-  --glass-border: rgba(255, 255, 255, 0.26);
-  --glass-ring: rgba(0, 0, 0, 0.28);
-  --glass-highlight: rgba(255, 255, 255, 0.34);
-  --glass-bottom-shade: rgba(0, 0, 0, 0.30);
-  --glass-shadow: 0 12px 34px rgba(0, 0, 0, 0.52), 0 2px 6px rgba(0, 0, 0, 0.35);
-  --nav-active-bg: rgba(255, 255, 255, 0.14);
-  --nav-active-border: rgba(255, 255, 255, 0.24);
-  --nav-active-shadow: 0 2px 10px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.28);
-  --nav-hover-bg: rgba(247, 244, 240, 0.06);
-  --dot-inner-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.38);
-  --dot-outer-shadow: 0 1px 3px rgba(0, 0, 0, 0.35), inset 0 0.5px 0 rgba(255, 255, 255, 0.08);
-  --sheet-bg: rgba(18, 27, 23, 0.92);
-  --scrim: rgba(0, 0, 0, 0.62);
-  --card-visual-bg: #1E3A2F;
-  --badge-bg: rgba(201, 168, 108, 0.18);
-  --badge-border: rgba(201, 168, 108, 0.48);
-  --badge-text: #F2DFBD;
-  --whiskey-bg: rgba(201, 168, 108, 0.13);
-  --whiskey-border: rgba(201, 168, 108, 0.46);
-  --whiskey-text: #E9D3A6;
-  --pill-border: rgba(201, 168, 108, 0.40);
-  --pill-text: #E9D3A6;
-  --map-accent: #C9A86C;
-  --map-soft: rgba(201, 168, 108, 0.10);
-  --map-border: rgba(201, 168, 108, 0.46);
-  --bar-fill: #C9A86C;
-  --glow-opacity: 1;
+  --accent-soft: rgba(47, 102, 78, 0.18);
+  --accent-track: rgba(59, 125, 96, 0.72);
+  --wave-ripple-bg: rgba(59, 125, 96, 0.22);
+  --track-neutral: #2C2C2E;
+  --dot-bg: #1E1E20;
+  --dot-inactive: #36363A;
+  --dot-outer-active: rgba(59, 125, 96, 0.24);
+  --orb-core: #3B7D60;
+  --orb-shadow: 0 2px 10px rgba(0, 0, 0, 0.36);
+  --muted: #6C6C73;
+  --chip-border: rgba(255, 255, 255, 0.14);
+  --divider: rgba(255, 255, 255, 0.08);
+  --glass-bg: rgba(28, 28, 30, 0.46);
+  --glass-header-bg: rgba(18, 18, 19, 0.78);
+  --glass-border: rgba(255, 255, 255, 0.16);
+  --glass-ring: rgba(0, 0, 0, 0.34);
+  --glass-highlight: rgba(255, 255, 255, 0.20);
+  --glass-bottom-shade: rgba(0, 0, 0, 0.36);
+  --glass-shadow: 0 12px 34px rgba(0, 0, 0, 0.52), 0 2px 6px rgba(0, 0, 0, 0.36);
+  --nav-active-bg: rgba(255, 255, 255, 0.11);
+  --nav-active-border: rgba(255, 255, 255, 0.18);
+  --nav-active-shadow: 0 2px 10px rgba(0, 0, 0, 0.30), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  --nav-hover-bg: rgba(255, 255, 255, 0.06);
+  --dot-inner-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.42);
+  --dot-outer-shadow: 0 1px 3px rgba(0, 0, 0, 0.38), inset 0 0.5px 0 rgba(255, 255, 255, 0.06);
+  --sheet-bg: rgba(26, 26, 28, 0.96);
+  --scrim: rgba(0, 0, 0, 0.66);
+  --card-visual-bg: #1D352B;
+  --badge-bg: rgba(0, 0, 0, 0.30);
+  --badge-border: rgba(255, 255, 255, 0.18);
+  --badge-text: #F2F2F5;
+  --whiskey-bg: rgba(255, 255, 255, 0.06);
+  --whiskey-border: rgba(255, 255, 255, 0.12);
+  --whiskey-text: #D6D6DC;
+  --pill-border: rgba(75, 148, 115, 0.42);
+  --pill-text: #8BC8AA;
+  --map-accent: #6EB996;
+  --map-soft: rgba(47, 102, 78, 0.14);
+  --map-border: rgba(75, 148, 115, 0.42);
+  --bar-fill: #3B7D60;
+  --glow-opacity: 0;
 }
 
 html, body {
@@ -121,7 +121,7 @@ html, body {
 
 body {
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #0c120f;
+  background: #0B0B0C;
   display: flex; justify-content: center; align-items: flex-start;
   padding: 12px 0;
 }
@@ -134,20 +134,18 @@ body {
   background: var(--bg);
   box-shadow: 0 25px 60px rgba(0,0,0,0.4);
   transform-origin: top center;
-  transition: background-color 0.25s ease;
 }
 
 .bg-base {
   position: absolute; inset: 0; z-index: 0;
   background: var(--bg);
-  transition: background-color 0.25s ease;
 }
 .ambient-glow {
   position: absolute; border-radius: 50%; pointer-events: none; z-index: 1;
   opacity: var(--glow-opacity); transition: opacity 0.3s ease;
 }
-.glow-1 { width: 300px; height: 300px; top: -90px; right: -80px; background: radial-gradient(circle, rgba(201,168,108,0.12) 0%, transparent 68%); }
-.glow-2 { width: 240px; height: 240px; bottom: 100px; left: -90px; background: radial-gradient(circle, rgba(44,82,64,0.22) 0%, transparent 68%); }
+.glow-1 { width: 300px; height: 300px; top: -90px; right: -80px; background: radial-gradient(circle, rgba(201,168,108,0.10) 0%, transparent 68%); }
+.glow-2 { width: 240px; height: 240px; bottom: 100px; left: -90px; background: radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 68%); }
 
 .notch {
   width: 122px; height: 28px; background: #000; border-radius: 100px;
@@ -175,17 +173,17 @@ body {
 html[data-theme="dark"] .ios-glass {
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.14) 0%,
+    rgba(255, 255, 255, 0.12) 0%,
     var(--glass-bg) 45%,
-    rgba(10, 16, 13, 0.34) 100%
+    rgba(16, 17, 19, 0.44) 100%
   );
 }
 .ios-glass-header {
   background: var(--glass-header-bg);
-  backdrop-filter: blur(22px) saturate(2.0);
-  -webkit-backdrop-filter: blur(22px) saturate(2.0);
+  backdrop-filter: blur(22px) saturate(1.8);
+  -webkit-backdrop-filter: blur(22px) saturate(1.8);
   border-bottom: 0.5px solid var(--divider);
-  transition: background-color 0.25s ease, border-color 0.25s ease;
+  transform: translateZ(0);
 }
 
 /* ===== FIXED HEADER ===== */
@@ -227,7 +225,7 @@ html[data-theme="dark"] .ios-glass {
 .like-badge {
   position: absolute; top: 4px; right: 3px;
   min-width: 15px; height: 15px; padding: 0 4px;
-  border-radius: 100px; background: var(--gold); color: #1E3A2F;
+  border-radius: 100px; background: var(--accent); color: #FFFFFF;
   font-size: 10px; font-weight: 700;
   display: none; align-items: center; justify-content: center;
 }
@@ -251,13 +249,12 @@ html[data-theme="dark"] .icon-moon { display: none; }
   touch-action: pan-y;
   scrollbar-width: none;
   transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.3s ease;
-  will-change: transform, opacity;
 }
 .view::-webkit-scrollbar { display: none; }
 
 .view-home {
   padding: 108px var(--side-pad) 175px var(--side-pad);
-  transform: translateX(0);
+  transform: none;
   opacity: 1;
   pointer-events: auto;
 }
@@ -274,7 +271,7 @@ html[data-theme="dark"] .icon-moon { display: none; }
   pointer-events: none;
 }
 .view-results.active {
-  transform: translateX(0);
+  transform: none;
   opacity: 1;
   pointer-events: auto;
 }

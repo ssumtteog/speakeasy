@@ -184,6 +184,8 @@ function renderActiveFilterBar() {
 
 function renderSearchResults() {
   const viewSearch = document.getElementById('viewSearch');
+  const prevScroll = viewSearch ? viewSearch.scrollTop : 0;
+  const hadResults = viewSearch ? viewSearch.classList.contains('has-results') : false;
   const whiskyBlock = document.getElementById('searchWhiskyBlock');
   const listEl = document.getElementById('searchResultsList');
   const countEl = document.getElementById('searchResultsCount');
@@ -276,6 +278,9 @@ function renderSearchResults() {
       matchedBars,
       '선택한 조건에 맞는 위스키나 바가 없어요.<br>필터를 조금 넓히거나 다른 키워드로 검색해 보세요!'
     );
+  }
+  if (hadResults && viewSearch) {
+    viewSearch.scrollTop = prevScroll;
   }
 }
 
@@ -405,22 +410,29 @@ function saveRecentSearch(term) {
   renderRecentSearches();
 }
 
-// Keyboard-safe instant tap for iOS WKWebView:
-// On iOS, tapping a button while <input> has focus causes a keyboard-blur touchcancel BEFORE touchend/click fires.
-// Handling action on touchstart (with preventDefault) guarantees 100% immediate response on first tap!
+// Keyboard-safe instant tap for iOS WKWebView + Desktop:
+// Fires on first pointerdown/touchstart/click with per-action dedup, NEVER blocking click via mousedown.
+const searchActionTimestamps = {};
+function runDedupedSearchAction(key, fn) {
+  const now = Date.now();
+  if (now - (searchActionTimestamps[key] || 0) < 320) return;
+  searchActionTimestamps[key] = now;
+  fn();
+}
+
 function bindKeyboardSafeTap(el, handler) {
   if (!el) return;
   let lastFired = 0;
   const fire = (e) => {
     const now = Date.now();
-    if (now - lastFired < 360) return;
+    if (now - lastFired < 320) return;
     lastFired = now;
     if (e.cancelable) e.preventDefault();
     e.stopPropagation();
     handler(e);
   };
+  el.addEventListener('pointerdown', fire);
   el.addEventListener('touchstart', fire, { passive: false });
-  el.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); });
   el.addEventListener('click', fire);
 }
 
@@ -492,59 +504,283 @@ function renderRecentSearches() {
       searchInputEl.blur();
     });
   });
-  box.querySelectorAll('[data-recent-del]').forEach(btn => {
-    bindKeyboardSafeTap(btn, () => {
-      const idx = parseInt(btn.dataset.recentDel, 10);
-      recentSearches.splice(idx, 1);
-      persistRecentSearches();
-      renderRecentSearches();
-    });
-  });
-  bindKeyboardSafeTap(document.getElementById('recentClearAllBtn'), () => {
-    recentSearches = [];
-    persistRecentSearches();
-    renderRecentSearches();
-    showToast('최근 검색 기록을 모두 삭제했어요');
+}
+
+// ===== CAMERA / ALBUM IMAGE PICKER + GEMINI VISION AI SCAN =====
+let lastObjectUrl = null;
+let scanRequestSeq = 0;
+
+function compressScanImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('파일을 읽지 못했어요'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('이미지를 불러오지 못했어요'));
+      img.onload = () => {
+        const maxSide = 600;
+        let w = img.width;
+        let h = img.height;
+        if (w > maxSide || h > maxSide) {
+          if (w >= h) {
+            h = Math.round((h * maxSide) / w);
+            w = maxSide;
+          } else {
+            w = Math.round((w * maxSide) / h);
+            h = maxSide;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        try {
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.68);
+          resolve({
+            base64: dataUrl.replace(/^data:[^;]+;base64,/, ''),
+            mimeType: 'image/jpeg'
+          });
+        } catch (e) {
+          const raw = String(reader.result || '');
+          resolve({
+            base64: raw.replace(/^data:[^;]+;base64,/, ''),
+            mimeType: file.type || 'image/jpeg'
+          });
+        }
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
   });
 }
 
-// ===== CAMERA / ALBUM IMAGE PICKER =====
-let lastObjectUrl = null;
-function openCameraScanSheet(imgUrl) {
+function findMatchingWhiskiesFromScan(ai) {
+  if (!ai || !ai.detected) return [];
+  const terms = [ai.whiskyName, ai.enName, ai.brand, ai.searchKeyword]
+    .map(t => normText(t))
+    .filter(t => t.length >= 2);
+  if (terms.length === 0) return [];
+  return WHISKIES
+    .map(w => {
+      const nameN = normText(w.name);
+      const enN = normText(w.en);
+      const brandN = normText(w.brand);
+      const keysN = normText((w.matchKeys || []).join(' '));
+      let score = 0;
+      terms.forEach((term, idx) => {
+        const weight = idx < 2 ? 3 : 2;
+        if (nameN.includes(term) || term.includes(nameN)) score += weight * 2;
+        else if (enN.includes(term) || term.includes(enN)) score += weight * 2;
+        else if (brandN.includes(term) || term.includes(brandN)) score += weight;
+        else if (keysN.includes(term)) score += 1;
+      });
+      return { w, score };
+    })
+    .filter(x => x.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+    .map(x => x.w);
+}
+
+function escapeScanHtml(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+async function analyzeWhiskyLabelWithAI(file) {
+  if (typeof hasLiveSupabase !== 'function' || !hasLiveSupabase()) {
+    return { notConfigured: true };
+  }
+  const { base64, mimeType } = await compressScanImage(file);
+  const base = window.SPEAKEASY_SUPABASE.url.replace(/\/$/, '');
+  const key = window.SPEAKEASY_SUPABASE.anonKey;
+  const res = await fetch(base + '/functions/v1/scan-whisky-label', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': key
+    },
+    body: JSON.stringify({ imageBase64: base64, mimeType })
+  });
+  if (res.status === 404) {
+    return { notDeployed: true };
+  }
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const msg = data.status === 503 || data.status === 429
+      ? 'AI 서버가 잠시 혼잡해요. 아래 버튼으로 바로 다시 시도해 보세요!'
+      : (data.error || 'AI 분석 중 오류가 발생했어요');
+    return { error: msg };
+  }
+  return { result: data };
+}
+
+function renderScanResultBox(container, payload) {
+  if (!container) return;
   const quickBrands = ['발베니', '글렌피딕', '조니워커', '몽키숄더', '글렌모렌지', '아드벡', '메이커스마크', '놉크릭', '제임슨', '맥캘란'];
+  const statusPill = document.getElementById('scanStatusPill');
+  const beamEl = document.getElementById('scanBeamEl');
+  const badgeEl = document.getElementById('scanHeaderBadge');
+  if (beamEl) beamEl.style.display = 'none';
+
+  const bindQuickChips = () => {
+    container.querySelectorAll('[data-scan-brand]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const brand = btn.dataset.scanBrand;
+        closeDetailSheet();
+        state.searchQuery = brand;
+        searchInputEl.value = brand;
+        saveRecentSearch(brand);
+        renderSearchResults();
+      });
+    });
+  };
+
+  if (payload.notDeployed || payload.notConfigured) {
+    if (statusPill) statusPill.textContent = 'Edge Function 배포 대기 중';
+    if (badgeEl) badgeEl.textContent = '설정 필요';
+    container.innerHTML = `
+      <div class="scan-notice-box">
+        Supabase에 <strong>scan-whisky-label</strong> Edge Function과 <code>GEMINI_API_KEY</code>를 등록하면 사진만 찍어도 위스키를 자동 판독해요!
+      </div>
+      <div class="sheet-sec-title">직접 브랜드 선택해서 찾기</div>
+      <div class="bar-whiskeys" style="margin-bottom:16px;">
+        ${quickBrands.map(b => '<button class="whiskey-tag" style="cursor:pointer;" data-scan-brand="' + b + '">' + b + '</button>').join('')}
+      </div>
+    `;
+    bindQuickChips();
+    return;
+  }
+
+  if (payload.error) {
+    if (statusPill) statusPill.textContent = '잠시 후 다시 시도';
+    if (badgeEl) badgeEl.textContent = '재시도';
+    container.innerHTML = `
+      <div class="scan-notice-box">
+        ${escapeScanHtml(payload.error)}
+        ${payload.retryFn ? '<div style="margin-top:10px;"><button type="button" class="scan-ai-primary-btn" id="scanRetrySameBtn">같은 사진으로 다시 분석하기</button></div>' : ''}
+      </div>
+      <div class="bar-whiskeys" style="margin-bottom:16px;">
+        ${quickBrands.map(b => '<button class="whiskey-tag" style="cursor:pointer;" data-scan-brand="' + b + '">' + b + '</button>').join('')}
+      </div>
+    `;
+    if (payload.retryFn) {
+      document.getElementById('scanRetrySameBtn')?.addEventListener('click', payload.retryFn);
+    }
+    bindQuickChips();
+    return;
+  }
+
+  const ai = payload.result || {};
+  if (!ai.detected) {
+    if (statusPill) statusPill.textContent = '라벨 인식 실패';
+    if (badgeEl) badgeEl.textContent = '다시 촬영';
+    container.innerHTML = `
+      <div class="scan-notice-box">
+        ${escapeScanHtml(ai.notes || '위스키 라벨이 또렷하게 보이지 않아요. 병 정면 라벨이 잘 나오도록 다시 찍어보세요!')}
+      </div>
+      <div class="sheet-sec-title">또는 인기 브랜드 바로 찾기</div>
+      <div class="bar-whiskeys" style="margin-bottom:16px;">
+        ${quickBrands.map(b => '<button class="whiskey-tag" style="cursor:pointer;" data-scan-brand="' + b + '">' + b + '</button>').join('')}
+      </div>
+    `;
+    bindQuickChips();
+    return;
+  }
+
+  if (statusPill) statusPill.textContent = 'AI 판독 완료 ✓';
+  if (badgeEl) badgeEl.textContent = 'Gemini AI';
+
+  const matchedWhiskies = findMatchingWhiskiesFromScan(ai);
+  const keyword = ai.searchKeyword || ai.brand || ai.whiskyName || '';
+  const confLabel = ai.confidence === 'high' ? '높은 정확도' : (ai.confidence === 'medium' ? '보통 정확도' : '추정 결과');
+
+  container.innerHTML = `
+    <div class="scan-ai-card">
+      <div class="scan-ai-badges">
+        ${ai.category ? `<span class="whisky-cat-badge">${escapeScanHtml(ai.category)}</span>` : ''}
+        ${ai.abv ? `<span class="scan-ai-meta">${escapeScanHtml(ai.abv)}</span>` : ''}
+        <span class="scan-ai-meta">· ${confLabel}</span>
+      </div>
+      <div class="scan-ai-name">${escapeScanHtml(ai.whiskyName || ai.brand || '위스키')}</div>
+      ${ai.enName ? `<div class="scan-ai-en">${escapeScanHtml(ai.enName)}</div>` : ''}
+      ${ai.notes ? `<div class="scan-ai-notes">${escapeScanHtml(ai.notes)}</div>` : ''}
+      <div class="scan-ai-actions">
+        ${keyword ? `<button type="button" class="scan-ai-primary-btn" id="scanSearchBarsBtn">"${escapeScanHtml(keyword)}" 파는 바 & 정보 검색</button>` : ''}
+        ${matchedWhiskies.length > 0 ? `<button type="button" class="scan-ai-secondary-btn" id="scanOpenWhiskyBtn">${escapeScanHtml(matchedWhiskies[0].name)} 테이스팅 노트 보기</button>` : ''}
+      </div>
+    </div>
+  `;
+
+  document.getElementById('scanSearchBarsBtn')?.addEventListener('click', () => {
+    closeDetailSheet();
+    state.searchQuery = keyword;
+    searchInputEl.value = keyword;
+    saveRecentSearch(keyword);
+    renderSearchResults();
+  });
+
+  document.getElementById('scanOpenWhiskyBtn')?.addEventListener('click', () => {
+    if (matchedWhiskies[0]) {
+      openWhiskySheet(matchedWhiskies[0].id);
+    }
+  });
+}
+
+function openCameraScanSheet(imgUrl, file) {
+  const reqId = ++scanRequestSeq;
   sheetBody.innerHTML = `
     <div class="sheet-title-row">
       <div class="sheet-bar-name">위스키 라벨 스캔</div>
-      <span class="sheet-match">미리보기</span>
+      <span class="sheet-match" id="scanHeaderBadge">AI 분석 중</span>
     </div>
-    <div class="sheet-addr">선택한 라벨 사진입니다. AI 자동 판독 연동 전까지 아래에서 브랜드를 골라 바로 검색할 수 있어요.</div>
+    <div class="sheet-addr">찍으신 라벨 사진을 Gemini Vision AI가 분석하고 있어요.</div>
     <div class="scan-preview-wrap">
       <img class="scan-preview-img" src="${imgUrl}" alt="선택된 위스키 라벨" />
-      <div class="scan-beam"></div>
-      <div class="scan-status-pill">AI 자동 인식은 백엔드(Gemini Vision) 연결 후 활성화</div>
+      <div class="scan-beam" id="scanBeamEl"></div>
+      <div class="scan-status-pill" id="scanStatusPill">Gemini AI가 라벨을 판독하고 있어요...</div>
     </div>
-    <div class="sheet-sec-title">사진 속 위스키 빠르게 찾기</div>
-    <div class="bar-whiskeys" style="margin-bottom:16px;">
-      ${quickBrands.map(b => '<button class="whiskey-tag" style="cursor:pointer;" data-scan-brand="' + b + '">' + b + '</button>').join('')}
+    <div id="scanAiResultBox">
+      <div class="scan-loading-box">라벨의 브랜드·연산·스타일을 읽는 중이에요 (약 1~3초)</div>
     </div>
     <button class="scan-retake-btn" id="scanRetakeBtn">다른 사진 선택 / 다시 찍기</button>
   `;
-  sheetBody.querySelectorAll('[data-scan-brand]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const brand = btn.dataset.scanBrand;
-      closeDetailSheet();
-      state.searchQuery = brand;
-      searchInputEl.value = brand;
-      saveRecentSearch(brand);
-      renderSearchResults();
-    });
-  });
   document.getElementById('scanRetakeBtn')?.addEventListener('click', () => {
     cameraFileInput.value = '';
     cameraFileInput.click();
   });
   sheetScrim.classList.add('open');
   detailSheet.classList.add('open');
+
+  if (!file) return;
+  const runScan = () => {
+    const box = document.getElementById('scanAiResultBox');
+    const pill = document.getElementById('scanStatusPill');
+    const beam = document.getElementById('scanBeamEl');
+    const badge = document.getElementById('scanHeaderBadge');
+    if (beam) beam.style.display = '';
+    if (pill) pill.textContent = 'Gemini AI가 라벨을 판독하고 있어요...';
+    if (badge) badge.textContent = 'AI 분석 중';
+    if (box) box.innerHTML = '<div class="scan-loading-box">라벨의 브랜드·연산·스타일을 읽는 중이에요 (약 1~3초)</div>';
+    analyzeWhiskyLabelWithAI(file)
+      .then(payload => {
+        if (reqId !== scanRequestSeq) return;
+        if (payload.error) payload.retryFn = runScan;
+        renderScanResultBox(document.getElementById('scanAiResultBox'), payload);
+      })
+      .catch(() => {
+        if (reqId !== scanRequestSeq) return;
+        renderScanResultBox(document.getElementById('scanAiResultBox'), {
+          error: '네트워크 연결을 확인해 주세요',
+          retryFn: runScan
+        });
+      });
+  };
+  runScan();
 }
 
 // ===== SEARCH INPUT FOCUS MODE (YouTube / Google / Naver style) =====
@@ -561,16 +797,32 @@ function updateSearchHeaderBack() {
   backBtn.classList.toggle('visible', isActiveSub);
 }
 
+function resetIosViewportOffset() {
+  try { window.scrollTo(0, 0); } catch (e) {}
+  if (viewSearchEl) {
+    viewSearchEl.scrollTop = 0;
+    // Force iOS WKWebView hit-test tree to resync with settled DOM layout
+    void viewSearchEl.offsetHeight;
+  }
+}
+
 function enterSearchFocusMode() {
+  const alreadyFocused = viewSearchEl.classList.contains('is-focused');
   viewSearchEl.classList.add('is-focused');
-  renderRecentSearches();
-  updateSearchHeaderBack();
+  if (!alreadyFocused) {
+    renderRecentSearches();
+    updateSearchHeaderBack();
+  }
+  resetIosViewportOffset();
+  setTimeout(resetIosViewportOffset, 50);
+  setTimeout(resetIosViewportOffset, 220);
 }
 
 function exitSearchFocusMode() {
   viewSearchEl.classList.remove('is-focused');
   searchInputEl.blur();
   updateSearchHeaderBack();
+  setTimeout(resetIosViewportOffset, 50);
 }
 
 function handleSearchBack() {
@@ -595,7 +847,16 @@ function handleSearchBack() {
   return true;
 }
 
+// Let iOS/WebView complete native tap -> focus BEFORE shifting layout so the input never jumps away mid-tap
 searchInputEl.addEventListener('focus', enterSearchFocusMode);
+
+// Tapping anywhere on the search pill (outside right-side action icons) reliably focuses the text input
+document.querySelector('.search-bar-box')?.addEventListener('click', (e) => {
+  if (e.target.closest('.search-bar-actions')) return;
+  if (document.activeElement !== searchInputEl) {
+    searchInputEl.focus();
+  }
+});
 
 searchInputEl.addEventListener('input', (e) => {
   state.searchQuery = e.target.value;
@@ -616,18 +877,65 @@ searchInputEl.addEventListener('keydown', (e) => {
   }
 });
 
-bindKeyboardSafeTap(document.getElementById('searchCancelBtn'), () => {
-  handleSearchBack();
-});
+// Delegated capture handlers on #viewSearch so Cancel / Clear / Delete-all ALWAYS fire on first tap even while iOS keyboard is open
+function handleDelegatedSearchAction(e) {
+  const target = e.target;
+  if (!target || !target.closest) return;
 
-bindKeyboardSafeTap(document.getElementById('searchClearBtn'), () => {
-  clearTimeout(autoSaveTimer);
-  state.searchQuery = '';
-  searchInputEl.value = '';
-  enterSearchFocusMode();
-  renderSearchResults();
-  searchInputEl.focus();
-});
+  const cancelBtn = target.closest('#searchCancelBtn');
+  if (cancelBtn) {
+    if (e.cancelable) e.preventDefault();
+    e.stopPropagation();
+    runDedupedSearchAction('cancel', () => handleSearchBack());
+    return;
+  }
+
+  const clearBtn = target.closest('#searchClearBtn');
+  if (clearBtn) {
+    if (e.cancelable) e.preventDefault();
+    e.stopPropagation();
+    runDedupedSearchAction('clear', () => {
+      clearTimeout(autoSaveTimer);
+      state.searchQuery = '';
+      searchInputEl.value = '';
+      enterSearchFocusMode();
+      renderSearchResults();
+      searchInputEl.focus();
+    });
+    return;
+  }
+
+  const clearAllBtn = target.closest('#recentClearAllBtn');
+  if (clearAllBtn) {
+    if (e.cancelable) e.preventDefault();
+    e.stopPropagation();
+    runDedupedSearchAction('clearAll', () => {
+      recentSearches = [];
+      persistRecentSearches();
+      renderRecentSearches();
+      showToast('최근 검색 기록을 모두 삭제했어요');
+    });
+    return;
+  }
+
+  const delBtn = target.closest('[data-recent-del]');
+  if (delBtn) {
+    if (e.cancelable) e.preventDefault();
+    e.stopPropagation();
+    const idx = parseInt(delBtn.dataset.recentDel, 10);
+    runDedupedSearchAction('del-' + idx, () => {
+      if (!isNaN(idx)) {
+        recentSearches.splice(idx, 1);
+        persistRecentSearches();
+        renderRecentSearches();
+      }
+    });
+  }
+}
+
+viewSearchEl.addEventListener('pointerdown', handleDelegatedSearchAction, true);
+viewSearchEl.addEventListener('touchstart', handleDelegatedSearchAction, { capture: true, passive: false });
+viewSearchEl.addEventListener('click', handleDelegatedSearchAction, true);
 
 document.getElementById('searchCameraBtn').addEventListener('click', (e) => {
   triggerBounce(e.currentTarget);
@@ -642,7 +950,7 @@ cameraFileInput.addEventListener('change', (e) => {
     try { URL.revokeObjectURL(lastObjectUrl); } catch (err) {}
   }
   lastObjectUrl = URL.createObjectURL(file);
-  openCameraScanSheet(lastObjectUrl);
+  openCameraScanSheet(lastObjectUrl, file);
 });
 
 // ===== DEDICATED FULL-SCREEN SEARCH FILTER SCREEN =====
