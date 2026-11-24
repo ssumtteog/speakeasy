@@ -1,4 +1,4 @@
-// ===== WHISKY GUIDE KNOWLEDGE (4 CATEGORIES + BRAND STORIES + GLOSSARY) =====
+// ===== WHISKY GUIDE KNOWLEDGE (4 CATEGORIES + BRAND STORIES + GLOSSARY + PAIRINGS — KO / EN / JA) =====
 const GUIDE_CATEGORIES = [
   {
     id: '블렌디드',
@@ -6,17 +6,39 @@ const GUIDE_CATEGORIES = [
     en: 'Blended',
     image: 'assets/guide/blended.jpg',
     badge: '입문 1순위',
+    badge_en: 'Best to Start',
+    badge_ja: '入門におすすめ',
     tagline: '부드럽고 균형 잡힌 위스키의 시작',
+    tagline_en: 'Smooth, balanced, and effortless to enjoy',
+    tagline_ja: 'まろやかで調和のとれた最初の一杯',
     shortDesc: '여러 증류소의 몰트·그레인 원액을 조화롭게 섞어 마시기 편해요.',
+    shortDesc_en: 'Malt and grain whiskies blended in harmony for an easy, approachable sip.',
+    shortDesc_ja: 'モルトとグレーンを絶妙に調和させた、飲みやすい王道スタイル。',
     whatIsTitle: '블렌디드 위스키란?',
+    whatIsTitle_en: 'What is Blended Whisky?',
+    whatIsTitle_ja: 'ブレンデッドウイスキーとは？',
     whatIsBody: '서로 다른 증류소에서 만든 몰트 위스키(보리)와 그레인 위스키(옥수수·밀 등)를 마스터 블렌더가 황금 비율로 조합한 위스키입니다. 모난 곳 없이 부드럽고 일관된 맛을 내기 때문에 위스키를 처음 접하거나 하이볼로 즐기기에 가장 좋습니다.',
+    whatIsBody_en: 'Crafted by master blenders combining single malts (barley) and grain whiskies (corn, wheat) from multiple distilleries. Smooth, consistent, and rounded — ideal for highballs or your very first dram.',
+    whatIsBody_ja: '複数の蒸留所のモルト原酒（大麦）とグレーン原酒（トウモロコシ・小麦など）を、マスターブレンダーが黄金比で調和させたウイスキー。クセが少なく飲みやすいため、ハイボールや入門に最適です。',
     facts: [
       { label: '주원료', value: '보리 맥아 + 곡물(옥수수·밀)' },
       { label: '대표 스타일', value: '부드러움 · 밸런스 · 가성비' },
       { label: '추천 음용법', value: '하이볼 · 온더락 · 니트' }
     ],
+    facts_en: [
+      { label: 'Key Grains', value: 'Malted Barley + Grain (Corn & Wheat)' },
+      { label: 'Signature Style', value: 'Smooth · Balanced · Great Value' },
+      { label: 'Best Served', value: 'Highball · On the Rocks · Neat' }
+    ],
+    facts_ja: [
+      { label: '主原料', value: '大麦麦芽＋穀物（トウモロコシ・小麦）' },
+      { label: '特徴', value: 'まろやか・バランス重視・コスパ◎' },
+      { label: 'おすすめの飲み方', value: 'ハイボール・ロック・ストレート' }
+    ],
     profile: { sweet: 68, smoky: 28, body: 52, beginner: 96 },
-    highlights: ['조니워커', '몽키숄더', '발렌타인', '제임슨', '산토리']
+    highlights: ['조니워커', '몽키숄더', '발렌타인', '제임슨', '산토리'],
+    highlights_en: ['Johnnie Walker', 'Monkey Shoulder', "Ballantine's", 'Jameson', 'Suntory'],
+    highlights_ja: ['ジョニーウォーカー', 'モンキーショルダー', 'バランタイン', 'ジェムソン', 'サントリー']
   },
   {
     id: '싱글몰트',
@@ -24,17 +46,39 @@ const GUIDE_CATEGORIES = [
     en: 'Single Malt',
     image: 'assets/guide/singlemalt.jpg',
     badge: '풍미의 정석',
+    badge_en: 'Classic Craft',
+    badge_ja: '個性の王道',
     tagline: '단 하나의 증류소, 100% 보리의 개성',
+    tagline_en: '100% malted barley from a single distillery',
+    tagline_ja: '単一蒸留所・大麦モルト100%の個性',
     shortDesc: '증류소마다 물·오크통·기후가 달라 다채로운 향을 탐험할 수 있어요.',
+    shortDesc_en: 'Every distillery brings its own fruit, honey, oak, and terroir to explore.',
+    shortDesc_ja: '水・樽・風土が織りなす多彩な香りとストーリーを楽しめます。',
     whatIsTitle: '싱글몰트 위스키란?',
+    whatIsTitle_en: 'What is Single Malt?',
+    whatIsTitle_ja: 'シングルモルトとは？',
     whatIsBody: '단 하나의(Single) 증류소에서 100% 발아된 보리(Malt)만을 사용해 만든 위스키입니다. 섞지 않고 한 곳의 개성을 고스란히 담기 때문에 과일·꿀·초콜릿·견과류 등 증류소마다 뚜렷한 향과 스토리를 비교하며 마시는 재미가 큽니다.',
+    whatIsBody_en: 'Made from 100% malted barley at a single distillery. Unblended with other houses, it captures pure distillery character — from orchard fruit and heather honey to rich sherry and dark chocolate.',
+    whatIsBody_ja: '単一の蒸留所で大麦麦芽のみを使って造られるウイスキー。果実や蜂蜜、シェリー樽由来の奥深い香りなど、蒸留所ごとの個性を飲み比べる楽しさがあります。',
     facts: [
       { label: '주원료', value: '100% 발아 보리 (몰트)' },
       { label: '대표 스타일', value: '과일 · 꿀 · 셰리 · 복합미' },
       { label: '추천 음용법', value: '니트(스트레이트) · 물 몇 방울' }
     ],
+    facts_en: [
+      { label: 'Key Grain', value: '100% Malted Barley' },
+      { label: 'Signature Style', value: 'Orchard Fruit · Honey · Sherry · Complexity' },
+      { label: 'Best Served', value: 'Neat · A Few Drops of Water' }
+    ],
+    facts_ja: [
+      { label: '主原料', value: '大麦麦芽（モルト）100%' },
+      { label: '特徴', value: '果実・蜂蜜・シェリー・奥深い余韻' },
+      { label: 'おすすめの飲み方', value: 'ストレート・加水（数滴）' }
+    ],
     profile: { sweet: 74, smoky: 30, body: 72, beginner: 80 },
-    highlights: ['글렌피딕', '발베니', '맥캘란', '글렌모렌지', '글렌리벳']
+    highlights: ['글렌피딕', '발베니', '맥캘란', '글렌모렌지', '글렌리벳'],
+    highlights_en: ['Glenfiddich', 'The Balvenie', 'The Macallan', 'Glenmorangie', 'The Glenlivet'],
+    highlights_ja: ['グレンフィディック', 'バルヴェニー', 'マッカラン', 'グレンモーレンジィ', 'グレンリベット']
   },
   {
     id: '피트',
@@ -42,17 +86,39 @@ const GUIDE_CATEGORIES = [
     en: 'Peat · Islay',
     image: 'assets/guide/peat.jpg',
     badge: '강렬한 개성',
+    badge_en: 'Bold & Smoky',
+    badge_ja: '強烈な個性',
     tagline: '모닥불 연기와 바닷바람의 깊은 여운',
+    tagline_en: 'Campfire smoke meets Atlantic sea spray',
+    tagline_ja: '焚き火のスモークと潮風の深い余韻',
     shortDesc: '이탄(피트) 불로 보리를 말려 스모키하고 짭짤한 매력이 폭발해요.',
+    shortDesc_en: 'Malted barley dried over peat fires for unmistakable smoky, maritime depth.',
+    shortDesc_ja: 'ピート（泥炭）で燻した大麦が生む、虜になるスモーキーさ。',
     whatIsTitle: '피트 위스키란?',
+    whatIsTitle_en: 'What is Peated Whisky?',
+    whatIsTitle_ja: 'ピートウイスキーとは？',
     whatIsBody: '스코틀랜드 아일라(Islay) 섬 등에서는 보리를 건조할 때 땅속 식물이 퇴적된 연료인 "피트(Peat·이탄)"를 태웁니다. 이 연기가 보리에 스며들어 캠프파이어, 훈제, 바다 소금기, 약품 향 같은 독보적인 풍미를 만듭니다. 처음엔 낯설지만 한 번 빠지면 가장 열광하게 되는 장르예요.',
+    whatIsBody_en: 'Iconic to Scotland’s Islay island, barley is dried over smoldering peat turf. The smoke infuses bold notes of hearth fire, sea salt, iodine, and dark barbecue — bold at first sip, and deeply addictive once it clicks.',
+    whatIsBody_ja: 'スコットランド・アイラ島などで泥炭（ピート）を焚いて大麦を乾燥させることで、焚き火や潮風、燻製のような独特の香りをまとわせた個性派ウイスキー。一度ハマると抜け出せない魅力があります。',
     facts: [
       { label: '핵심 특징', value: '이탄(Peat) 훈연 건조' },
       { label: '대표 스타일', value: '스모키 · 바다 · 요오드 · 훈제' },
       { label: '추천 음용법', value: '니트 · 스모키 하이볼' }
     ],
+    facts_en: [
+      { label: 'Defining Craft', value: 'Kiln-Dried Over Burning Peat' },
+      { label: 'Signature Style', value: 'Campfire Smoke · Sea Spray · Medicinal' },
+      { label: 'Best Served', value: 'Neat · Smoky Highball' }
+    ],
+    facts_ja: [
+      { label: '製法の特徴', value: '泥炭（ピート）による燻煙乾燥' },
+      { label: '特徴', value: 'スモーキー・潮風・ヨード・燻製香' },
+      { label: 'おすすめの飲み方', value: 'ストレート・スモーキーハイボール' }
+    ],
     profile: { sweet: 42, smoky: 96, body: 88, beginner: 44 },
-    highlights: ['아드벡', '라프로익', '라가불린', '보모어', '탈리스커']
+    highlights: ['아드벡', '라프로익', '라가불린', '보모어', '탈리스커'],
+    highlights_en: ['Ardbeg', 'Laphroaig', 'Lagavulin', 'Bowmore', 'Talisker'],
+    highlights_ja: ['アードベッグ', 'ラフロイグ', 'ラガヴーリン', 'ボウモア', 'タリスカー']
   },
   {
     id: '버번',
@@ -60,158 +126,341 @@ const GUIDE_CATEGORIES = [
     en: 'Bourbon & Rye',
     image: 'assets/guide/bourbon.jpg',
     badge: '진한 달콤함',
+    badge_en: 'Rich & Sweet',
+    badge_ja: '濃厚な甘み',
     tagline: '새 오크통과 옥수수의 묵직한 바닐라',
+    tagline_en: 'Charred new oak and rich corn sweetness',
+    tagline_ja: '新樽オークとトウモロコシの豊かなバニラ',
     shortDesc: '옥수수 51% 이상과 새 불탄 오크통에서 나오는 진한 카라멜·바닐라 향.',
+    shortDesc_en: '51%+ corn aged in newly charred American oak for lush vanilla and caramel.',
+    shortDesc_ja: 'トウモロコシ51%以上を焦がした新樽で熟成。濃いバニラとキャラメル香。',
     whatIsTitle: '버번 위스키란?',
+    whatIsTitle_en: 'What is Bourbon & Rye?',
+    whatIsTitle_ja: 'バーボン・ライとは？',
     whatIsBody: '미국(주로 켄터키)에서 옥수수를 51% 이상 사용해 만들고, 안쪽을 불로 태운 "새 아메리칸 오크통"에서만 숙성하는 위스키입니다. 새 오크통 특유의 강렬한 바닐라·카라멜·구운 우드 향과 묵직한 타격감이 특징이며, 알싸한 호밀을 쓴 라이(Rye)와 테네시 위스키도 이 계열로 함께 즐겨요.',
+    whatIsBody_en: 'American whiskey distilled from at least 51% corn and aged exclusively in brand-new charred oak barrels. Expect bold vanilla, caramel, toasted oak, and warm spice — alongside peppery Rye and charcoal-mellowed Tennessee whiskey.',
+    whatIsBody_ja: 'アメリカ（主にケンタッキー）でトウモロコシを51%以上使用し、内側を焦がした新しいオーク樽のみで熟成。力強いバニラやキャラメル香が魅力で、スパイシーなライやテネシーもこの系統です。',
     facts: [
       { label: '주원료', value: '옥수수 51% 이상 (+ 호밀·밀)' },
       { label: '대표 스타일', value: '바닐라 · 카라멜 · 구운 오크' },
       { label: '추천 음용법', value: '온더락 · 하이볼 · 올드패션드' }
     ],
+    facts_en: [
+      { label: 'Key Grains', value: '51%+ Corn (+ Rye or Wheat)' },
+      { label: 'Signature Style', value: 'Vanilla · Caramel · Toasted Oak' },
+      { label: 'Best Served', value: 'On the Rocks · Highball · Old Fashioned' }
+    ],
+    facts_ja: [
+      { label: '主原料', value: 'トウモロコシ51%以上（＋ライ麦・小麦）' },
+      { label: '特徴', value: 'バニラ・キャラメル・香ばしい樽香' },
+      { label: 'おすすめの飲み方', value: 'ロック・ハイボール・オールドファッションド' }
+    ],
     profile: { sweet: 86, smoky: 36, body: 82, beginner: 82 },
-    highlights: ['메이커스마크', '우드포드 리저브', '놉크릭', '와일드터키', '버팔로 트레이스']
+    highlights: ['메이커스마크', '우드포드 리저브', '놉크릭', '와일드터키', '버팔로 트레이스'],
+    highlights_en: ["Maker's Mark", 'Woodford Reserve', 'Knob Creek', 'Wild Turkey', 'Buffalo Trace'],
+    highlights_ja: ['メーカーズマーク', 'ウッドフォードリザーブ', 'ノブクリーク', 'ワイルドターキー', 'バッファロートレース']
   }
 ];
 
 const GUIDE_BRAND_STORIES = {
   '글렌피딕': {
     en: 'Glenfiddich',
+    ja: 'グレンフィディック',
     origin: '스코틀랜드 · 스페이사이드 (1887)',
+    origin_en: 'Speyside, Scotland (1887)',
+    origin_ja: 'スコットランド・スペイサイド (1887)',
     story: '게일어로 "사슴의 계곡"을 뜻하며, 세계 최초로 싱글몰트를 전 세계에 알린 전설적인 증류소입니다. 삼각형 초록 병이 상징이며 신선한 서양배와 청사과 같은 화사한 과일향 덕분에 싱글몰트 입문의 가장 안전한 기준점으로 꼽힙니다.',
-    tip: '처음이라면 12년으로 깔끔한 과일향을 느끼고, 조금 더 진한 꿀과 시나몬이 궁금하다면 15년 솔레라로 넘어가 보세요.'
+    story_en: 'Meaning "Valley of the Deer" in Gaelic, Glenfiddich pioneered single malt on the global stage. Famous for its green triangular bottle and crisp pear-and-apple freshness, it remains the gold standard for beginners.',
+    story_ja: 'ゲール語で「鹿の谷」を意味し、シングルモルトを世界へ広めた先駆的蒸留所。緑の三角ボトルと洋梨・青リンゴのような爽やかな果実香で、入門の定番として愛されています。',
+    tip: '처음이라면 12년으로 깔끔한 과일향을 느끼고, 조금 더 진한 꿀과 시나몬이 궁금하다면 15년 솔레라로 넘어가 보세요.',
+    tip_en: 'Start with the crisp 12-Year, then step up to the 15-Year Solera for warmer honey and cinnamon depth.',
+    tip_ja: 'まずは爽やかな12年から。より濃厚な蜂蜜とシナモンを楽しむなら15年ソレラがおすすめです。'
   },
   '발베니': {
     en: 'The Balvenie',
+    ja: 'ザ・バルヴェニー',
     origin: '스코틀랜드 · 스페이사이드 (1892)',
+    origin_en: 'Speyside, Scotland (1892)',
+    origin_ja: 'スコットランド・スペイサイド (1892)',
     story: '글렌피딕 바로 옆에 자리한 형제 증류소로, 보리 재배부터 몰팅·오크통 제작까지 장인들의 수작업을 고집합니다. 꿀과 바닐라의 부드러운 단맛이 시그니처이며 두 가지 오크통을 거치는 "캐스크 피니시" 기법의 개척자입니다.',
-    tip: '부드러운 꿀·견과류 풍미의 12년 더블우드와 열대과일 럼 향이 감도는 14년 캐리비안 캐스크가 가장 인기예요.'
+    story_en: 'Glenfiddich’s sister distillery, dedicated to traditional craftsmanship from homegrown barley to on-site cooperage. Signature notes of honey and vanilla shine through its pioneering cask-finish expressions.',
+    story_ja: '大麦栽培から製麦・樽作りまで職人の手仕事を守る名門。蜂蜜とバニラの優しい甘みが特徴で、2種類の樽で熟成する「カスクフィニッシュ」の先駆者です。',
+    tip: '부드러운 꿀·견과류 풍미의 12년 더블우드와 열대과일 럼 향이 감도는 14년 캐리비안 캐스크가 가장 인기예요.',
+    tip_en: 'Try the silky 12Y DoubleWood for honeyed nuttiness, or the 14Y Caribbean Cask for tropical rum-barrel warmth.',
+    tip_ja: '蜂蜜とナッツ香る12年ダブルウッド、南国フルーツ感のある14年カリビアンカスクが定番人気です。'
   },
   '맥캘란': {
     en: 'The Macallan',
+    ja: 'ザ・マッカラン',
     origin: '스코틀랜드 · 스페이사이드 (1824)',
+    origin_en: 'Speyside, Scotland (1824)',
+    origin_ja: 'スコットランド・スペイサイド (1824)',
     story: '"싱글몰트의 롤스로이스"라 불리며 스페인 헤레스 지방에서 직접 제작한 셰리 오크통 숙성에 엄청난 투자를 합니다. 말린 건포도, 다크 초콜릿, 따뜻한 향신료가 어우러지는 깊고 우아한 셰리 풍미가 특징입니다.',
-    tip: '부드러운 입문은 12년 더블캐스크, 진득한 정통 셰리의 깊이를 원한다면 12년·18년 셰리오크를 추천합니다.'
+    story_en: 'Often called the "Rolls-Royce of Single Malts," The Macallan invests heavily in bespoke sherry-seasoned oak casks from Jerez, Spain — delivering lush dried fruit, dark chocolate, and warm spice.',
+    story_ja: '「シングルモルトのロールスロイス」と称され、スペイン・ヘレス産シェリー樽に徹底的にこだわる名門。レーズンやダークチョコ、優雅なスパイス香が魅力です。',
+    tip: '부드러운 입문은 12년 더블캐스크, 진득한 정통 셰리의 깊이를 원한다면 12년·18년 셰리오크를 추천합니다.',
+    tip_en: 'Go for the 12Y Double Cask for a smooth entry, or the 12Y & 18Y Sherry Oak for deep classic sherry richness.',
+    tip_ja: 'まろやかな入門なら12年ダブルカスク、王道シェリーの深みなら12年・18年シェリーオークがおすすめです。'
   },
   '글렌모렌지': {
     en: 'Glenmorangie',
+    ja: 'グレンモーレンジィ',
     origin: '스코틀랜드 · 하이랜드 (1843)',
+    origin_en: 'Highland, Scotland (1843)',
+    origin_ja: 'スコットランド・ハイランド (1843)',
     story: '기린 목처럼 스코틀랜드에서 가장 높은 구리 증류기를 사용해 불순물 없이 극도로 맑고 화사한 원액을 뽑아냅니다. 시트러스·복숭아·꽃향이 깔끔하게 살아있어 부담 없이 즐기기 좋습니다.',
-    tip: '상큼한 오리지널부터 포트 캐스크의 퀸타 루반, 에스프레소 향의 시그넷까지 캐스크 변화 비교가 정말 재밌는 브랜드예요.'
+    story_en: 'Using Scotland’s tallest giraffe-neck copper stills, Glenmorangie produces an exceptionally pure, delicate spirit brimming with citrus, peach, and bright floral aromatics.',
+    story_ja: 'キリンの首のようにスコットランドで最も背の高い蒸留器を用い、雑味のない華やかな原酒を造ります。柑橘や桃、花のような軽やかな香りが魅力です。',
+    tip: '상큼한 오리지널부터 포트 캐스크의 퀸타 루반, 에스프레소 향의 시그넷까지 캐스크 변화 비교가 정말 재밌는 브랜드예요.',
+    tip_en: 'Compare The Original against port-finished Quinta Ruban or espresso-rich Signet to taste how casks transform a spirit.',
+    tip_ja: '爽やかなオリジナルからポート樽のキンタ・ルバン、コーヒー香るシグネットまで樽違いの飲み比べが楽しいブランドです。'
   },
   '글렌리벳': {
     en: 'The Glenlivet',
+    ja: 'ザ・グレンリベット',
     origin: '스코틀랜드 · 스페이사이드 (1824)',
+    origin_en: 'Speyside, Scotland (1824)',
+    origin_ja: 'スコットランド・スペイサイド (1824)',
     story: '스코틀랜드 스페이사이드 지역 최초의 합법 증류소로, 부드럽고 우아한 과일·꽃향 스타일의 기준을 세웠습니다. 글렌피딕과 함께 전 세계 싱글몰트 시장을 이끄는 양대 산맥입니다.',
-    tip: '파운더스 리저브나 12년은 알코올 자극이 적어 위스키 입문자도 니트로 편안하게 마시기 좋아요.'
+    story_en: 'The first licensed distillery in Speyside, setting the benchmark for smooth, floral, fruit-forward single malt. Alongside Glenfiddich, it anchors the global single malt world.',
+    story_ja: 'スペイサイド初の政府公認蒸留所として、優雅でフルーティーなスタイルの基準を築きました。世界中で親しまれる王道シングルモルトです。',
+    tip: '파운더스 리저브나 12년은 알코올 자극이 적어 위스키 입문자도 니트로 편안하게 마시기 좋아요.',
+    tip_en: 'Both Founder’s Reserve and the 12-Year have a gentle alcohol bite, making them easy to sip neat.',
+    tip_ja: 'ファウンダーズリザーブや12年はアルコールの角が少なく、初心者でもストレートで心地よく楽しめます。'
   },
   '글렌알라키': {
     en: 'The GlenAllachie',
+    ja: 'グレンアラヒー',
     origin: '스코틀랜드 · 스페이사이드 (1967)',
+    origin_en: 'Speyside, Scotland (1967)',
+    origin_ja: 'スコットランド・スペイサイド (1967)',
     story: '위스키 업계의 거장 빌리 워커가 인수한 뒤 단숨에 전 세계 마니아들의 최애로 떠오른 증류소입니다. 46% 이상의 높은 도수와 논칠필터로 진한 초콜릿·꿀·셰리 풍미를 아낌없이 담아냅니다.',
-    tip: '진하고 달콤한 셰리 위스키를 좋아한다면 12년·15년, 강한 타격감을 원한다면 10년 캐스크 스트렝스를 경험해 보세요.'
+    story_en: 'Revitalized by legendary master distiller Billy Walker, GlenAllachie became a cult favorite overnight — bottled at 46%+ non-chill filtered for decadent chocolate, heather honey, and sherry richness.',
+    story_ja: '巨匠ビリー・ウォーカーの就任で一躍マニアの憧れとなった蒸留所。46%以上・ノンチルフィルターで濃厚なチョコ・蜂蜜・シェリー香を引き出します。',
+    tip: '진하고 달콤한 셰리 위스키를 좋아한다면 12년·15년, 강한 타격감을 원한다면 10년 캐스크 스트렝스를 경험해 보세요.',
+    tip_en: 'Love bold sherry? Start with the 12Y or 15Y — or go full-throttle with the 10Y Cask Strength.',
+    tip_ja: '濃厚なシェリー好きなら12年・15年、力強い原酒の迫力を求めるなら10年カスクストレングスをどうぞ。'
   },
   '글렌드로낙': {
     en: 'The GlenDronach',
+    ja: 'グレンドロナック',
     origin: '스코틀랜드 · 하이랜드 (1826)',
+    origin_en: 'Highland, Scotland (1826)',
+    origin_ja: 'スコットランド・ハイランド (1826)',
     story: '200년 가까이 올로로소와 페드로 히메네즈(PX) 셰리 오크통 숙성만을 고집해 온 정통 셰리 명가입니다. 건포도, 무화과, 마누카 꿀 같은 묵직한 단맛이 일품입니다.',
-    tip: '12년만 마셔도 셰리 위스키의 매력이 선명하게 느껴지며, 15년 리바이벌은 애호가들이 극찬하는 밸런스를 보여줍니다.'
+    story_en: 'A 200-year bastion of traditional Oloroso and Pedro Ximénez (PX) sherry maturation, prized for its lush, weighty sweetness of raisins, figs, and manuka honey.',
+    story_ja: '約200年にわたりオロロソ＆PXシェリー樽熟成を貫く正統派シェリーの名家。レーズンやイチジク、マヌカハニーのような重厚な甘みが絶品です。',
+    tip: '12년만 마셔도 셰리 위스키의 매력이 선명하게 느껴지며, 15년 리바이벌은 애호가들이 극찬하는 밸런스를 보여줍니다.',
+    tip_en: 'Even the 12Y delivers unmistakable sherry character, while the 15Y Revival is celebrated for near-perfect balance.',
+    tip_ja: '12年でもシェリーの醍醐味がしっかり味わえ、15年リバイバルは愛好家絶賛のバランスを誇ります。'
   },
   '아드벡': {
     en: 'Ardbeg',
+    ja: 'アードベッグ',
     origin: '스코틀랜드 · 아일라 (1815)',
+    origin_en: 'Islay, Scotland (1815)',
+    origin_ja: 'スコットランド・アイラ島 (1815)',
     story: '강렬한 장작불 피트 스모크 속에 의외의 상큼한 시트러스와 달콤한 바닐라를 숨겨두는 "피트 패러독스"로 전 세계에 열성 팬덤을 거느린 아일라 대표 증류소입니다.',
-    tip: '아드벡 10년으로 정통 피트를 경험한 뒤, 달콤한 셰리가 더해진 우가달로 넘어가면 신세계가 열립니다.'
+    story_en: 'Famous for its "Peat Paradox" — layering bright lemon zest and sweet vanilla beneath ferocious woodsmoke — Ardbeg commands one of the most passionate fanbases in whisky.',
+    story_ja: '強烈なピートスモークの奥に爽やかな柑橘とバニラの甘みを忍ばせる「ピートのパラドックス」で、世界中に熱狂的なファンを持つアイラ代表です。',
+    tip: '아드벡 10년으로 정통 피트를 경험한 뒤, 달콤한 셰리가 더해진 우가달로 넘어가면 신세계가 열립니다.',
+    tip_en: 'Meet pure Islay smoke with Ardbeg 10, then explore Uigeadail where rich sherry meets campfire intensity.',
+    tip_ja: '王道ピートの10年を体験したら、シェリー樽の甘みが重なるウーガダールへ進むと新しい世界が開けます。'
   },
   '라프로익': {
     en: 'Laphroaig',
+    ja: 'ラフロイグ',
     origin: '스코틀랜드 · 아일라 (1815)',
+    origin_en: 'Islay, Scotland (1815)',
+    origin_ja: 'スコットランド・アイラ島 (1815)',
     story: '영국 왕실 인증을 받은 아일라의 아이콘. 병원 소독약(요오드)과 바닷바람, 젖은 모닥불 연기 같은 극단적인 개성으로 "사랑하거나 증오하거나"라는 슬로건이 유명합니다.',
-    tip: '첫 모금의 충격 뒤에 찾아오는 바닐라 단맛이 매력적이에요. 쿼터캐스크는 오크의 부드러움이 더해져 마시기 한결 편합니다.'
+    story_en: 'Holding a Royal Warrant, this Islay legend is unapologetically medicinal, briny, and smoky — famously embracing its polarizing "Love It or Hate It" reputation.',
+    story_ja: '英国王室御用達のアイラの象徴。ヨード香や潮風、焚き火のような強烈な個性で「好きになるか嫌いになるか」と称される唯一無二の味わいです。',
+    tip: '첫 모금의 충격 뒤에 찾아오는 바닐라 단맛이 매력적이에요. 쿼터캐스크는 오크의 부드러움이 더해져 마시기 한결 편합니다.',
+    tip_en: 'Look past the bold first punch for its velvety vanilla sweetness; Quarter Cask adds extra oak creaminess.',
+    tip_ja: '一口目の衝撃の後に広がるバニラの甘みがクセになります。クォーターカスクは樽の丸みがあり飲みやすめです。'
   },
   '라가불린': {
     en: 'Lagavulin',
+    ja: 'ラガヴーリン',
     origin: '스코틀랜드 · 아일라 (1816)',
+    origin_en: 'Islay, Scotland (1816)',
+    origin_ja: 'スコットランド・アイラ島 (1816)',
     story: '아주 천천히 증류하고 길게 숙성해 "아일라의 왕"으로 불립니다. 거친 피트 연기를 실크처럼 우아하고 묵직하게 다듬어내며 셰리의 은은한 단맛과 완벽한 균형을 이룹니다.',
-    tip: '라가불린 16년은 피트를 처음 접해도 "고급스럽다"는 인상을 주는 대표 명작입니다.'
+    story_en: 'Slowly distilled and patiently matured to earn its title as "King of Islay." Bold peat smoke is polished into silky elegance, balanced with subtle sherry sweetness.',
+    story_ja: 'ゆったりとした蒸留と長期熟成で「アイラの王」と呼ばれる名酒。力強いピート香をシルクのように優雅に整え、シェリーの甘みと絶妙に調和させます。',
+    tip: '라가불린 16년은 피트를 처음 접해도 "고급스럽다"는 인상을 주는 대표 명작입니다.',
+    tip_en: 'Lagavulin 16Y is an iconic masterpiece that feels refined and luxurious even to first-time peat drinkers.',
+    tip_ja: 'ラガヴーリン16年はピート初心者でも「気品がある」と感じられる不朽の名作です。'
   },
   '보모어': {
     en: 'Bowmore',
+    ja: 'ボウモア',
     origin: '스코틀랜드 · 아일라 (1779)',
+    origin_en: 'Islay, Scotland (1779)',
+    origin_ja: 'スコットランド・アイラ島 (1779)',
     story: '아일라 섬에서 가장 오래된 증류소입니다. 바다보다 낮은 지하 숙성고(No.1 Vault)에서 숙성되며 과하지 않은 피트와 레몬·꿀·초콜릿의 밸런스가 뛰어나 피트 입문용으로 최고입니다.',
-    tip: '피트 위스키가 두렵다면 보모어 12년으로 시작해 보세요. 부담 없이 스모키한 매력을 느낄 수 있어요.'
+    story_en: 'Islay’s oldest distillery, aging spirits in its legendary sea-level No. 1 Vaults. Measured peat smoke meets lemon, honey, and dark chocolate — ideal for stepping into smoky whiskies.',
+    story_ja: 'アイラ最古の蒸留所。海面下の貯蔵庫で熟成され、程よいピートとレモン・蜂蜜・チョコの調和が抜群でピート入門に最適です。',
+    tip: '피트 위스키가 두렵다면 보모어 12년으로 시작해 보세요. 부담 없이 스모키한 매력을 느낄 수 있어요.',
+    tip_en: 'Curious about peat without the shock? Bowmore 12Y is the gentlest gateway into Islay smoke.',
+    tip_ja: 'ピートに挑戦したい方はボウモア12年から。穏やかなスモーク感を無理なく楽しめます。'
   },
   '탈리스커': {
     en: 'Talisker',
+    ja: 'タリスカー',
     origin: '스코틀랜드 · 스카이 섬 (1830)',
+    origin_en: 'Isle of Skye, Scotland (1830)',
+    origin_ja: 'スコットランド・スカイ島 (1830)',
     story: '거친 파도가 치는 스카이 섬 유일의 클래식 증류소입니다. 입안에서 톡 쏘는 흑후추(페퍼) 타격감과 짭짤한 바다 내음, 은은한 스모크가 조화롭게 어우러집니다.',
-    tip: '탈리스커 10년에 탄산수와 통후추를 살짝 갈아 넣는 "탈리스커 페퍼 하이볼"은 꼭 한 번 마셔봐야 할 별미예요.'
+    story_en: 'Crafted by the rugged shores of the Isle of Skye, Talisker pairs signature cracked black pepper spice with sea spray and warming maritime smoke.',
+    story_ja: '荒波のスカイ島を代表する蒸留所。舌の上で弾ける黒胡椒のスパイシーさと潮気、心地よいスモークが重なり合います。',
+    tip: '탈리스커 10년에 탄산수와 통후추를 살짝 갈아 넣는 "탈리스커 페퍼 하이볼"은 꼭 한 번 마셔봐야 할 별미예요.',
+    tip_en: 'Don’t miss a Talisker 10 highball topped with a twist of fresh cracked black pepper — it’s a bar cult classic.',
+    tip_ja: 'タリスカー10年に炭酸水と挽きたての黒胡椒を添える「スパイシーハイボール」は必飲の一杯です。'
   },
   '조니워커': {
     en: 'Johnnie Walker',
+    ja: 'ジョニーウォーカー',
     origin: '스코틀랜드 (1820)',
+    origin_en: 'Scotland (1820)',
+    origin_ja: 'スコットランド (1820)',
     story: '걸어가는 신사 로고와 사각형 병으로 전 세계 어디서나 만날 수 있는 블렌디드 스카치의 제왕입니다. 레드·블랙·그린·골드·블루까지 라벨 색깔만으로 개성과 등급을 직관적으로 고를 수 있어요.',
-    tip: '하이볼은 레드·블랙, 니트 가성비 명작은 싱글몰트만 섞은 그린 15년, 특별한 날엔 블루 라벨을 추천해요.'
+    story_en: 'Recognized worldwide by its Striding Man and square bottle, Johnnie Walker makes navigating Scotch effortless through its color-coded lineup — from Red and Black to Green, Gold, and Blue.',
+    story_ja: 'ストライディングマンと四角いボトルで世界中で愛されるブレンデッドの王者。レッドからブラック・グリーン・ブルーまで色で個性を直感的に選べます。',
+    tip: '하이볼은 레드·블랙, 니트 가성비 명작은 싱글몰트만 섞은 그린 15년, 특별한 날엔 블루 라벨을 추천해요.',
+    tip_en: 'Reach for Black Label in highballs, all-malt Green 15Y for unbeatable neat value, and Blue Label for milestones.',
+    tip_ja: 'ハイボールならブラック、ストレート派の隠れた名作はモルト100%のグリーン15年、特別な日にはブルーを。'
   },
   '몽키숄더': {
     en: 'Monkey Shoulder',
+    ja: 'モンキーショルダー',
     origin: '스코틀랜드 · 스페이사이드 (2005)',
+    origin_en: 'Speyside, Scotland (2005)',
+    origin_ja: 'スコットランド・スペイサイド (2005)',
     story: '글렌피딕·발베니·키닌비 세 곳의 싱글몰트 원액만 블렌딩해 만든 트렌디한 블렌디드 몰트입니다. 병 어깨에 매달린 원숭이 세 마리 장식이 상징이며 부드럽고 달콤해 입문자 최애로 꼽혀요.',
-    tip: '그냥 마셔도 부드럽고, 진저에일이나 토닉워터와 섞어 하이볼로 마시면 오렌지·바닐라 향이 확 살아납니다.'
+    story_en: 'A vibrant blended malt marrying Speyside single malts, topped with its signature three brass monkeys. Creamy, malty, and zesty — equally loved neat or in cocktails.',
+    story_ja: 'スペイサイドの3つのシングルモルトを贅沢にブレンド。肩に乗る3匹の猿が目印で、まろやかで甘く初心者からプロまで愛される1本です。',
+    tip: '그냥 마셔도 부드럽고, 진저에일이나 토닉워터와 섞어 하이볼로 마시면 오렌지·바닐라 향이 확 살아납니다.',
+    tip_en: 'Easy-going neat, and electric with ginger ale or tonic where its zesty orange and vanilla notes pop.',
+    tip_ja: 'そのままでも滑らかですが、ジンジャーエールで割るとオレンジとバニラの香りが一気に花開きます。'
   },
   '발렌타인': {
-    en: 'Ballantine\'s',
+    en: "Ballantine's",
+    ja: 'バランタイン',
     origin: '스코틀랜드 (1827)',
+    origin_en: 'Scotland (1827)',
+    origin_ja: 'スコットランド (1827)',
     story: '한국인이 가장 사랑하는 클래식 스카치 블렌디드 브랜드입니다. 꿀, 사과, 바닐라의 부드러운 균형이 탁월해 파이니스트부터 17·21·30년까지 전 연령층에게 사랑받습니다.',
-    tip: '데일리 하이볼엔 파이니스트, 부드러운 니트의 정석을 느끼고 싶다면 17년 이상 라인업을 추천합니다.'
+    story_en: 'A timeless Scotch favorite prized across Korea for its silky balance of honey, red apple, and vanilla — spanning everyday Finest up to revered 17, 21, and 30-Year expressions.',
+    story_ja: '蜂蜜・リンゴ・バニラの絶妙な調和で長年愛されるクラシック・スコッチ。ファイネストから17年・21年・30年まで幅広い層に支持されています。',
+    tip: '데일리 하이볼엔 파이니스트, 부드러운 니트의 정석을 느끼고 싶다면 17년 이상 라인업을 추천합니다.',
+    tip_en: 'Finest is a trusty daily highball pour; step up to 17Y+ for classic, velvety sipping.',
+    tip_ja: '普段のハイボールにはファイネスト、優雅なストレートを楽しむなら17年以上がおすすめです。'
   },
   '제임슨': {
     en: 'Jameson',
+    ja: 'ジェムソン',
     origin: '아일랜드 · 더블린 (1780)',
+    origin_en: 'Dublin, Ireland (1780)',
+    origin_ja: 'アイルランド・ダブリン (1780)',
     story: '전통 3회 증류 방식으로 스카치보다 훨씬 가볍고 매끄러운 목넘김을 자랑하는 세계 1위 아이리시 위스키입니다. 피트 향이 전혀 없어 입문자도 부담 없이 즐길 수 있어요.',
-    tip: '제임슨에 진저에일과 라임 한 조각을 넣은 "제임슨 진저 하이볼"은 실패 없는 조합입니다.'
+    story_en: 'Triple-distilled and unpeated, the world’s favorite Irish whiskey is exceptionally light, crisp, and smooth — an effortless pour for any crowd.',
+    story_ja: '伝統の3回蒸留とノンピート製法により、驚くほど軽やかで滑らかな口当たりを誇る世界No.1アイリッシュウイスキーです。',
+    tip: '제임슨에 진저에일과 라임 한 조각을 넣은 "제임슨 진저 하이볼"은 실패 없는 조합입니다.',
+    tip_en: 'Jameson, ginger ale, and a fresh lime wedge is one of the most reliable highballs anywhere.',
+    tip_ja: 'ジンジャーエールとライムを合わせた「ジェムソン・ジンジャー」は間違いのない定番です。'
   },
   '산토리': {
     en: 'Suntory Whisky',
+    ja: 'サントリーウイスキー',
     origin: '일본 (1923)',
+    origin_en: 'Japan (1923)',
+    origin_ja: '日本 (1923)',
     story: '일본 위스키의 역사를 연 대표 하우스로 야마자키·하쿠슈·치타 증류소를 보유하고 있습니다. 섬세한 장인 정신과 미즈나라 오크 숙성으로 전 세계 위스키 어워드를 휩쓸고 있습니다.',
-    tip: '가쿠빈은 하이볼의 정석, 히비키 하모니는 꽃향기와 꿀이 우아한 재패니즈 블렌디드의 정점입니다.'
+    story_en: 'Founding house of Japanese whisky — home to Yamazaki, Hakushu, and Chita distilleries — celebrated worldwide for precision blending and rare Mizunara oak aging.',
+    story_ja: '山崎・白州・知多の3蒸留所を擁する日本ウイスキーの礎。繊細なブレンド技術とミズナラ樽熟成で世界中の賞を席巻しています。',
+    tip: '가쿠빈은 하이볼의 정석, 히비키 하모니는 꽃향기와 꿀이 우아한 재패니즈 블렌디드의 정점입니다.',
+    tip_en: 'Kakubin is the undisputed king of crisp highballs; Hibiki Harmony showcases floral, honeyed Japanese artistry.',
+    tip_ja: '角瓶はハイボールの王道、響ハーモニーは花と蜂蜜が優雅に香るジャパニーズブレンドの象徴です。'
   },
   '메이커스마크': {
-    en: 'Maker\'s Mark',
+    en: "Maker's Mark",
+    ja: 'メーカーズマーク',
     origin: '미국 · 켄터키 (1953)',
+    origin_en: 'Kentucky, USA (1953)',
+    origin_ja: 'アメリカ・ケンタッキー (1953)',
     story: '병목마다 수작업으로 붉은 밀랍(왁스)을 입히는 아이코닉한 버번입니다. 거친 호밀 대신 부드러운 겨울 밀을 사용해 자극이 적고 달콤한 바닐라·카라멜 향이 진하게 퍼집니다.',
-    tip: '버번이 처음이라면 메이커스마크 온더락이나 콜라·진저에일 하이볼로 시작하면 실패가 없어요.'
+    story_en: 'Hand-dipped in signature red wax, this wheated Kentucky bourbon swaps spicy rye for soft red winter wheat — creating a remarkably mellow, caramel-sweet profile.',
+    story_ja: '1本ずつ手作業で赤い封蝋を施すアイコニックなバーボン。ライ麦の代わりに冬小麦を使うことで、角のない優しいバニラとキャラメルの甘みが生まれます。',
+    tip: '버번이 처음이라면 메이커스마크 온더락이나 콜라·진저에일 하이볼로 시작하면 실패가 없어요.',
+    tip_en: 'New to bourbon? Try Maker’s Mark over a big ice cube or with ginger ale for an instant favorite.',
+    tip_ja: 'バーボン入門ならロックやジンジャーエール割りが鉄板。驚くほど飲みやすく楽しめます。'
   },
   '우드포드 리저브': {
     en: 'Woodford Reserve',
+    ja: 'ウッドフォードリザーブ',
     origin: '미국 · 켄터키 (1812)',
+    origin_en: 'Kentucky, USA (1812)',
+    origin_ja: 'アメリカ・ケンタッキー (1812)',
     story: '켄터키 더비 공식 버번이자 구리 포트 스틸 3회 증류로 극강의 부드러움과 200가지 이상의 아로마 노트를 자랑합니다. 클래식 칵테일 올드패션드의 정석 기주로 사랑받아요.',
-    tip: '달콤한 디저트 같은 버번을 원한다면 새 오크통에 한 번 더 숙성한 "더블오크드"를 꼭 마셔보세요.'
+    story_en: 'Official bourbon of the Kentucky Derby, triple-distilled in copper pot stills for remarkable depth and over 200 flavor notes — the bartender’s go-to for an Old Fashioned.',
+    story_ja: 'ケンタッキーダービー公式バーボン。銅製ポットスチル3回蒸留による奥深い香りで、オールドファッションドの王道ベースとしても愛されます。',
+    tip: '달콤한 디저트 같은 버번을 원한다면 새 오크통에 한 번 더 숙성한 "더블오크드"를 꼭 마셔보세요.',
+    tip_en: 'Craving dessert in a glass? Seek out Double Oaked for decadent maple, dark chocolate, and toasted oak.',
+    tip_ja: 'デザート感覚の濃厚な甘みがお好みなら、二度樽熟成の「ダブルオークド」をぜひお試しください。'
   },
   '놉크릭': {
     en: 'Knob Creek',
+    ja: 'ノブクリーク',
     origin: '미국 · 켄터키 (1992)',
+    origin_en: 'Kentucky, USA (1992)',
+    origin_ja: 'アメリカ・ケンタッキー (1992)',
     story: '짐빔 가문의 스몰배치 컬렉션 대표주자로, 9년 이상의 넉넉한 숙성과 50도(100프루프) 병입을 고수해 묵직하고 진한 구운 오크·메이플·땅콩 풍미를 제대로 보여줍니다.',
-    tip: '얼음 하나를 넣어 천천히 녹여 마시면 50도의 묵직한 풍미가 부드럽게 열리며 진가가 드러납니다.'
+    story_en: 'A standout of the Jim Beam Small Batch collection, aged 9+ years and bottled at 100 proof (50% ABV) for full-bodied roasted oak, maple syrup, and nutty richness.',
+    story_ja: '9年以上の長期熟成と50度（100プルーフ）ボトリングにこだわるスモールバッチの代表格。香ばしい樽香とメープル、ナッツの重厚感が際立ちます。',
+    tip: '얼음 하나를 넣어 천천히 녹여 마시면 50도의 묵직한 풍미가 부드럽게 열리며 진가가 드러납니다.',
+    tip_en: 'Pour over one large rock and let it open slowly — the 100-proof richness softens into pure velvet.',
+    tip_ja: '大きめの氷をひとつ浮かべてゆっくり溶かすと、50度の力強い旨味がまろやかに花開きます。'
   },
   '와일드터키': {
     en: 'Wild Turkey',
+    ja: 'ワイルドターキー',
     origin: '미국 · 켄터키 (1869)',
+    origin_en: 'Kentucky, USA (1869)',
+    origin_ja: 'アメリカ・ケンタッキー (1869)',
     story: '낮은 증류 도수로 원재료의 진한 풍미를 살리고, 물을 최소한만 더해 묵직하고 강렬한 정통 버번의 맛을 지키는 브랜드입니다. 뛰어난 가성비로 전 세계 애호가들의 사랑을 받아요.',
-    tip: '101 8년은 버번의 교과서, 58도대 레어브리드는 고도수 배럴 프루프의 짜릿함을 선사합니다.'
+    story_en: 'Distilled to a lower proof and minimally diluted to preserve maximum grain and barrel flavor — a bold, high-rye classic beloved by bartenders for its unbeatable value.',
+    story_ja: '低めの蒸留度数で原料の旨味を濃く残す本格派バーボン。力強いコクと抜群のコスパで世界中のバーテンダーから信頼されています。',
+    tip: '101 8년은 버번의 교과서, 58도대 레어브리드는 고도수 배럴 프루프의 짜릿함을 선사합니다.',
+    tip_en: 'Wild Turkey 101 is textbook bourbon; Rare Breed delivers exhilarating barrel-proof intensity.',
+    tip_ja: '101 8年はバーボンの教科書、58度台のレアブリードは樽出し原酒の迫力を味わえます。'
   },
   '버팔로 트레이스': {
     en: 'Buffalo Trace',
+    ja: 'バッファロートレース',
     origin: '미국 · 켄터키 (1775)',
+    origin_en: 'Kentucky, USA (1775)',
+    origin_ja: 'アメリカ・ケンタッキー (1775)',
     story: '미국에서 가장 오래 연속 가동 중인 전설적인 증류소로 이글레어, 블랑톤 같은 희귀 인기 버번을 모두 이곳에서 만듭니다. 깔끔한 흑설탕·체리·바닐라 밸런스가 일품입니다.',
-    tip: '기본 버팔로 트레이스는 가격 대비 완성도가 뛰어나 입문부터 데일리까지 만능입니다.'
+    story_en: 'America’s oldest continuously operating distillery — birthplace of cult favorites like Eagle Rare and Blanton’s. Its flagship pours clean brown sugar, dark cherry, and vanilla.',
+    story_ja: 'アメリカ最古の連続稼働蒸留所。黒砂糖・ダークチェリー・バニラの澄んだバランスが光る名作です。',
+    tip: '기본 버팔로 트레이스는 가격 대비 완성도가 뛰어나 입문부터 데일리까지 만능입니다.',
+    tip_en: 'The flagship Buffalo Trace punches well above its price — versatile enough for sipping or mixing.',
+    tip_ja: 'スタンダードな1本でも完成度が非常に高く、入門から普段飲みまで万能に活躍します。'
   },
   '잭 다니엘스': {
-    en: 'Jack Daniel\'s',
+    en: "Jack Daniel's",
+    ja: 'ジャックダニエル',
     origin: '미국 · 테네시 (1866)',
+    origin_en: 'Tennessee, USA (1866)',
+    origin_ja: 'アメリカ・テネシー (1866)',
     story: '숙성 전 사탕단풍나무 숯에 한 방울씩 여과하는 "링컨 카운티 공법"을 쓰는 테네시 위스키의 상징입니다. 특유의 바나나·바닐라·구운 숯 향이 선명합니다.',
-    tip: '콜라와 섞는 잭콕도 좋지만, 위스키 본연의 맛을 느끼고 싶다면 싱글배럴 라인업을 추천해요.'
+    story_en: 'The icon of Tennessee whiskey, mellowed drop by drop through ten feet of sugar maple charcoal before aging — giving its unmistakable banana, vanilla, and toasted-charcoal notes.',
+    story_ja: '熟成前にサトウカエデの炭で一滴ずつ濾過するテネシーウイスキーの象徴。バナナやバニラ、香ばしい炭の風味が際立ちます。',
+    tip: '콜라와 섞는 잭콕도 좋지만, 위스키 본연의 맛을 느끼고 싶다면 싱글배럴 라인업을 추천해요.',
+    tip_en: 'Beyond the classic Jack & Coke, explore the Single Barrel range for rich, serious sipping.',
+    tip_ja: '定番のジャックコークはもちろん、本格的な味わいを楽しむならシングルバレルがおすすめです。'
   }
 };
 
@@ -219,137 +468,225 @@ const GUIDE_GLOSSARY = [
   // 바 · 음용
   {
     term: '커버차지 (Cover Charge)',
+    term_en: 'Cover Charge',
+    term_ja: 'チャージ（テーブルチャージ）',
     group: '바 · 음용',
-    keywords: '자릿세 기본안주 물 웰컴드링크 바 비용',
-    desc: '위스키 바에 착석할 때 인당 부과되는 기본 이용료(보통 5천~1만 원대)예요. 대개 생수·웰컴 티·견과류나 초콜릿 같은 기본 핑거푸드와 전문 바텐딩 서비스가 포함됩니다.'
+    keywords: '자릿세 기본안주 물 웰컴드링크 바 비용 cover charge seating fee チャージ お通し',
+    desc: '위스키 바에 착석할 때 인당 부과되는 기본 이용료(보통 5천~1만 원대)예요. 대개 생수·웰컴 티·견과류나 초콜릿 같은 기본 핑거푸드와 전문 바텐딩 서비스가 포함됩니다.',
+    desc_en: 'A per-person seating fee common at Korean cocktail & whisky bars (typically ₩5,000–₩10,000). It usually includes welcome water or soup, light bites like nuts or chocolate, and curated bartender service.',
+    desc_ja: 'バー着席時に1名ごとにかかる基本料（韓国では5,000〜10,000ウォン程度が一般的）。お水やナッツ・チョコなどの軽いお通しとバーテンダーのサービスが含まれます。'
   },
   {
     term: '니트 (Neat)',
+    term_en: 'Neat (Straight)',
+    term_ja: 'ストレート（ニート）',
     group: '바 · 음용',
-    keywords: '스트레이트 원액 그대로 상온 마시는법',
-    desc: '얼음이나 물을 넣지 않고 상온의 위스키 원액 그대로 마시는 방식. 위스키 본연의 향과 질감을 가장 선명하게 느낄 수 있어요.'
+    keywords: '스트레이트 원액 그대로 상온 마시는법 neat straight ストレート',
+    desc: '얼음이나 물을 넣지 않고 상온의 위스키 원액 그대로 마시는 방식. 위스키 본연의 향과 질감을 가장 선명하게 느낄 수 있어요.',
+    desc_en: 'Served at room temperature with no ice or water added. The purest way to experience a whisky’s full aroma, texture, and finish.',
+    desc_ja: '氷も水も加えず、常温のままウイスキー本来の香りや質感、余韻をダイレクトに味わう飲み方です。'
   },
   {
     term: '온더락 (On the Rocks)',
+    term_en: 'On the Rocks',
+    term_ja: 'オン・ザ・ロック',
     group: '바 · 음용',
-    keywords: '얼음 카빙 아이스 락글라스 버번',
-    desc: '단단하고 큰 얼음(카빙 아이스) 위에 위스키를 부어 마시는 방식. 온도가 내려가며 알코올 자극이 줄고, 얼음이 천천히 녹으면서 향이 단계적으로 열립니다.'
+    keywords: '얼음 카빙 아이스 락글라스 버번 ice rocks ロック 氷',
+    desc: '단단하고 큰 얼음(카빙 아이스) 위에 위스키를 부어 마시는 방식. 온도가 내려가며 알코올 자극이 줄고, 얼음이 천천히 녹으면서 향이 단계적으로 열립니다.',
+    desc_en: 'Poured over a large, dense hand-carved ice cube or sphere. Chilling softens alcohol heat while slow dilution gradually unlocks hidden flavors.',
+    desc_ja: '大きな氷（かち割り氷や丸氷）に注ぐスタイル。冷やすことでアルコールの刺激が和らぎ、氷が溶けるにつれて香りや味わいが変化します。'
   },
   {
     term: '하이볼 (Highball)',
+    term_en: 'Highball',
+    term_ja: 'ハイボール',
     group: '바 · 음용',
-    keywords: '탄산수 진저에일 레몬 청량 입문',
-    desc: '위스키에 차가운 탄산수나 진저에일을 섞고 레몬·라임 껍질을 더하는 방식. 도수 부담 없이 상쾌하게 마시거나 식사와 곁들이기 좋아요.'
+    keywords: '탄산수 진저에일 레몬 청량 입문 soda ginger ale ハイボール 炭酸',
+    desc: '위스키에 차가운 탄산수나 진저에일을 섞고 레몬·라임 껍질을 더하는 방식. 도수 부담 없이 상쾌하게 마시거나 식사와 곁들이기 좋아요.',
+    desc_en: 'Whisky lengthened over crisp ice with chilled sparkling water or ginger ale and a citrus twist. Refreshing, lower-ABV, and effortless alongside food.',
+    desc_ja: 'ウイスキーに冷えた炭酸水やジンジャーエールを合わせ、レモンやライムを添えるスタイル。爽快で食事とも相性抜群です。'
   },
   {
     term: '트와이스업 (Twice Up)',
+    term_en: 'Twice Up',
+    term_ja: 'トワイスアップ',
     group: '바 · 음용',
-    keywords: '물 1대1 희석 블렌더 테이스팅',
-    desc: '위스키와 상온의 생수를 1:1 비율로 섞어 마시는 방식. 마스터 블렌더들이 원액의 숨은 향을 확인할 때 즐겨 쓰는 정석 테이스팅 법이에요.'
+    keywords: '물 1대1 희석 블렌더 테이스팅 water tasting トワイスアップ 加水',
+    desc: '위스키와 상온의 생수를 1:1 비율로 섞어 마시는 방식. 마스터 블렌더들이 원액의 숨은 향을 확인할 때 즐겨 쓰는 정석 테이스팅 법이에요.',
+    desc_en: 'Equal parts whisky and room-temperature still water (1:1). A classic master-blender technique that tones down alcohol and releases subtle aromatics.',
+    desc_ja: 'ウイスキーと常温の水を1:1で割る飲み方。マスターブレンダーが繊細な香りを確認するときにも用いる本格的なテイスティング法です。'
   },
   {
     term: '글렌캐런 잔 (Glencairn)',
+    term_en: 'Glencairn Glass',
+    term_ja: 'グレンケアン・グラス',
     group: '바 · 음용',
-    keywords: '테이스팅 글라스 튤립 잔 향 모으기',
-    desc: '아래는 둥글고 입구로 갈수록 좁아지는 튤립 모양의 위스키 전용 잔. 알코올 기운은 분산시키고 섬세한 아로마만 코끝으로 모아줍니다.'
+    keywords: '테이스팅 글라스 튤립 잔 향 모으기 glencairn tulip glass テイスティンググラス',
+    desc: '아래는 둥글고 입구로 갈수록 좁아지는 튤립 모양의 위스키 전용 잔. 알코올 기운은 분산시키고 섬세한 아로마만 코끝으로 모아줍니다.',
+    desc_en: 'The iconic tulip-shaped whisky tasting glass. Its wide bowl lets the spirit breathe while the tapered rim concentrates delicate aromas toward your nose.',
+    desc_ja: '底が丸く飲み口に向かってすぼまるチューリップ型の専用グラス。アルコール刺激を逃がしつつ繊細な香りを鼻先へ集めます。'
   },
   {
     term: '에어링 (Airing)',
+    term_en: 'Airing / Breathing',
+    term_ja: 'エアリング（開く）',
     group: '바 · 음용',
-    keywords: '브리딩 공기 접촉 산화 시간 열림',
-    desc: '잔에 따르거나 병을 개봉한 뒤 공기와 만나며 알코올의 날카로움이 가라앉고 숨겨져 있던 과일·꿀·우드 향이 부드럽게 피어나는 현상이에요.'
+    keywords: '브리딩 공기 접촉 산화 시간 열림 airing breathing エアリング 酸化',
+    desc: '잔에 따르거나 병을 개봉한 뒤 공기와 만나며 알코올의 날카로움이 가라앉고 숨겨져 있던 과일·꿀·우드 향이 부드럽게 피어나는 현상이에요.',
+    desc_en: 'Letting a poured glass or newly opened bottle rest in air for a few minutes. Sharp alcohol vapors settle and deeper fruit, honey, and oak notes bloom.',
+    desc_ja: 'グラスに注いだり抜栓後に空気に触れさせることで、アルコールの角が取れ、隠れていた果実や蜂蜜・樽の香りがふわりと開く現象です。'
   },
   {
     term: '보틀 킵 (Bottle Keep)',
+    term_en: 'Bottle Keep',
+    term_ja: 'ボトルキープ',
     group: '바 · 음용',
-    keywords: '바틀 보관 병 주문 단골 바',
-    desc: '바에서 위스키를 한 병 통째로 주문해 마신 뒤, 남은 술을 이름표를 붙여 바에 맡겨 두고 다음 방문 때 이어서 마시는 문화예요.'
+    keywords: '바틀 보관 병 주문 단골 바 bottle keep ボトルキープ',
+    desc: '바에서 위스키를 한 병 통째로 주문해 마신 뒤, 남은 술을 이름표를 붙여 바에 맡겨 두고 다음 방문 때 이어서 마시는 문화예요.',
+    desc_en: 'Purchasing a full bottle at a bar, tagging it with your name, and having the bar store the remainder for your future visits.',
+    desc_ja: 'バーでボトルを1本注文し、飲みきれなかった分を名前を付けて店に預け、次回の来店時に続きを楽しめる文化です。'
   },
   // 캐스크 · 숙성
   {
     term: '캐스크 (Cask)',
+    term_en: 'Cask / Barrel',
+    term_ja: 'カスク（熟成樽）',
     group: '캐스크 · 숙성',
-    keywords: '오크통 숙성통 나무 배럴',
-    desc: '위스키를 숙성하는 참나무 오크통. 위스키 최종 풍미의 60~70% 이상을 결정하며, 이전에 어떤 술이 담겨 있었는지에 따라 색과 향이 완전히 달라집니다.'
+    keywords: '오크통 숙성통 나무 배럴 cask barrel oak 樽 オーク',
+    desc: '위스키를 숙성하는 참나무 오크통. 위스키 최종 풍미의 60~70% 이상을 결정하며, 이전에 어떤 술이 담겨 있었는지에 따라 색과 향이 완전히 달라집니다.',
+    desc_en: 'The oak barrel used to mature whisky. Responsible for 60–70% of the final color and flavor — shaped heavily by whatever wine or spirit aged in it before.',
+    desc_ja: 'ウイスキーを熟成させるオーク樽。色合いや風味の6〜7割を左右し、以前にどんなお酒が入っていたかで個性が大きく変わります。'
   },
   {
     term: '셰리 캐스크 (Oloroso · PX)',
+    term_en: 'Sherry Cask (Oloroso · PX)',
+    term_ja: 'シェリーカスク（オロロソ・PX）',
     group: '캐스크 · 숙성',
-    keywords: '스페인 와인 건포도 초콜릿 페드로히메네즈 올로로소',
-    desc: '스페인 주정강화 와인인 셰리를 숙성했던 오크통. 드라이하고 견과류·스파이스가 도는 올로로소(Oloroso)와, 건포도·꿀처럼 극도로 진득하고 달콤한 PX(페드로 히메네즈)가 대표적이에요.'
+    keywords: '스페인 와인 건포도 초콜릿 페드로히메네즈 올로로소 sherry oloroso px シェリー樽',
+    desc: '스페인 주정강화 와인인 셰리를 숙성했던 오크통. 드라이하고 견과류·스파이스가 도는 올로로소(Oloroso)와, 건포도·꿀처럼 극도로 진득하고 달콤한 PX(페드로 히메네즈)가 대표적이에요.',
+    desc_en: 'Oak casks seasoned with Spanish fortified sherry wine. Oloroso imparts dry nuttiness and spice, while Pedro Ximénez (PX) adds luscious raisin, fig, and syrupy sweetness.',
+    desc_ja: 'スペインの酒精強化ワイン・シェリーを熟成させた樽。ドライでナッツ香るオロロソと、レーズンや黒蜜のように濃厚な甘みのPXが代表的です。'
   },
   {
     term: '버번 캐스크 (Bourbon Cask)',
+    term_en: 'Ex-Bourbon Cask',
+    term_ja: 'バーボンカスク',
     group: '캐스크 · 숙성',
-    keywords: '아메리칸 오크 바닐라 코코넛 꿀 카라멜',
-    desc: '미국 버번 위스키를 한 번 숙성한 뒤 스코틀랜드 등으로 건너온 아메리칸 오크통. 밝은 황금빛과 화사한 바닐라·코코넛·꿀·청사과 풍미를 입혀줍니다.'
+    keywords: '아메리칸 오크 바닐라 코코넛 꿀 카라멜 bourbon cask american oak バーボン樽',
+    desc: '미국 버번 위스키를 한 번 숙성한 뒤 스코틀랜드 등으로 건너온 아메리칸 오크통. 밝은 황금빛과 화사한 바닐라·코코넛·꿀·청사과 풍미를 입혀줍니다.',
+    desc_en: 'American oak barrels used once for US bourbon before aging Scotch or world whiskies — imparting golden color and bright vanilla, coconut, honey, and orchard fruit.',
+    desc_ja: 'アメリカでバーボン熟成に一度使われたホワイトオーク樽。明るい黄金色と華やかなバニラ・ココナッツ・蜂蜜の風味を与えます。'
   },
   {
     term: '숙성 연수 (12Y·18Y)',
+    term_en: 'Age Statement (12Y · 18Y)',
+    term_ja: '熟成年数（12年・18年）',
     group: '캐스크 · 숙성',
-    keywords: '연산 나이 에이지 스테이트먼트 오래된 술',
-    desc: '병에 담긴 원액 중 "가장 어리게 숙성된 원액"의 최소 숙성 기간을 뜻해요. 오래될수록 부드럽고 깊은 오크 향이 더해지지만, 무조건 연수가 높다고 내 취향에 맞는 건 아니에요.'
+    keywords: '연산 나이 에이지 스테이트먼트 오래된 술 age statement years 熟成年数',
+    desc: '병에 담긴 원액 중 "가장 어리게 숙성된 원액"의 최소 숙성 기간을 뜻해요. 오래될수록 부드럽고 깊은 오크 향이 더해지지만, 무조건 연수가 높다고 내 취향에 맞는 건 아니에요.',
+    desc_en: 'Indicates the age of the youngest whisky in the bottle. Older drams bring deeper oak and smoothness, though younger bottles can be punchier and brighter.',
+    desc_ja: 'ボトルに含まれる中で「最も若い原酒」の熟成年数を表します。年数が長いほど円熟味が増しますが、若い原酒ならではの躍動感も魅力です。'
   },
   {
     term: 'NAS (Non-Age Statement)',
+    term_en: 'NAS (No Age Statement)',
+    term_ja: 'NAS（ノンエイジ）',
     group: '캐스크 · 숙성',
-    keywords: '논에이지 무연산 숙성연수 미표기',
-    desc: '숙성 연수를 라벨에 표기하지 않은 위스키. 연수에 묶이지 않고 다양한 연령의 원액을 자유롭게 조합해 뚜렷한 개성이나 가성비를 극대화한 제품이 많아요.'
+    keywords: '논에이지 무연산 숙성연수 미표기 nas no age ノンエイジ',
+    desc: '숙성 연수를 라벨에 표기하지 않은 위스키. 연수에 묶이지 않고 다양한 연령의 원액을 자유롭게 조합해 뚜렷한 개성이나 가성비를 극대화한 제품이 많아요.',
+    desc_en: 'Whisky bottled without an age number on the label — freeing blenders to marry casks of different ages purely for style, flavor balance, and value.',
+    desc_ja: '熟成年数を表記しないウイスキー。年数に縛られず様々な原酒を自在にブレンドすることで、個性やコスパを高めた名作も多くあります。'
   },
   {
     term: '캐스크 피니시 (Cask Finish)',
+    term_en: 'Cask Finish',
+    term_ja: 'カスクフィニッシュ（後熟）',
     group: '캐스크 · 숙성',
-    keywords: '더블캐스크 추가숙성 포트 럼 와인 피니쉬',
-    desc: '기본 오크통에서 오래 숙성한 원액을 마지막 수개월~수년 동안 포트와인·럼·셰리 등 다른 오크통으로 옮겨 추가 숙성해 복합적인 향을 더하는 기법이에요.'
+    keywords: '더블캐스크 추가숙성 포트 럼 와인 피니쉬 cask finish double wood 後熟',
+    desc: '기본 오크통에서 오래 숙성한 원액을 마지막 수개월~수년 동안 포트와인·럼·셰리 등 다른 오크통으로 옮겨 추가 숙성해 복합적인 향을 더하는 기법이에요.',
+    desc_en: 'Transferring matured whisky into a second cask — such as port, rum, wine, or sherry — for the final months or years to layer extra flavor complexity.',
+    desc_ja: '主熟成を終えた原酒を、仕上げの数ヶ月〜数年だけポート・ラム・シェリーなど別の樽へ移し、複雑な香りを重ねる製法です。'
   },
   {
     term: '미즈나라 오크 (Mizunara)',
+    term_en: 'Mizunara Oak',
+    term_ja: 'ミズナラ樽',
     group: '캐스크 · 숙성',
-    keywords: '일본 물참나무 백단향 인센스 사찰향 산토리',
-    desc: '일본 홋카이도 등지에서 자라는 희귀 물참나무 오크통. 특유의 백단향(인센스), 코코넛, 동양적인 스파이스 향이 감돌아 전 세계 마니아들이 열광합니다.'
+    keywords: '일본 물참나무 백단향 인센스 사찰향 산토리 mizunara oak sandalwood ミズナラ 白檀',
+    desc: '일본 홋카이도 등지에서 자라는 희귀 물참나무 오크통. 특유의 백단향(인센스), 코코넛, 동양적인 스파이스 향이 감돌아 전 세계 마니아들이 열광합니다.',
+    desc_en: 'Rare native Japanese oak prized worldwide for its delicate notes of sandalwood, temple incense, coconut, and refined oriental spice.',
+    desc_ja: '北海道などに育つ希少な日本産オーク樽。白檀（お香）やココナッツ、オリエンタルなスパイス香が世界中で高く評価されています。'
   },
   // 심화 · 매니아
   {
     term: '캐스크 스트렝스 (CS)',
+    term_en: 'Cask Strength (Barrel Proof)',
+    term_ja: 'カスクストレングス（CS）',
     group: '심화 · 매니아',
-    keywords: '배럴프루프 고도수 원액 무가수 55도 60도',
-    desc: '오크통에서 꺼낸 원액에 물을 한 방울도 섞지 않고 그대로 병입한 고도수(보통 55~65%) 위스키. 압도적인 풍미 밀도를 느낄 수 있어 물 몇 방울로 직접 도수를 조절하며 마시는 재미가 큽니다.'
+    keywords: '배럴프루프 고도수 원액 무가수 55도 60도 cask strength barrel proof カスクストレングス 原酒',
+    desc: '오크통에서 꺼낸 원액에 물을 한 방울도 섞지 않고 그대로 병입한 고도수(보통 55~65%) 위스키. 압도적인 풍미 밀도를 느낄 수 있어 물 몇 방울로 직접 도수를 조절하며 마시는 재미가 큽니다.',
+    desc_en: 'Bottled straight from the barrel with zero dilution (typically 55–65% ABV). Delivers intense flavor density — and lets you add drops of water to dial in your ideal strength.',
+    desc_ja: '樽から出した原酒に加水せずそのまま瓶詰めした高アルコール（約55〜65%）仕様。圧倒的な凝縮感があり、数滴の加水で自分好みに開かせる楽しさがあります。'
   },
   {
     term: '논칠필터 (NCF)',
+    term_en: 'Non-Chill Filtered (NCF)',
+    term_ja: 'ノンチルフィルター（冷却濾過なし）',
     group: '심화 · 매니아',
-    keywords: '냉각여과 안함 오일리 질감 천연 에스테르',
-    desc: 'Non-Chill Filtered의 약자. 차갑게 식혀 지방산·단백질을 걸러내는 냉각 여과를 생략해, 입안에서 훨씬 묵직하고 오일리한 질감과 원액 본연의 향을 그대로 살립니다.'
+    keywords: '냉각여과 안함 오일리 질감 천연 에스테르 non chill filtered ncf ノンチルフィルター',
+    desc: 'Non-Chill Filtered의 약자. 차갑게 식혀 지방산·단백질을 걸러내는 냉각 여과를 생략해, 입안에서 훨씬 묵직하고 오일리한 질감과 원액 본연의 향을 그대로 살립니다.',
+    desc_en: 'Skips cold-filtration so natural fatty acids and esters stay intact — giving a fuller, silkier mouthfeel and richer aroma (sometimes turning slightly hazy with ice).',
+    desc_ja: '冷却濾過を省くことで、香味成分や旨味をそのまま残した製法。よりオイリーで厚みのある口当たりと豊かな香りが楽しめます。'
   },
   {
     term: '내추럴 컬러 (Natural Colour)',
+    term_en: 'Natural Colour',
+    term_ja: 'ナチュラルカラー（無着色）',
     group: '심화 · 매니아',
-    keywords: '무색소 카라멜 색소 천연색상',
-    desc: '색을 균일하게 맞추기 위한 카라멜 색소(E150a)를 넣지 않고, 오직 오크통 숙성만으로 자연스럽게 우러난 위스키 본연의 빛깔을 뜻해요.'
+    keywords: '무색소 카라멜 색소 천연색상 natural colour caramel 無着色',
+    desc: '색을 균일하게 맞추기 위한 카라멜 색소(E150a)를 넣지 않고, 오직 오크통 숙성만으로 자연스럽게 우러난 위스키 본연의 빛깔을 뜻해요.',
+    desc_en: 'No E150a spirit caramel added for color uniformity — every shade of pale straw or deep mahogany comes purely from time in oak.',
+    desc_ja: '色味を整えるカラメル色素を一切使わず、オーク樽での熟成のみから生まれた自然な色合いであることを示します。'
   },
   {
     term: '싱글 캐스크 (Single Cask)',
+    term_en: 'Single Cask / Single Barrel',
+    term_ja: 'シングルカスク',
     group: '심화 · 매니아',
-    keywords: '싱글배럴 한정판 넘버링 단 하나의 오크통',
-    desc: '여러 통을 섞지 않고 단 하나의 오크통에서 나온 원액만으로 병입한 한정판 위스키. 통마다 맛과 향이 미세하게 달라 보통 수백 병만 생산되며 병마다 고유 번호가 적혀 있어요.'
+    keywords: '싱글배럴 한정판 넘버링 단 하나의 오크통 single cask barrel limited シングルカスク',
+    desc: '여러 통을 섞지 않고 단 하나의 오크통에서 나온 원액만으로 병입한 한정판 위스키. 통마다 맛과 향이 미세하게 달라 보통 수백 병만 생산되며 병마다 고유 번호가 적혀 있어요.',
+    desc_en: 'Drawn from one individual barrel without mixing. Every cask has its own fingerprint, yielding a small numbered run of just a few hundred bottles.',
+    desc_ja: '他の樽と一切混ぜず、たった1つの樽の原酒のみを瓶詰めした限定品。樽ごとの個性が際立ち、数百本ほどのシリアルナンバー入りで流通します。'
   },
   {
     term: 'PPM (피트 페놀 수치)',
+    term_en: 'PPM (Peat Phenol Level)',
+    term_ja: 'PPM（ピート・フェノール値）',
     group: '심화 · 매니아',
-    keywords: '피트 강도 스모키 아일라 아드벡 옥토모어',
-    desc: '보리를 피트(이탄) 연기로 건조할 때 스며든 페놀 화합물 농도 단위. 보통 20~30ppm은 은은한 스모크, 50ppm 이상(아드벡·라프로익 등)은 강렬한 피트, 100ppm 이상은 극강의 피트로 분류합니다.'
+    keywords: '피트 강도 스모키 아일라 아드벡 옥토모어 ppm phenol smoky フェノール値',
+    desc: '보리를 피트(이탄) 연기로 건조할 때 스며든 페놀 화합물 농도 단위. 보통 20~30ppm은 은은한 스모크, 50ppm 이상(아드벡·라프로익 등)은 강렬한 피트, 100ppm 이상은 극강의 피트로 분류합니다.',
+    desc_en: 'Parts Per Million of smoky phenols absorbed by malted barley. Around 20–30 ppm is gently smoky, 50+ ppm (like Ardbeg or Laphroaig) is heavily peated, and 100+ ppm is ultra-intense.',
+    desc_ja: '大麦に染み込んだピート香（フェノール化合物）の濃度単位。20〜30ppmで穏やか、50ppm以上（アードベッグ等）で強烈、100ppm超は超ヘビーピートとされます。'
   },
   {
     term: '독립병입자 (IB)',
+    term_en: 'Independent Bottler (IB)',
+    term_ja: 'ボトラーズ（独立瓶詰業者 / IB）',
     group: '심화 · 매니아',
-    keywords: 'OB 비교 고든앤맥페일 시그나토리 캐스크 매입',
-    desc: 'Independent Bottler. 증류소 공식 제품(OB)과 달리, 외부 전문 회사가 증류소에서 오크통을 직접 사 와 독자적인 숙성·병입을 거쳐 출시하는 위스키로 희귀한 개성을 찾는 애호가들에게 인기예요.'
+    keywords: 'OB 비교 고든앤맥페일 시그나토리 캐스크 매입 independent bottler ib ob ボトラーズ',
+    desc: 'Independent Bottler. 증류소 공식 제품(OB)과 달리, 외부 전문 회사가 증류소에서 오크통을 직접 사 와 독자적인 숙성·병입을 거쳐 출시하는 위스키로 희귀한 개성을 찾는 애호가들에게 인기예요.',
+    desc_en: 'Specialist houses (like Gordon & MacPhail or Signatory) that buy casks from distilleries and age/bottle them independently — prized for rare, off-profile gems.',
+    desc_ja: '蒸留所公式（オフィシャル）とは別に、専門業者が樽ごと買い付けて独自に熟成・瓶詰めするブランド。希少で個性的な1本を探す愛好家に人気です。'
   },
   {
     term: '피니시 & 레그 (Finish · Legs)',
+    term_en: 'Finish & Legs',
+    term_ja: 'フィニッシュ＆レッグ（涙）',
     group: '심화 · 매니아',
-    keywords: '여운 눈물 점도 바디감 테이스팅',
-    desc: '피니시는 삼킨 뒤 입안과 코끝에 남는 여운의 길이와 변화, 레그(티어스)는 잔 벽면을 천천히 타고 내려오는 물방울 줄기로 도수와 점도를 가늠하는 단서가 됩니다.'
+    keywords: '여운 눈물 점도 바디감 테이스팅 finish legs tears 余韻 涙',
+    desc: '피니시는 삼킨 뒤 입안과 코끝에 남는 여운의 길이와 변화, 레그(티어스)는 잔 벽면을 천천히 타고 내려오는 물방울 줄기로 도수와 점도를 가늠하는 단서가 됩니다.',
+    desc_en: 'Finish is how flavors linger and evolve after swallowing; legs (or tears) are the droplets running down the glass walls after swirling, hinting at ABV and viscosity.',
+    desc_ja: 'フィニッシュは飲み込んだ後に続く余韻の長さや変化、レッグ（涙）はグラスの内側を伝う滴のことで、度数や粘性の目安になります。'
   }
 ];
 
@@ -357,51 +694,111 @@ const GUIDE_PAIRINGS = [
   {
     id: 'pairing-sherry',
     style: '셰리 캐스크 몰트',
+    style_en: 'Sherry Cask Single Malt',
+    style_ja: 'シェリー樽シングルモルト',
     badge: '달콤 · 묵직',
+    badge_en: 'Rich & Sweet',
+    badge_ja: '濃厚・甘美',
     subtitle: '건과일 · 초콜릿 풍미를 배가시키는 조합',
+    subtitle_en: 'Bites that elevate dried fruit and cocoa notes',
+    subtitle_ja: 'ドライフルーツとカカオの香りを引き立てる組み合わせ',
     foods: ['다크 초콜릿 (70%+)', '말린 무화과 · 건포도', '티라미수', '구운 호두 · 아몬드'],
+    foods_en: ['Dark Chocolate (70%+)', 'Dried Figs & Raisins', 'Tiramisu', 'Roasted Walnuts & Almonds'],
+    foods_ja: ['ダークチョコ（70%以上）', 'ドライイチジク・レーズン', 'ティラミス', 'ローストナッツ'],
     why: '셰리 오크 특유의 짙은 건과일·카카오 노트와 다크 초콜릿의 쌉싸름함이 만나면 단맛이 과하지 않고 훨씬 입체적으로 살아나요.',
+    why_en: 'Bitter-sweet 70%+ dark chocolate and toasted nuts mirror the dried-fruit richness of sherry oak without making the palate feel cloying.',
+    why_ja: 'シェリー樽特有のドライフルーツやカカオの風味に、ビターチョコのほろ苦さが重なることで甘みが立体的に広がります。',
     examples: ['맥캘란 12년', '글렌드로낙 12년', '글렌알라키 12년'],
+    examples_en: ['Macallan 12Y', 'GlenDronach 12Y', 'GlenAllachie 12Y'],
+    examples_ja: ['マッカラン 12年', 'グレンドロナック 12年', 'グレンアラヒー 12年'],
     searchKey: '맥캘란'
   },
   {
     id: 'pairing-light',
     style: '라이트 · 플로럴 몰트',
+    style_en: 'Light & Floral Malt',
+    style_ja: 'ライト＆フローラルモルト',
     badge: '화사 · 깔끔',
+    badge_en: 'Bright & Clean',
+    badge_ja: '華やか・軽快',
     subtitle: '섬세한 과일·꽃향을 가리지 않는 담백한 안주',
+    subtitle_en: 'Delicate bites that let orchard fruit & florals shine',
+    subtitle_ja: '繊細な果実と花の香りを邪魔しない軽やかなおつまみ',
     foods: ['브리 · 까망베르 치즈', '청사과 · 배 슬라이스', '하몽 · 프로슈토', '바닐라 마카롱'],
+    foods_en: ['Brie & Camembert', 'Crisp Apple & Pear Slices', 'Jamón & Prosciutto', 'Vanilla Macaron'],
+    foods_ja: ['ブリー・カマンベールチーズ', '青リンゴ・洋梨', '生ハム・プロシュート', 'バニラマカロン'],
     why: '향이 섬세한 스페이사이드·하이랜드 몰트는 자극적인 양념 대신 부드러운 치즈나 신선한 과일과 곁들일 때 본연의 청량한 향이 가장 잘 살아요.',
+    why_en: 'Creamy soft cheeses and crisp orchard fruit complement delicate Speyside and Highland aromatics without overpowering their bright finish.',
+    why_ja: '繊細なスペイサイドやハイランドには、強い味付けを避けてクリーミーなチーズや新鮮な果物を合わせると香りが際立ちます。',
     examples: ['글렌피딕 12년', '글렌모렌지 오리지널', '발베니 12년'],
+    examples_en: ['Glenfiddich 12Y', 'Glenmorangie Original', 'Balvenie 12Y'],
+    examples_ja: ['グレンフィディック 12年', 'グレンモーレンジィ', 'バルヴェニー 12年'],
     searchKey: '발베니'
   },
   {
     id: 'pairing-peat',
     style: '스모키 · 피트 (아일라)',
+    style_en: 'Smoky & Peated (Islay)',
+    style_ja: 'スモーキー＆ピート（アイラ）',
     badge: '스모키 · 짭짤',
+    badge_en: 'Smoky & Briny',
+    badge_ja: 'スモーク・潮気',
     subtitle: '훈연·바다 내음과 강렬하게 맞붙는 페어링',
+    subtitle_en: 'Savory, salty pairings built to match bold smoke',
+    subtitle_ja: '燻製香と潮気に負けない旨味たっぷりのペアリング',
     foods: ['훈제 연어 · 청어', '고르곤졸라 · 블루치즈', '생굴 (오이스터)', '구운 베이컨 · 육포'],
+    foods_en: ['Smoked Salmon', 'Gorgonzola & Blue Cheese', 'Fresh Oysters', 'Crisp Bacon & Beef Jerky'],
+    foods_ja: ['スモークサーモン', 'ブルーチーズ', '生牡蠣（オイスター）', 'ベーコン・ビーフジャーキー'],
     why: '피트의 바닷바람·요오드 향은 의외로 해산물·블루치즈의 짭짤함과 엄청난 시너지를 내요. 생굴 위에 아일라 피트를 몇 방울 뿌려 먹는 방식도 유명해요.',
+    why_en: 'Islay’s maritime brine and campfire smoke create electric synergy with salty blue cheese and seafood — try a drop of peated whisky right over a fresh oyster.',
+    why_ja: 'ピートの潮気や燻製香は魚介やブルーチーズの塩気と驚くほど調和します。生牡蠣にアイラモルトを数滴垂らす食べ方も名物です。',
     examples: ['아드벡 10년', '라가불린 16년', '탈리스커 10년'],
+    examples_en: ['Ardbeg 10Y', 'Lagavulin 16Y', 'Talisker 10Y'],
+    examples_ja: ['アードベッグ 10年', 'ラガヴーリン 16年', 'タリスカー 10年'],
     searchKey: '아드벡'
   },
   {
     id: 'pairing-bourbon',
     style: '버번 · 라이 위스키',
+    style_en: 'Bourbon & Rye Whiskey',
+    style_ja: 'バーボン＆ライウイスキー',
     badge: '바닐라 · 스파이스',
+    badge_en: 'Vanilla & Spice',
+    badge_ja: 'バニラ・スパイス',
     subtitle: '진한 오크·카라멜과 어울리는 고소한 조합',
+    subtitle_en: 'Toasty, savory, and sweet matches for charred oak',
+    subtitle_ja: '濃厚なオークとキャラメルに寄り添う香ばしい一皿',
     foods: ['피칸 · 호두 파이', '바비큐 · 훈제 폭립', '체다 치즈', '바닐라 아이스크림'],
+    foods_en: ['Pecan & Walnut Pie', 'Smoked BBQ Ribs', 'Aged Cheddar', 'Vanilla Ice Cream'],
+    foods_ja: ['ピーカン・ナッツパイ', 'スモークBBQリブ', '熟成チェダーチーズ', 'バニラアイス'],
     why: '새 아메리칸 오크통에서 나오는 진한 바닐라·구운 우드 향이 고소한 견과류나 스모키한 고기 요리의 기름기를 깔끔하게 잡아줍니다.',
+    why_en: 'Charred American oak’s sweet vanilla and warm spice slice cleanly through smoky barbecue richness and turn pecan pie into pure comfort.',
+    why_ja: '新樽オークの濃厚なバニラとスパイス香が、香ばしいナッツや肉料理の脂をすっきり引き締め、バニラアイスとも絶品です。',
     examples: ['메이커스마크', '우드포드 리저브', '놉크릭'],
+    examples_en: ["Maker's Mark", 'Woodford Reserve', 'Knob Creek'],
+    examples_ja: ['メーカーズマーク', 'ウッドフォードリザーブ', 'ノブクリーク'],
     searchKey: '메이커스마크'
   },
   {
     id: 'pairing-highball',
     style: '블렌디드 · 하이볼',
+    style_en: 'Blended & Crisp Highballs',
+    style_ja: 'ブレンデッド＆ハイボール',
     badge: '청량 · 데일리',
+    badge_en: 'Crisp & Easy',
+    badge_ja: '爽快・定番',
     subtitle: '탄산감으로 입안을 씻어주는 가벼운 핑거푸드',
+    subtitle_en: 'Crispy, savory finger foods lifted by sparkling bubbles',
+    subtitle_ja: '炭酸のキレで後味さっぱり、気軽なフィンガーフード',
     foods: ['치킨 가라아게', '올리브 절임', '트러플 감자튀김', '크래커 & 크림치즈'],
+    foods_en: ['Crispy Karaage Chicken', 'Marinated Olives', 'Truffle Fries', 'Crackers & Cream Cheese'],
+    foods_ja: ['鶏の唐揚げ', 'オリーブマリネ', 'トリュフフライドポテト', 'クラッカー＆クリームチーズ'],
     why: '시원한 탄산과 가벼운 곡물 풍미가 기름지거나 짭짤한 핑거푸드의 뒷맛을 상쾌하게 정리해 주어 부담 없이 오래 즐기기 좋아요.',
+    why_en: 'Lively carbonation and smooth grain sweetness refresh the palate between bites of crispy karaage, salty olives, and truffle fries.',
+    why_ja: '爽やかな炭酸と軽やかな穀物の甘みが、揚げ物や塩気のあるおつまみの後味をすっきりリセットしてくれます。',
     examples: ['조니워커 블랙', '몽키숄더', '산토리 가쿠빈'],
+    examples_en: ['Johnnie Walker Black', 'Monkey Shoulder', 'Suntory Kakubin'],
+    examples_ja: ['ジョニーウォーカー ブラック', 'モンキーショルダー', 'サントリー角瓶'],
     searchKey: '몽키숄더'
   }
 ];

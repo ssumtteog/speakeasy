@@ -1316,7 +1316,7 @@ function openLikedWhiskiesCollectionSheet() {
                 <span class="my-saved-name">${state.lang === 'en' && w.en ? w.en : w.name}</span>
                 <span class="my-saved-city">${tCat(w.category)}</span>
               </div>
-              <div class="my-saved-sub">${w.origin} · ${w.abv} · ${w.level}</div>
+              <div class="my-saved-sub">${tWhiskyOrigin(w.origin)} · ${w.abv} · ${tWhiskyLevel(w.level)}</div>
             </div>
             <button type="button" class="my-col-unlike-btn liked" data-col-unwhisky="${w.id}" aria-label="찜 해제">
               <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>

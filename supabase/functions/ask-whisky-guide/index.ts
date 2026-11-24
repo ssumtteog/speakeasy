@@ -18,11 +18,27 @@ const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const SYSTEM_INSTRUCTION = `당신은 서울 고급 스피크이지 위스키 바의 수석 바텐더이자 소믈리에입니다.
+function getSystemInstruction(lang: string): string {
+  if (lang === "en") {
+    return `You are the head bartender and whisky sommelier at a refined speakeasy bar in Seoul.
+Answer warmly, accurately, and concisely in natural English for both beginners and enthusiasts.
+Respond ONLY in this JSON format:
+{"title":"Concise summary title (under 36 chars)","answer":"Accurate, practical answer (3-4 sentences in natural English)","keywords":["2-3 short English keywords"],"recommendedWhisky":"1 recommended whisky name (or empty string if none)"}
+If the question is unrelated to whisky, bars, cocktails, or pairings, politely guide them to ask about whisky.`;
+  }
+  if (lang === "ja") {
+    return `あなたはソウルの洗練されたスピークイージーバーのチーフバーテンダー兼ウイスキーソムリエです。
+初心者から愛好家まで満足できるよう、誇張なく自然で丁寧な日本語で答えてください。
+必ず以下のJSON形式のみで応答してください:
+{"title":"質問の要約タイトル（18文字以内）","answer":"正確で実用的な回答（3〜4文、自然な敬語）","keywords":["関連キーワード2〜3個"],"recommendedWhisky":"おすすめのウイスキー名1つ（なければ空文字）"}
+ウイスキー・バー・カクテル・ペアリングと無関係な質問には、丁寧にウイスキー関連の質問を案内してください。`;
+  }
+  return `당신은 서울 고급 스피크이지 위스키 바의 수석 바텐더이자 소믈리에입니다.
 입문자부터 위스키 애호가까지 모두 만족할 수 있도록, 과장 없이 정확하고 세련된 한국어로 답하세요.
 반드시 아래 JSON 형식으로만 응답하세요:
 {"title":"질문 핵심 요약 제목(18자 이내)","answer":"정확하고 실용적인 답변(3~4문장, 자연스러운 존댓말)","keywords":["관련 핵심 키워드 2~3개"],"recommendedWhisky":"질문과 어울리는 대표 위스키 한국어 이름 1개(없으면 빈 문자열)"}
 위스키·바·칵테일·안주 페어링과 무관한 질문이면 정중히 위스키 관련 질문을 안내하세요.`;
+}
 
 let cachedFlashModels: string[] = [];
 let cachedAt = 0;
@@ -81,6 +97,7 @@ async function callSingleModel(
   apiKey: string,
   model: string,
   question: string,
+  lang: string,
   timeoutMs: number,
   disableThinking: boolean,
 ): Promise<{ res: Response; model: string }> {
@@ -106,7 +123,7 @@ async function callSingleModel(
         contents: [
           {
             role: "user",
-            parts: [{ text: `${SYSTEM_INSTRUCTION}\n\n사용자 질문: ${question}` }],
+            parts: [{ text: `${getSystemInstruction(lang)}\n\nQuestion: ${question}` }],
           },
         ],
         generationConfig: genConfig,
@@ -145,11 +162,12 @@ async function raceFastModels(
   apiKey: string,
   models: string[],
   question: string,
+  lang: string,
 ): Promise<{ text: string; model: string } | { error: string; status: number }> {
   const runOne = async (model: string): Promise<{ text: string; model: string }> => {
-    let attempt = await callSingleModel(apiKey, model, question, 9000, true);
+    let attempt = await callSingleModel(apiKey, model, question, lang, 9000, true);
     if (attempt.res.status === 400) {
-      attempt = await callSingleModel(apiKey, model, question, 9000, false);
+      attempt = await callSingleModel(apiKey, model, question, lang, 9000, false);
     }
     if (!attempt.res.ok) {
       const detail = await attempt.res.text().catch(() => "");
@@ -209,6 +227,7 @@ denoRuntime.serve(async (req: Request): Promise<Response> => {
   try {
     const body = await req.json();
     const question = String(body.question || "").trim();
+    const lang = body.lang === "en" || body.lang === "ja" ? body.lang : "ko";
 
     if (question.length < 2) {
       return new Response(JSON.stringify({ error: "질문을 2자 이상 입력해 주세요." }), {
@@ -224,7 +243,7 @@ denoRuntime.serve(async (req: Request): Promise<Response> => {
     }
 
     const models = await getFastModels(apiKey);
-    const outcome = await raceFastModels(apiKey, models, question);
+    const outcome = await raceFastModels(apiKey, models, question, lang);
 
     if ("error" in outcome) {
       return new Response(

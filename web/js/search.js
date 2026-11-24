@@ -318,8 +318,8 @@ function openWhiskySheet(id) {
     </div>
     <div class="sheet-desc">${w.summary}</div>
     <div class="sheet-info-grid">
-      <div class="info-box"><div class="info-box-label">${tl('원산지', 'Origin', '産地')}</div><div class="info-box-val">${w.origin}</div></div>
-      <div class="info-box"><div class="info-box-label">${tl('도수 · 난이도', 'ABV · Level', '度数・難易度')}</div><div class="info-box-val">${w.abv} · ${w.level}</div></div>
+      <div class="info-box"><div class="info-box-label">${tl('원산지', 'Origin', '産地')}</div><div class="info-box-val">${tWhiskyOrigin(w.origin)}</div></div>
+      <div class="info-box"><div class="info-box-label">${tl('도수 · 난이도', 'ABV · Level', '度数・難易度')}</div><div class="info-box-val">${w.abv} · ${tWhiskyLevel(w.level)}</div></div>
     </div>
     <div class="sheet-sec-title">${tl('테이스팅 노트', 'Tasting Notes', 'テイスティングノート')}</div>
     <div class="tasting-notes-box">

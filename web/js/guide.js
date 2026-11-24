@@ -84,6 +84,27 @@ const GUIDE_CAT_COPY = {
   }
 };
 
+function gLoc(obj, key) {
+  if (!obj) return '';
+  if (state.lang === 'en' && obj[key + '_en'] !== undefined) return obj[key + '_en'];
+  if (state.lang === 'ja' && obj[key + '_ja'] !== undefined) return obj[key + '_ja'];
+  return obj[key] !== undefined ? obj[key] : '';
+}
+
+function gBrandName(brandKo, fallbackBottle) {
+  const meta = GUIDE_BRAND_STORIES[brandKo];
+  if (state.lang === 'en') {
+    if (meta && meta.en) return meta.en;
+    if (fallbackBottle && fallbackBottle.en) {
+      return fallbackBottle.en.replace(/\s+\d+Y.*$/i, '').replace(/\s+(Original|Double|Reserve|Harmony|Select|Black|Blue|Gold|Green|Red|Single|Small|Rare|Cask).*$/i, '').trim() || brandKo;
+    }
+  }
+  if (state.lang === 'ja') {
+    if (meta && meta.ja) return meta.ja;
+  }
+  return brandKo;
+}
+
 function tDictGroup(gp) {
   const map = {
     '전체': { ko: '전체', en: 'All', ja: 'すべて' },
@@ -99,10 +120,10 @@ function openGlossarySheet(index) {
   if (!item) return;
   sheetBody.innerHTML = `
     <div class="sheet-title-row">
-      <div class="sheet-bar-name">${escapeGuideHtml(item.term)}</div>
+      <div class="sheet-bar-name">${escapeGuideHtml(gLoc(item, 'term'))}</div>
       <span class="sheet-match">${escapeGuideHtml(tDictGroup(item.group || '바 · 음용'))}</span>
     </div>
-    <div class="sheet-desc" style="margin-top:14px; margin-bottom:14px;">${escapeGuideHtml(item.desc)}</div>
+    <div class="sheet-desc" style="margin-top:14px; margin-bottom:14px;">${escapeGuideHtml(gLoc(item, 'desc'))}</div>
     <button type="button" class="my-sheet-secondary-cta" id="openFullDictFromItem">${tl('위스키 사전 전체 보기 (' + GUIDE_GLOSSARY.length + '개)', 'View Full Glossary (' + GUIDE_GLOSSARY.length + ' terms)', '用語辞典をすべて見る (' + GUIDE_GLOSSARY.length + '語)')}</button>
   `;
   document.getElementById('openFullDictFromItem')?.addEventListener('click', () => openFullDictionarySheet(item.group || '전체'));
@@ -129,10 +150,10 @@ function openFullDictionarySheet(activeGroup) {
       ${items.map(g => `
         <div class="guide-dict-item">
           <div class="guide-dict-head">
-            <span class="guide-dict-term">${escapeGuideHtml(g.term)}</span>
+            <span class="guide-dict-term">${escapeGuideHtml(gLoc(g, 'term'))}</span>
             <span class="guide-dict-group">${escapeGuideHtml(tDictGroup(g.group || ''))}</span>
           </div>
-          <div class="guide-dict-desc">${escapeGuideHtml(g.desc)}</div>
+          <div class="guide-dict-desc">${escapeGuideHtml(gLoc(g, 'desc'))}</div>
         </div>
       `).join('')}
     </div>
@@ -153,15 +174,18 @@ function openFullPairingsSheet() {
       <span class="sheet-match">${tl(GUIDE_PAIRINGS.length + '종', GUIDE_PAIRINGS.length + ' styles', GUIDE_PAIRINGS.length + '種')}</span>
     </div>
     <div class="guide-dict-list">
-      ${GUIDE_PAIRINGS.map(p => `
+      ${GUIDE_PAIRINGS.map(p => {
+        const foods = gLoc(p, 'foods') || p.foods;
+        return `
         <button type="button" class="guide-search-item" data-open-pairing="${p.id}">
           <div class="guide-dict-head">
-            <span class="guide-dict-term">${escapeGuideHtml(p.style)}</span>
-            <span class="guide-dict-group">${escapeGuideHtml(p.badge)}</span>
+            <span class="guide-dict-term">${escapeGuideHtml(gLoc(p, 'style'))}</span>
+            <span class="guide-dict-group">${escapeGuideHtml(gLoc(p, 'badge'))}</span>
           </div>
-          <div class="guide-dict-desc">${escapeGuideHtml(p.foods.join(' · '))}</div>
+          <div class="guide-dict-desc">${escapeGuideHtml(foods.join(' · '))}</div>
         </button>
-      `).join('')}
+      `;
+      }).join('')}
     </div>
   `;
 
@@ -176,26 +200,28 @@ function openFullPairingsSheet() {
 function openPairingSheet(pairingId) {
   const p = GUIDE_PAIRINGS.find(x => x.id === pairingId);
   if (!p) return;
+  const foods = gLoc(p, 'foods') || p.foods;
+  const examplesDisp = gLoc(p, 'examples') || p.examples;
   sheetBody.innerHTML = `
     <div class="sheet-title-row">
-      <div class="sheet-bar-name">${escapeGuideHtml(p.style)}</div>
-      <span class="sheet-match">${escapeGuideHtml(p.badge)}</span>
+      <div class="sheet-bar-name">${escapeGuideHtml(gLoc(p, 'style'))}</div>
+      <span class="sheet-match">${escapeGuideHtml(gLoc(p, 'badge'))}</span>
     </div>
-    <div class="sheet-addr" style="margin-bottom:14px;">${escapeGuideHtml(p.subtitle)}</div>
+    <div class="sheet-addr" style="margin-bottom:14px;">${escapeGuideHtml(gLoc(p, 'subtitle'))}</div>
 
     <div class="sheet-sec-title">${tl('추천 안주 페어링', 'Recommended Bites', 'おすすめのおつまみ')}</div>
     <div class="bar-whiskeys" style="margin-bottom:18px;">
-      ${p.foods.map(f => `<span class="whiskey-tag">${escapeGuideHtml(f)}</span>`).join('')}
+      ${foods.map(f => `<span class="whiskey-tag">${escapeGuideHtml(f)}</span>`).join('')}
     </div>
 
     <div class="guide-tip-box" style="margin-bottom:18px;">
       <div class="guide-tip-label">${tl('왜 잘 어울릴까요?', 'Why It Works', '相性が良い理由')}</div>
-      <div>${escapeGuideHtml(p.why)}</div>
+      <div>${escapeGuideHtml(gLoc(p, 'why'))}</div>
     </div>
 
     <div class="sheet-sec-title">${tl('어울리는 대표 위스키', 'Great Bottles to Pair', 'おすすめの銘柄')}</div>
     <div class="bar-whiskeys" style="margin-bottom:16px;">
-      ${p.examples.map(ex => `<button type="button" class="whiskey-tag" style="cursor:pointer;" data-pairing-whisky="${escapeGuideHtml(ex)}">${escapeGuideHtml(ex)} →</button>`).join('')}
+      ${p.examples.map((koEx, idx) => `<button type="button" class="whiskey-tag" style="cursor:pointer;" data-pairing-whisky="${escapeGuideHtml(koEx)}">${escapeGuideHtml(examplesDisp[idx] || koEx)} →</button>`).join('')}
     </div>
 
     <button type="button" class="my-sheet-secondary-cta" id="openAllPairingsFromDetail">${tl('안주 페어링 전체 보기 (' + GUIDE_PAIRINGS.length + '종)', 'All Food Pairings (' + GUIDE_PAIRINGS.length + ')', 'ペアリング一覧を見る (' + GUIDE_PAIRINGS.length + '種)')}</button>
@@ -238,7 +264,7 @@ async function askWhiskyGuideAI(question) {
       'Content-Type': 'application/json',
       'apikey': key
     },
-    body: JSON.stringify({ question })
+    body: JSON.stringify({ question, lang: state.lang })
   });
   if (res.status === 404) {
     return { notDeployed: true };
@@ -375,10 +401,15 @@ function renderGuideSearchPanel(query) {
 
   const matchedGlossary = GUIDE_GLOSSARY
     .map((g, idx) => ({ g, idx }))
-    .filter(({ g }) => normText([g.term, g.group, g.keywords, g.desc].join(' ')).includes(q));
+    .filter(({ g }) => normText([g.term, g.term_en, g.term_ja, g.group, g.keywords, g.desc, g.desc_en, g.desc_ja].join(' ')).includes(q));
 
   const matchedPairings = GUIDE_PAIRINGS.filter(p =>
-    normText([p.style, p.badge, p.subtitle, p.why, ...p.foods, ...p.examples].join(' ')).includes(q)
+    normText([
+      p.style, p.style_en, p.style_ja, p.badge, p.badge_en, p.badge_ja,
+      p.subtitle, p.subtitle_en, p.subtitle_ja, p.why, p.why_en, p.why_ja,
+      ...p.foods, ...(p.foods_en || []), ...(p.foods_ja || []),
+      ...p.examples, ...(p.examples_en || []), ...(p.examples_ja || [])
+    ].join(' ')).includes(q)
   );
 
   const matchedWhiskies = WHISKIES.filter(w =>
@@ -410,10 +441,10 @@ function renderGuideSearchPanel(query) {
         ${matchedGlossary.map(({ g, idx }) => `
           <button type="button" class="guide-search-item" data-gs-glossary="${idx}">
             <div class="guide-dict-head">
-              <span class="guide-dict-term">${escapeGuideHtml(g.term)}</span>
+              <span class="guide-dict-term">${escapeGuideHtml(gLoc(g, 'term'))}</span>
               <span class="guide-dict-group">${escapeGuideHtml(tDictGroup(g.group || ''))}</span>
             </div>
-            <div class="guide-search-snippet">${escapeGuideHtml(g.desc)}</div>
+            <div class="guide-search-snippet">${escapeGuideHtml(gLoc(g, 'desc'))}</div>
           </button>
         `).join('')}
       </div>
@@ -425,15 +456,18 @@ function renderGuideSearchPanel(query) {
         <span class="guide-sec-count">${tl(matchedPairings.length + '건', String(matchedPairings.length), matchedPairings.length + '件')}</span>
       </div>
       <div class="guide-search-list">
-        ${matchedPairings.map(p => `
+        ${matchedPairings.map(p => {
+          const foods = gLoc(p, 'foods') || p.foods;
+          return `
           <button type="button" class="guide-search-item" data-gs-pairing="${p.id}">
             <div class="guide-dict-head">
-              <span class="guide-dict-term">${escapeGuideHtml(p.style)}</span>
-              <span class="guide-dict-group">${escapeGuideHtml(p.badge)}</span>
+              <span class="guide-dict-term">${escapeGuideHtml(gLoc(p, 'style'))}</span>
+              <span class="guide-dict-group">${escapeGuideHtml(gLoc(p, 'badge'))}</span>
             </div>
-            <div class="guide-search-snippet">${escapeGuideHtml(p.foods.join(' · '))}</div>
+            <div class="guide-search-snippet">${escapeGuideHtml(foods.join(' · '))}</div>
           </button>
-        `).join('')}
+        `;
+        }).join('')}
       </div>
     ` : ''}
 
@@ -484,8 +518,7 @@ function updateGuideHeader() {
     titleEl.textContent = tl(guideState.categoryId + ' 가이드', tCat(guideState.categoryId) + ' Guide', tCat(guideState.categoryId) + 'ガイド');
   } else {
     backBtn.classList.add('visible');
-    const storyMeta = GUIDE_BRAND_STORIES[guideState.brandName];
-    titleEl.textContent = (state.lang === 'en' && storyMeta && storyMeta.en) ? storyMeta.en : guideState.brandName;
+    titleEl.textContent = gBrandName(guideState.brandName);
   }
 }
 
@@ -580,10 +613,10 @@ function renderGuideView(opts) {
         <div class="guide-cat-list">
           ${GUIDE_CATEGORIES.map(cat => {
             const count = getGuideWhiskiesByCategory(cat.id).length;
-            const loc = GUIDE_CAT_COPY[cat.id];
-            const catBadge = (loc && loc.badge[state.lang]) || cat.badge;
-            const catTagline = (loc && loc.tagline[state.lang]) || cat.tagline;
-            const catDesc = (loc && loc.shortDesc[state.lang]) || cat.shortDesc;
+            const catBadge = gLoc(cat, 'badge');
+            const catTagline = gLoc(cat, 'tagline');
+            const catDesc = gLoc(cat, 'shortDesc');
+            const catHighlights = gLoc(cat, 'highlights') || cat.highlights;
             return `
               <div class="guide-cat-card" data-guide-cat="${cat.id}">
                 <div class="guide-cat-top">
@@ -594,7 +627,7 @@ function renderGuideView(opts) {
                   </div>
                   <div class="guide-cat-heading">
                     <span class="guide-cat-name">${tCat(cat.id)}</span>
-                    <span class="guide-cat-en">${cat.en}</span>
+                    ${state.lang !== 'en' ? `<span class="guide-cat-en">${cat.en}</span>` : ''}
                   </div>
                 </div>
                 <div class="guide-cat-body">
@@ -602,7 +635,7 @@ function renderGuideView(opts) {
                   <div class="guide-cat-desc">${catDesc}</div>
                   <div class="guide-cat-footer">
                     <div class="guide-mini-brands">
-                      ${cat.highlights.slice(0, 3).map(h => `<span class="guide-mini-pill">${h}</span>`).join('')}
+                      ${catHighlights.slice(0, 3).map(h => `<span class="guide-mini-pill">${h}</span>`).join('')}
                     </div>
                     <div class="guide-arrow">
                       <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
@@ -667,10 +700,10 @@ function renderGuideView(opts) {
     if (!cat) return;
     const brands = getGuideBrandsInCategory(cat.id);
 
-    const loc = GUIDE_CAT_COPY[cat.id];
-    const catBadge = (loc && loc.badge[state.lang]) || cat.badge;
-    const catWhatTitle = (loc && loc.whatIsTitle[state.lang]) || cat.whatIsTitle;
-    const catWhatBody = (loc && loc.whatIsBody[state.lang]) || cat.whatIsBody;
+    const catBadge = gLoc(cat, 'badge');
+    const catWhatTitle = gLoc(cat, 'whatIsTitle');
+    const catWhatBody = gLoc(cat, 'whatIsBody');
+    const catFacts = gLoc(cat, 'facts') || cat.facts;
 
     container.innerHTML = `
       <div class="guide-breadcrumb">
@@ -687,7 +720,7 @@ function renderGuideView(opts) {
         <div class="guide-concept-title">${catWhatTitle}</div>
         <div class="guide-concept-body">${catWhatBody}</div>
         <div class="guide-facts-list">
-          ${cat.facts.map(f => `
+          ${catFacts.map(f => `
             <div class="guide-fact-row">
               <span class="guide-fact-label">${f.label}</span>
               <span class="guide-fact-val">${f.value}</span>
@@ -710,15 +743,18 @@ function renderGuideView(opts) {
       <div class="guide-brand-list">
         ${brands.map(item => {
           const storyMeta = GUIDE_BRAND_STORIES[item.brand];
+          const bLabel = gBrandName(item.brand, item.bottles[0]);
           const previewText = storyMeta
-            ? storyMeta.story
-            : item.bottles[0].summary;
+            ? gLoc(storyMeta, 'story')
+            : (state.lang === 'ko'
+              ? item.bottles[0].summary
+              : `${tWhiskyOrigin(item.bottles[0].origin)} · ${item.bottles[0].abv} · ${tWhiskyLevel(item.bottles[0].level)}`);
           return `
             <div class="guide-brand-card" data-guide-brand="${item.brand}">
               ${renderWhiskyBottleSVG(item.bottles[0], 'thumb-sm')}
               <div class="guide-brand-info">
                 <div class="guide-brand-top">
-                  <span class="guide-brand-name">${state.lang === 'en' && storyMeta && storyMeta.en ? storyMeta.en : item.brand}</span>
+                  <span class="guide-brand-name">${bLabel}</span>
                   <span class="guide-brand-count">${tl(item.bottles.length + '종', item.bottles.length + (item.bottles.length === 1 ? ' bottle' : ' bottles'), item.bottles.length + '種')}</span>
                 </div>
                 <div class="guide-brand-sub">${previewText}</div>
@@ -755,17 +791,18 @@ function renderGuideView(opts) {
   const storyMeta = GUIDE_BRAND_STORIES[guideState.brandName];
   const sample = bottles[0];
 
+  const brandDisplay = gBrandName(guideState.brandName, sample);
   const brandEn = storyMeta ? storyMeta.en : (sample ? sample.en.split(' ')[0] : '');
-  const brandOrigin = storyMeta ? storyMeta.origin : (sample ? sample.origin : '');
+  const brandOrigin = storyMeta ? gLoc(storyMeta, 'origin') : (sample ? tWhiskyOrigin(sample.origin) : '');
   const brandStory = storyMeta
-    ? storyMeta.story
+    ? gLoc(storyMeta, 'story')
     : tl(
         `${guideState.brandName}은(는) ${brandOrigin} 지역의 개성이 살아있는 대표적인 ${guideState.categoryId} 위스키 브랜드입니다. ${sample ? sample.summary : ''}`,
-        `${brandEn || guideState.brandName} is a signature ${tCat(guideState.categoryId).toLowerCase()} house known for distinctive character.`,
-        `${guideState.brandName}は、地域の個性が際立つ代表的な${tCat(guideState.categoryId)}ブランドです。`
+        `${brandDisplay} is a signature ${tCat(guideState.categoryId).toLowerCase()} house from ${brandOrigin}, celebrated for its distinct distillery character.`,
+        `${brandDisplay}は、${brandOrigin}の個性が際立つ代表的な${tCat(guideState.categoryId)}ブランドです。`
       );
   const brandTip = storyMeta
-    ? storyMeta.tip
+    ? gLoc(storyMeta, 'tip')
     : tl(
         '아래 라인업 중 도수와 난이도를 참고해 취향에 맞는 바틀부터 가볍게 시작해 보세요.',
         'Browse the lineup below by ABV and style to find the best bottle for your palate.',
@@ -778,12 +815,12 @@ function renderGuideView(opts) {
       <span class="guide-crumb-sep">›</span>
       <button class="guide-crumb-btn" id="crumbToCat">${tCat(cat ? cat.id : guideState.categoryId)}</button>
       <span class="guide-crumb-sep">›</span>
-      <span class="guide-crumb-current">${state.lang === 'en' && brandEn ? brandEn : guideState.brandName}</span>
+      <span class="guide-crumb-current">${brandDisplay}</span>
     </div>
 
     <div class="guide-concept-card">
       <span class="guide-concept-eyebrow">${brandEn} · ${brandOrigin}</span>
-      <div class="guide-concept-title">${tl(guideState.brandName + '이란?', 'About ' + (brandEn || guideState.brandName), guideState.brandName + 'について')}</div>
+      <div class="guide-concept-title">${tl(guideState.brandName + '이란?', 'About ' + brandDisplay, brandDisplay + 'について')}</div>
       <div class="guide-concept-body">${brandStory}</div>
       <div class="guide-tip-box">
         <div class="guide-tip-label">${tl('입문 · 테이스팅 팁', 'Tasting Tip', 'テイスティングのコツ')}</div>
@@ -813,8 +850,8 @@ function renderGuideView(opts) {
                   </button>
                 </div>
               </div>
-              <div class="guide-bottle-en">${w.en} · ${w.level}</div>
-              <div class="guide-bottle-summary" style="margin-bottom:0;">${w.summary}</div>
+              <div class="guide-bottle-en">${w.en} · ${tWhiskyLevel(w.level)}</div>
+              <div class="guide-bottle-summary" style="margin-bottom:0;">${state.lang === 'ko' ? w.summary : (tWhiskyOrigin(w.origin) + ' · ' + tCat(w.category))}</div>
             </div>
           </div>
           <div class="guide-bottle-footer">
@@ -827,7 +864,7 @@ function renderGuideView(opts) {
     </div>
 
     <button class="guide-find-bar-btn" id="guideFindBarsBtn">
-      <span>${tl(guideState.brandName + ' 즐길 수 있는 바 검색하기', 'Find Bars Serving ' + (brandEn || guideState.brandName), guideState.brandName + 'が飲めるバーを探す')}</span>
+      <span>${tl(guideState.brandName + ' 즐길 수 있는 바 검색하기', 'Find Bars Serving ' + brandDisplay, brandDisplay + 'が飲めるバーを探す')}</span>
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M7 17L17 7"/><polyline points="8 7 17 7 17 16"/></svg>
     </button>
   `;

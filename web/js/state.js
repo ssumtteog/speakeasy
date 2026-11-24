@@ -174,6 +174,68 @@ function tReviewTag(tag) {
   return rec ? (rec[state.lang] || rec.ko) : tag;
 }
 
+const WHISKY_LEVEL_I18N = {
+  '초입문 추천': { en: 'First Pour', ja: '超入門' },
+  '입문 추천': { en: 'Beginner Pick', ja: '入門おすすめ' },
+  '입문 · 하이볼': { en: 'Easy Highball', ja: '入門・ハイボール' },
+  '입문 · 가성비': { en: 'Great Value', ja: '入門・コスパ◎' },
+  '바 인기 주류': { en: 'Bar Favorite', ja: 'バー定番人気' },
+  '입문~중급': { en: 'Approachable', ja: '入門〜中級' },
+  '중급 추천': { en: 'Intermediate', ja: '中級おすすめ' },
+  '중상급': { en: 'Rich & Complex', ja: '中上級' },
+  '중상급 추천': { en: 'Rich & Complex', ja: '中上級おすすめ' },
+  '상급 추천': { en: 'Enthusiast', ja: '上級おすすめ' },
+  '프리미엄': { en: 'Premium', ja: 'プレミアム' },
+  '최상급 프리미엄': { en: 'Ultra Premium', ja: '最上級プレミアム' },
+  '최상급 마니아': { en: 'Collector’s Pick', ja: 'マニア向け最高峰' },
+  '피트 입문': { en: 'Peat Starter', ja: 'ピート入門' },
+  '피트 입문 추천': { en: 'Peat Starter', ja: 'ピート入門◎' },
+  '피트 입문~중급': { en: 'Light–Med Peat', ja: 'ピート入門〜中級' },
+  '피트 입문~마니아': { en: 'Peat Classic', ja: 'ピート定番' },
+  '피트 마니아': { en: 'Heavy Peat', ja: 'ヘビーピート' }
+};
+function tWhiskyLevel(lv) {
+  if (!lv || state.lang === 'ko') return lv || '';
+  return (WHISKY_LEVEL_I18N[lv] && WHISKY_LEVEL_I18N[lv][state.lang]) || lv;
+}
+
+const WHISKY_ORIGIN_I18N = {
+  '스코틀랜드 · 스페이사이드': { en: 'Speyside, Scotland', ja: 'スコットランド・スペイサイド' },
+  '스코틀랜드 · 하이랜드': { en: 'Highland, Scotland', ja: 'スコットランド・ハイランド' },
+  '스코틀랜드 · 웨스트 하이랜드': { en: 'West Highland, Scotland', ja: 'スコットランド・西ハイランド' },
+  '스코틀랜드 · 오크니 아일랜드': { en: 'Orkney, Scotland', ja: 'スコットランド・オークニー諸島' },
+  '스코틀랜드 · 아란 섬': { en: 'Isle of Arran, Scotland', ja: 'スコットランド・アラン島' },
+  '스코틀랜드 · 스카이 섬': { en: 'Isle of Skye, Scotland', ja: 'スコットランド・スカイ島' },
+  '스코틀랜드 · 로우랜드': { en: 'Lowland, Scotland', ja: 'スコットランド・ローランド' },
+  '스코틀랜드 · 캠벨타운': { en: 'Campbeltown, Scotland', ja: 'スコットランド・キャンベルタウン' },
+  '스코틀랜드 · 아일라': { en: 'Islay, Scotland', ja: 'スコットランド・アイラ島' },
+  '스코틀랜드 · 아일라 블렌디드몰트': { en: 'Islay Blended Malt', ja: 'アイラ・ブレンデッドモルト' },
+  '스코틀랜드 · 블렌디드 몰트': { en: 'Scottish Blended Malt', ja: 'スコットランド・ブレンデッドモルト' },
+  '스코틀랜드 · 미즈나라 피니시': { en: 'Scotland · Mizunara Finish', ja: 'スコットランド・ミズナラ後熟' },
+  '스코틀랜드': { en: 'Scotland', ja: 'スコットランド' },
+  '대만 · 이란': { en: 'Yilan, Taiwan', ja: '台湾・宜蘭' },
+  '대한민국 · 남양주': { en: 'Namyangju, Korea', ja: '韓国・南楊州' },
+  '독일 · 슈바르츠발트 (진)': { en: 'Black Forest, Germany (Gin)', ja: 'ドイツ・黒い森（ジン）' },
+  '아일랜드 · 아이리시': { en: 'Ireland', ja: 'アイルランド' },
+  '북아일랜드 · 아이리시': { en: 'Northern Ireland', ja: '北アイルランド' },
+  '아일랜드 · 싱글 팟 스틸': { en: 'Ireland · Single Pot Still', ja: 'アイルランド・ポットスチル' },
+  '일본 · 산토리': { en: 'Japan · Suntory', ja: '日本・サントリー' },
+  '일본 · 닛카': { en: 'Japan · Nikka', ja: '日本・ニッカ' },
+  '일본 · 홋카이도': { en: 'Hokkaido, Japan', ja: '日本・北海道' },
+  '일본 · 산토리 그레인': { en: 'Japan · Suntory Grain', ja: '日本・サントリーグレーン' },
+  '캐나다 · 캐나디안': { en: 'Canada', ja: 'カナダ' },
+  '미국 · 켄터키': { en: 'Kentucky, USA', ja: 'アメリカ・ケンタッキー' },
+  '미국 · 켄터키 (라이)': { en: 'Kentucky, USA (Rye)', ja: 'アメリカ・ケンタッキー（ライ）' },
+  '미국 · 인디애나 (라이)': { en: 'Indiana, USA (Rye)', ja: 'アメリカ・インディアナ（ライ）' },
+  '미국 · 버몬트 (라이)': { en: 'Vermont, USA (Rye)', ja: 'アメリカ・バーモント（ライ）' },
+  '미국 · 테네시': { en: 'Tennessee, USA', ja: 'アメリカ・テネシー' },
+  '미국 · 테네시 (리큐르)': { en: 'Tennessee, USA (Liqueur)', ja: 'アメリカ・テネシー（リキュール）' }
+};
+function tWhiskyOrigin(orig) {
+  if (!orig || state.lang === 'ko') return orig || '';
+  return (WHISKY_ORIGIN_I18N[orig] && WHISKY_ORIGIN_I18N[orig][state.lang]) || orig;
+}
+
 const I18N = {
   ko: {
     langName: '한국어',
