@@ -1,7 +1,7 @@
 /* ===== VIEW 6: MY PAGE (CLEAN PROFILE + COLLECTIONS + NOTE CTA) + SETTINGS SCREEN + AUTH SCREEN ===== */
 .view-my {
   padding: 126px var(--side-pad) 114px var(--side-pad);
-  transform: translateY(10px);
+  transform: translateX(48px);
   opacity: 0;
   pointer-events: none;
 }

@@ -49,6 +49,17 @@ function setView(nextView, opts) {
   const titleEl = document.getElementById('headerTitle');
   const likeBtn = document.getElementById('headerLikeBtn');
 
+  const nextEl = getViewElByName(nextView);
+  const allViews = [homeEl, resEl, searchEl, guideEl, mapEl, myEl].filter(Boolean);
+  const shouldSlide = Boolean(prevEl && nextEl && prevEl !== nextEl);
+
+  allViews.forEach(v => v.classList.remove('view-enter-right', 'view-exit-left'));
+  if (shouldSlide) {
+    prevEl.classList.add('view-exit-left');
+    nextEl.classList.add('view-enter-right');
+    void nextEl.offsetWidth;
+  }
+
   homeEl.classList.remove('behind');
   resEl.classList.remove('active');
   searchEl.classList.remove('active');
@@ -56,6 +67,14 @@ function setView(nextView, opts) {
   if (mapEl) mapEl.classList.remove('active');
   if (myEl) myEl.classList.remove('active');
   likeBtn.classList.remove('liked-filter');
+
+  if (shouldSlide) {
+    nextEl.classList.remove('view-enter-right');
+    clearTimeout(window.__viewExitTimer);
+    window.__viewExitTimer = setTimeout(() => {
+      allViews.forEach(v => v.classList.remove('view-exit-left'));
+    }, 360);
+  }
 
   if (nextView === 'home') {
     ctaEl.classList.remove('hidden');

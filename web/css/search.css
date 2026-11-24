@@ -1,7 +1,7 @@
 /* ===== VIEW 3: SEARCH TAB ===== */
 .view-search {
   padding: 108px var(--side-pad) 110px var(--side-pad);
-  transform: translateY(10px);
+  transform: translateX(48px);
   opacity: 0;
   pointer-events: none;
 }
