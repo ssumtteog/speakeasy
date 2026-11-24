@@ -320,6 +320,8 @@ async function handleSocialLogout() {
   }
   hasCloudRow = false;
   pendingCloudFields.clear();
+  safeSetStorage('speakeasy-onboarding-done', 'false');
+  try { sessionStorage.removeItem('speakeasy-onboarding-session-dismissed'); } catch (e) {}
   setAccountState(null);
   if (syncedBeforeLogout) {
     resetLocalUserRecords();
@@ -1807,7 +1809,10 @@ let onboardingActiveIndex = 0;
 
 function closeOnboardingScreen(markDone) {
   if (markDone !== false) {
-    safeSetStorage('speakeasy-onboarding-done', 'true');
+    try { sessionStorage.setItem('speakeasy-onboarding-session-dismissed', 'true'); } catch (e) {}
+    if (state.account && state.account.email) {
+      safeSetStorage('speakeasy-onboarding-done', 'true');
+    }
   }
   const el = document.getElementById('onboardingScreen');
   if (el) {
@@ -2015,10 +2020,16 @@ function openOnboardingScreen(startIdx) {
   }
 }
 
-// Auto-launch onboarding once on first visit (Home tab only in native shell)
-if (
-  safeGetStorage('speakeasy-onboarding-done') !== 'true' &&
-  (!window.__SPEAKEASY_NATIVE__ || window.__SPEAKEASY_INITIAL_TAB__ === 'home')
-) {
-  openOnboardingScreen(0);
-}
+// Auto-launch onboarding when not signed in (fresh session launch, Home tab only in native shell)
+(function maybeLaunchOnboarding() {
+  const isSignedIn = Boolean(state.account && state.account.email);
+  let dismissedThisSession = false;
+  try { dismissedThisSession = sessionStorage.getItem('speakeasy-onboarding-session-dismissed') === 'true'; } catch (e) {}
+  if (
+    !isSignedIn &&
+    !dismissedThisSession &&
+    (!window.__SPEAKEASY_NATIVE__ || window.__SPEAKEASY_INITIAL_TAB__ === 'home')
+  ) {
+    openOnboardingScreen(0);
+  }
+})();
